@@ -1,0 +1,6 @@
+﻿Nombre,Tipo de Dato,Descripción
+ID_TIPO_CONTACTO,Integer,Identificador único del tipo de contacto.
+DESCRIPCION_TIPO_CONTACTO,Varchar,Indica la descripción del tipo de contacto.
+NOMBRE_TIP_CONTACTO,Varchar,Indica el nombre asigando al tipo de contacto.
+ACTIVO,Boolean,Indica si dicho Tipo de Contacto se encuentra activo o no.
+ID_EMPRESA,Integer,Identificador único de empresa

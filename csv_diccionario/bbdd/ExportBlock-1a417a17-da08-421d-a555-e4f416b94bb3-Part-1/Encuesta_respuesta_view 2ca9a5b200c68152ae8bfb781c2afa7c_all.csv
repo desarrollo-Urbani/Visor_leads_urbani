@@ -1,0 +1,13 @@
+﻿Nombre,Descripción,Tipo de Dato
+ID_CONTRATO,Identificador del contrato,Integer
+OBSERVACION,Observación de los cambios que se realizaron,Text
+VALOR_NUEVO,Valor nuevo en el contrato,Varchar
+FECHA,Fecha de cambio,Date Time
+ID_CONTRATO_LOG,Identificador único del cambio en el contrato,Integer
+ORIGEN_MODIFICACION,Origen de la modificación,Varchar
+ID_USUARIO,Identificador único del usuario,Integer
+TIPO_MODIFICACION,Tipo de modificación,Varchar
+ID_COTIZ_ITEM,Identificador único de la relación entre la cotización y el bien,Integer
+ACCION,Acción que se realizó,Varchar
+VALOR_ANTIGUO,Valor antiguo del contrato,Varchar
+URL_ARCHIVO,URL del archivo en casod e que se haya cambbiado,Varchar

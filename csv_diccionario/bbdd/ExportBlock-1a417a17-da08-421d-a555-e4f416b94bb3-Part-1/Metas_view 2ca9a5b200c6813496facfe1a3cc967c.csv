@@ -1,0 +1,18 @@
+﻿Nombre,Tipo de Dato,Descripción
+ID_METAS,Integer,Identificador único de la meta.
+VERSION,Integer,Indicador para desarrolladores a la hora de realizar alguna modificación.
+AVANCE_ITEMS,Integer,Indica el monto de bienes/items de avance.
+AVANCE_PESOS,Decimal,Indica el monto en pesos de avance.
+AVANCE_UF,Decimal,Indica el monto en UF de avance.
+FECHA_FIN,Date Time,Indica la fecha fin desde la que se considera la meta.
+FECHA_INICIO,Date Time,Indica la fecha inicio desde la que se considera la meta.
+META_ALCANZADA,Integer,Indica si la meta se ha cumplido o no.
+META_ITEMS,Integer,Indica el monto de bienes/items propuestos en la meta.
+META_PESOS,Decimal,Indica el monto en pesos propuestos en la meta.
+META_UF,Decimal,Indica el monto en UF propuestos en la meta.
+NOMBRE_META,Varchar,Indica el nombre de la meta.
+TIPO_META,Varchar,"Indica el tipo de meta (por proyecto, por vendedor, etc)"
+TIPO_MONTO_META,Varchar,"Indica el tipo en que se expresan las metas (UF, Moneda Local, bienes o items)"
+ID_EMPRESA,Integer,Identificador único de la empresa.
+ID_PROYECTO,Integer,Identificador único del proyecto.
+ID_USUARIO,Integer,Identificador único del usuario.

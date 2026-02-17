@@ -1,0 +1,99 @@
+﻿Nombre,Descripción,Tipo de Dato
+ELIMINADO,"Indica si el proyecto se ha eliminado o
+  no.",Boolean
+HORARIO_ATENCION_PROYECTO,"Indica si el horario de atención cargado
+  en el proyecto aparece o no en el mail de cotización.",Boolean
+DESCRIPCION,"Detalla una descripción del proyecto que
+  se carga en el sistema.",Text
+DIVIDENDO_ANIOS2,"Detalla (25) años a los cuáles calcular
+  dividendos estimados de crédito hipotecario a la tasa indicada.",Integer
+EJECUTIVO_2,Nombre del ejecutivo 1,Varchar
+DIVIDENDO_ANIOS3,"Detalla (30) años a los cuáles calcular
+  dividendos estimados de crédito hipotecario a la tasa indicada.",Integer
+VERSION,"Indicador para desarrolladores a la hora
+  de realizar alguna modificación.",Integer
+URL_IMAGEN_3,URL de imagen asociada al proyecto.,Text
+HORARIO_ATENCION,"Campo utilizado para colocar horario de
+  atención del proyecto que aparece en mail cotización.",Text
+TASA,"Detalla tasa anual de interés cargada en
+  el proyecto.",Decimal
+MONTO_POLIZA_SEGURO,"Detalla monto de la póliza de seguros
+  asociada al proyecto, cargada en el sistema.",Varchar
+ID_EMPRESA,Identificador único de la empresa a la que pertenece el proyecto.,Integer
+DIVIDENDO_ANIOS1,"Detalla (20) años a los cuáles calcular
+  dividendos estimados de crédito hipotecario a la tasa indicada.",Integer
+ACTIVO,"Indica si el proyecto se encuentra activo
+  o no.",Boolean
+NOM_LEGAL,Indica el nombre legal del proyecto.,Varchar
+EMAIL,"Indica mail del proyecto cargado en el
+  sistema.",Varchar
+PORCENTAJE_AVANCE,Indica porcentaje de avance del proyecto.,Decimal
+TASA_HIP,"Detalla tasa de interés que se carga para
+  calcular el estimado de dividendos de crédito hipotecario.",Decimal
+CALLE,"Indica calle donde se encuentra ubicado
+  el proyecto.",Varchar
+RUT_PROYECTO,Indica el RUT del proyecto indicado.,Varchar
+NOM_LEGAL_PROMESA,"Indica nombre legal del proyecto que
+  aparecerá en el documento de promesa.",Varchar
+FECHA_TERMINO,"Indica fecha de término del proyecto
+  cargada en el sistema.",Date Time
+COMUNA,"Indica comuna donde se encuentra ubicado
+  el proyecto.",Varchar
+RUT_PROYECTO_PROMESA,"Indica el RUT del proyecto que aparecerá
+  en el documento de promesa.",Varchar
+NOM_PROYECTO,"Indica el nombre con el que proyecto
+  aparece en MobySuite.",Varchar
+REGION,"Indica region donde se encuentra ubicado
+  el proyecto.",Varchar
+NOMBRE_BANCO,"Indica el Banco Inmobiliaria cargado en
+  el proyecto.",Varchar
+EMAIL_2,"Indica mail del proyecto cargado en el
+  sistema.",Varchar
+CIUDAD,"Indica ciudad donde se encuentra ubicado
+  el proyecto.",Varchar
+RAZON_SOCIAL_ARQUITECTO,Detalla como bien menciona el nombre la razón social de arquitecto del proyecto,Varchar
+EJECUTIVO_1,Nombre del ejecutivo 2,Varchar
+TELEFONO1,"Indica teléfono del proyecto cargado en
+  el sistema.",Varchar
+EMPRESA_ASEGURADORA,"Detalla empresa de seguros asociada al
+  proyecto, cargada en el sistema.",Varchar
+URL_IMAGEN_1,URL de imagen asociada al proyecto.,Text
+PORCENTAJE_MULTA,"Indica porcentaje de multa en caso de
+  resciliar un contato en dicho proyecto.",Decimal
+FECHA_REGISTRO_PROYECTO,"Indica fecha en la que el proyecto fue
+  creado o cargado al sistema.",Date Time
+FECHA_LANZAMIENTO_COMERCIAL,Detalla la fecha que se inicio las ventas del proyecto,date time
+URL_LOGO,"URL del logo del proyecto (que aparece en
+  la cotización por ejemplo)",Text
+PRECIO_VENTA_OBJETIVO_PONDERADO,"Detalla el precio venta objetivo
+  ponderado cargado en datos finanzas del proyecto.",Decimal
+PRECIO_VENTA_OBJETIVO_UTIL,"Detalla el precio venta objetivo útil
+  cargado en datos finanzas del proyecto.",Decimal
+TELEFONO2,"Indica teléfono del proyecto cargado en
+  el sistema.",Varchar
+CODIGO_POSTAL,"Indica número postal o altura de la calle
+  donde se encuentra ubicado.",Varchar
+EVALUACION_PLANA,"Detalla el valor de evaluación plana que
+  se carga o estima del proyecto.",Decimal
+URL_IMAGEN_2,URL de imagen asociada al proyecto.,Text
+FECHA_ESCRITURA,"Indica fecha en la que se espera
+  escriturar el proyecto (fecha entrega cargada en el proyecto).",Date Time
+CTACTE,"Indica la cuenta corriente de la
+  inmobiliaria cargada a este proyecto.",Varchar
+FECHA_INICIO,"Indica fecha inicio del proyecto cargada
+  en el sistema.",Date Time
+TELEFONO_AMC,"Indica teléfono asociado al proyecto que
+  aparecerá en la AMC.",Varchar
+NUM_INTERIOR,"Indica número interior de la dirección
+  (ej: casa 4, departamento 3)",Varchar
+REFERENCIA,"Indica referencia donde se encuentra
+  ubicado el proyecto.",Longtext
+SUBSIDIO,"Detalla valor del campo Subsidio cargado
+  en datos finanzas del proyecto.",Decimal
+PAIS,"Indica país en el que se desarrolla el
+  proyecto.",Varchar
+SITIO_WEB,Indica el sitio web del proyecto.,Varchar
+ID_PROYECTO,"Identificador único
+  del proyecto.",Integer
+NUM_EXTERIOR,"Indica número exterior o altura de la
+  calle donde se encuentra ubicado.",Varchar

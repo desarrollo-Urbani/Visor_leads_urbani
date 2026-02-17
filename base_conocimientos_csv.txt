@@ -1,0 +1,1284 @@
+==================================================
+   DICCIONARIO DE DATOS: BASE DE CONOCIMIENTOS    
+==================================================
+
+ARCHIVO: Bien_Log_View 2ca9a5b200c681ea9491d22ed9a5e603.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Bien_Log_View 2ca9a5b200c681ea9491d22ed9a5e603.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+      Nombre Tipo de Dato                          Descripción
+ ID_BIEN_LOG      Integer    Identificador único del elemento.
+FECHA_CAMBIO    Date Time Fecha en la que se realizo el cambio
+     CAMBIOS         Text     Descripción del cambio realizado
+
+==================================================
+
+ARCHIVO: Bien_Log_View 2ca9a5b200c681ea9491d22ed9a5e603_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Bien_Log_View 2ca9a5b200c681ea9491d22ed9a5e603_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+             Nombre                                                                      Descripción Tipo de Dato
+FECHA_REGISTRO_BIEN Indica fecha en la que el bien se registró/cargó por primera vez en el\nsistema.    Date Time
+           NUM_DORM                                       Cantidad de dormitorios que posee el bien.      Integer
+          SUP_TOTAL                          Suma de superficies que hacen al total de la propiedad.       Double
+
+==================================================
+
+ARCHIVO: Bien_View 2ca9a5b200c68169ab3fcece86a00533.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Bien_View 2ca9a5b200c68169ab3fcece86a00533.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+      Nombre Tipo de Dato                                                                                              Descripción
+     ID_BIEN      Integer                                                                   Identificador único del elemento bien.
+    NUM_BIEN      Varchar                                                          Número correspondiente del bien en el proyecto.
+ID_TIPO_BIEN      Integer Identificador único del tipo de bien (se vincula a la TIPO_BIEN_VIEW. Ejemplos: casa, departamento, etc)
+
+==================================================
+
+ARCHIVO: Bien_View 2ca9a5b200c68169ab3fcece86a00533_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Bien_View 2ca9a5b200c68169ab3fcece86a00533_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+             Nombre                                                                        Descripción Tipo de Dato
+FECHA_REGISTRO_BIEN Indica fecha en la que el bien se registró/cargó por primera vez en el\n  sistema.    Date Time
+         VALOR_BASE                                        Mínimo valor al que puede venderse el bien.      Decimal
+         TIP_COCINA             Detalla el tipo de cocina que posee el bien (Integrada, cerrada, etc.)      Varchar
+
+==================================================
+
+ARCHIVO: Clientes_View 2ca9a5b200c6816895a5fc33ca0e0fd1.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Clientes_View 2ca9a5b200c6816895a5fc33ca0e0fd1.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+    Nombre Tipo de Dato                                                              Descripción
+ID_CLIENTE      Integer                                        Identificador único del elemento.
+       RUT      Varchar        Rol único Triburario del cliente, tiene validación, no se repite.
+       DNI      Boolean Indica si el dato ingresado en RUT es o no DNI (para extranjeros por ej)
+
+==================================================
+
+ARCHIVO: Clientes_View 2ca9a5b200c6816895a5fc33ca0e0fd1_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Clientes_View 2ca9a5b200c6816895a5fc33ca0e0fd1_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+       Nombre                                               Descripción Tipo de Dato
+   RENTA_REAL                          Indica la renta real del cliente      Varchar
+    EMPLEADOR Detalla la empresa u organización empleadora del cliente.      Varchar
+CODIGO_POSTAL       Código Postal de la ciudad donde reside el cliente.      Varchar
+
+==================================================
+
+ARCHIVO: Constante_View 2ca9a5b200c681ffa06ccc5174a0995d.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Constante_View 2ca9a5b200c681ffa06ccc5174a0995d.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+          Nombre Tipo de Dato                                          Descripción
+           FECHA    Date Time                 Fecha en la que aplica la constante.
+           VALOR       Double                               Valor de la constante.
+VALOR_PROYECTADO       Double Valor estimado de la constante en la fecha indicada.
+
+==================================================
+
+ARCHIVO: Constante_View 2ca9a5b200c681ffa06ccc5174a0995d_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Constante_View 2ca9a5b200c681ffa06ccc5174a0995d_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+          Nombre                                          Descripción Tipo de Dato
+VALOR_PROYECTADO Valor estimado de la constante en la fecha indicada.       Double
+           FECHA                 Fecha en la que aplica la constante.    Date Time
+      ID_EMPRESA                          Identificador de la empresa      Integer
+
+==================================================
+
+ARCHIVO: Contabilidad_view 2ca9a5b200c6814fb754fce535382111.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Contabilidad_view 2ca9a5b200c6814fb754fce535382111.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+   Nombre Tipo de Dato                                       Descripción
+ ID_PAGOS      Integer                     Identificador único del pago.
+    CUOTA      Integer   Número de cuota que está pagando el\n  cliente.
+ID_RECIBO      Integer Identificador único del recibo, asociado al pago.
+
+==================================================
+
+ARCHIVO: Contabilidad_view 2ca9a5b200c6814fb754fce535382111_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Contabilidad_view 2ca9a5b200c6814fb754fce535382111_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+            Nombre                                                                              Descripción Tipo de Dato
+         ID_VALIJA                                                         Identificador único de la valija      Integer
+ESTADO_RECIBO_PAGO                                                     Muestra el estado del recibo de pago      Varchar
+   ESTADO_CONTABLE Indica el estado asignado por contabilidad (Depositado, En cartera,\n  Conciliado, etc.)      Varchar
+
+==================================================
+
+ARCHIVO: Contratos_Documentos_View 2ca9a5b200c6819fb6d3f7797d3a86cf.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Contratos_Documentos_View 2ca9a5b200c6819fb6d3f7797d3a86cf.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+               Nombre Tipo de Dato                                                     Descripción
+ID_CONTRATO_DOCUMENTO      Integer                               Identificador único del elemento.
+          ID_CONTRATO      Integer Identificador único del contrato al que pertenece el documento.
+                ORDEN      Integer            Muestra el orden en el que se mostrara el documento.
+
+==================================================
+
+ARCHIVO: Contratos_Documentos_View 2ca9a5b200c6819fb6d3f7797d3a86cf_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Contratos_Documentos_View 2ca9a5b200c6819fb6d3f7797d3a86cf_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                          Nombre                                                               Descripción Tipo de Dato
+      ID_USUARIO_CARGA_DOCUMENTO Idetificador único del usuario que cargo el documento a la base de datos.      Integer
+FECHA_ACTUALIZACION_AUTORIZACION       Indica la fecha en la que se autrizó la actualización el documento.    Date Time
+                           ORDEN                      Muestra el orden en el que se mostrara el documento.      Integer
+
+==================================================
+
+ARCHIVO: Contrato_Compareciente_View 2ca9a5b200c6815ba54ceba485a37d32.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Contrato_Compareciente_View 2ca9a5b200c6815ba54ceba485a37d32.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                   Nombre Tipo de Dato                                        Descripción
+ID_CONTRATO_COMPARECIENTE      Integer Identificador único del compareciente del contrato
+           FECHA_REGISTRO    Date Time       Fecha en la que se registró el compareciente
+       FECHA_MODIFICACION    Date Time       Fecha en la que se modificó el compareciente
+
+==================================================
+
+ARCHIVO: Contrato_Compareciente_View 2ca9a5b200c6815ba54ceba485a37d32_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Contrato_Compareciente_View 2ca9a5b200c6815ba54ceba485a37d32_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                 Nombre                                                               Descripción Tipo de Dato
+ID_USUARIO_MODIFICACION Identificador único del usuario u ejecutivo que modificó el compareciente      Integer
+                 ACTIVO                                    Indica si el compareciente está activo      TinyInt
+                  NIVEL                                                   Nivel del compareciente      Varchar
+
+==================================================
+
+ARCHIVO: Contrato_Observacion_View 2ca9a5b200c68115848ec2f9cf6f7ab3.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Contrato_Observacion_View 2ca9a5b200c68115848ec2f9cf6f7ab3.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                 Nombre Tipo de Dato                                Descripción
+ID_CONTRATO_OBSERVACION      Integer      Identificador del ingreso del cliente
+         FECHA_REGISTRO    Date Time Fecha en la que se registró la observación
+            OBSERVACION         Text                   Observación del contrato
+
+==================================================
+
+ARCHIVO: Contrato_Observacion_View 2ca9a5b200c68115848ec2f9cf6f7ab3_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Contrato_Observacion_View 2ca9a5b200c68115848ec2f9cf6f7ab3_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                Nombre                                        Descripción Tipo de Dato
+MOSTRAR_OBSERVACION_EN  Muestra lugar en el que se muestra la observación      Varchar
+           ID_CONTRATO                   Identificador unico del contrato      Integer
+                ORIGEN Muestra el Módulo en el cual se agregó observación      Varchar
+
+==================================================
+
+ARCHIVO: Contrato_View 2ca9a5b200c6816aa568e660649c84ee.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Contrato_View 2ca9a5b200c6816aa568e660649c84ee.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+         Nombre Tipo de Dato                                                                   Descripción
+    ID_CONTRATO      Integer                                             Identificador único del elemento.
+ESTADO_CONTRATO      Varchar Indica estado en que se encuentra el contrato (Reservado, Promesado,\n  etc.)
+   PRECIO_TOTAL      Decimal                                           Indica el valor total del contrato.
+
+==================================================
+
+ARCHIVO: Contrato_View 2ca9a5b200c6816aa568e660649c84ee_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Contrato_View 2ca9a5b200c6816aa568e660649c84ee_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                            Nombre                                                       Descripción Tipo de Dato
+          CANTIDAD_BIENES_MAESTROS                         Bienes maestros que contiene el contrato.      Integer
+OBSERVACIONES_ESTADO_ESCRITURACION Muestra la observación que se le asignó al estado de la escritura         Text
+                            BIENES                                  Bienes que estan en el contrato.         Text
+
+==================================================
+
+ARCHIVO: Cotizacion_Descuento_View 2ca9a5b200c68154abfcd0567bf1d840.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Cotizacion_Descuento_View 2ca9a5b200c68154abfcd0567bf1d840.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+          Nombre Tipo de Dato                                                                   Descripción
+     ID_COT_DESC      Integer                           Identificador único del descuento en\n  cotización.
+NOMBRE_DESCUENTO      Varchar Detalla si el descuento es por proyecto, por contrato, no autorizado,\n  etc.
+           FECHA    Date Time                          Fecha en que se aplica el descuento a la cotización.
+
+==================================================
+
+ARCHIVO: Cotizacion_Descuento_View 2ca9a5b200c68154abfcd0567bf1d840_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Cotizacion_Descuento_View 2ca9a5b200c68154abfcd0567bf1d840_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+     Nombre                                                               Descripción Tipo de Dato
+    VERSION Indicador para desarrolladores a la hora de realizar alguna modificación.      Integer
+ AUTORIZADO            Indica si el descuento aplicado es autorizado o no autorizado.      Boolean
+ID_COT_DESC                       Identificador único del descuento en\n  cotización.      Integer
+
+==================================================
+
+ARCHIVO: Cotizacion_Item_View 2ca9a5b200c681ccb71ee70afb69e2c2.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Cotizacion_Item_View 2ca9a5b200c681ccb71ee70afb69e2c2.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+          Nombre Tipo de Dato                                  Descripción
+   ID_COTIZ_ITEM      Integer     Identificador único del ítem cotización.
+    PRECIO_LISTA      Decimal               Valor lista del bien cotizado.
+PRECIO_ADICIONAL      Decimal Valor de adicional aplicado a la cotización.
+
+==================================================
+
+ARCHIVO: Cotizacion_Item_View 2ca9a5b200c681ccb71ee70afb69e2c2_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Cotizacion_Item_View 2ca9a5b200c681ccb71ee70afb69e2c2_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                 Nombre                                                Descripción Tipo de Dato
+             ID_USUARIO Identificador único del usuario que realizó la cotización.      Integer
+           PRECIO_VENTA                  Valor al que finalmente se vende el bien.      Decimal
+APLICA_PRECIO_ADICIONAL    Indica si se aplica o no un adicional en la cotización.      Boolean
+
+==================================================
+
+ARCHIVO: Cotizacion_Promocion_View 2ca9a5b200c6814698c8dc116885a460.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Cotizacion_Promocion_View 2ca9a5b200c6814698c8dc116885a460.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                 Nombre Tipo de Dato                                               Descripción
+ID_COTIZACION_PROMOCION      Integer     Identificador único de la promoción en\n  cotización.
+            DESCRIPCION      Varchar                   Detalla la descripción de la promoción.
+                  FECHA    Date Time Indica fecha en que se aplica la promoción en cotización.
+
+==================================================
+
+ARCHIVO: Cotizacion_Promocion_View 2ca9a5b200c6814698c8dc116885a460_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Cotizacion_Promocion_View 2ca9a5b200c6814698c8dc116885a460_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+       Nombre                                               Descripción Tipo de Dato
+  DESCRIPCION                   Detalla la descripción de la promoción.      Varchar
+ID_COTIZACION                     Identificador único de la Cotización.      Integer
+        FECHA Indica fecha en que se aplica la promoción en cotización.    Date Time
+
+==================================================
+
+ARCHIVO: Cotizacion_View 2ca9a5b200c6818abb3ec889620aec7e.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Cotizacion_View 2ca9a5b200c6818abb3ec889620aec7e.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+       Nombre Tipo de Dato                                      Descripción
+ID_COTIZACION      Integer         Identificador único\n  de la cotización.
+  FECHA_COTIZ    Date Time Indica fecha en que se realizó la\n  cotización.
+     APROBADA      Boolean    Indica si la cotización fue aprobada o\n  no.
+
+==================================================
+
+ARCHIVO: Cotizacion_View 2ca9a5b200c6818abb3ec889620aec7e_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Cotizacion_View 2ca9a5b200c6818abb3ec889620aec7e_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+        Nombre                                                                                   Descripción Tipo de Dato
+  TASA_INTERES Tasa de interés estimada en la cotización\n  para crédito hipotecario, traída desde proyecto.      Decimal
+      APROBADA                                                 Indica si la cotización fue aprobada o\n  no.      Boolean
+HASH_DOCUMENTO                                  Campo utilizado para identificar el pdf\n  de la cotización.      Varchar
+
+==================================================
+
+ARCHIVO: EMPRESA_VIEW 2ca9a5b200c6816ea56df464582c85a7.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\EMPRESA_VIEW 2ca9a5b200c6816ea56df464582c85a7.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+     Nombre Tipo de Dato                        Descripción
+ ID_EMPRESA      Integer        Identificador Unico Empresa
+NOM_EMPRESA      varchar   Mostrará el nombre de la empresa
+       PAIS      varchar Pais donde se encuentra la empresa
+
+==================================================
+
+ARCHIVO: EMPRESA_VIEW 2ca9a5b200c6816ea56df464582c85a7_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\EMPRESA_VIEW 2ca9a5b200c6816ea56df464582c85a7_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+       Nombre                                  Descripción Tipo de Dato
+    ELIMINADO    Indica si la empresa está eliminada o no.      boolean
+CODIGO_POSTAL Codigo postal referente a la región y comuna      varchar
+        CALLE       Dirección correspondiente a la empresa      varchar
+
+==================================================
+
+ARCHIVO: Encuesta_evento_view 2ca9a5b200c681bc8beac044c72b7e33.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Encuesta_evento_view 2ca9a5b200c681bc8beac044c72b7e33.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+            Nombre Tipo de Dato                                                    Descripción
+ID_ENCUESTA_EVENTO      Integer                     Identificador único del evento de encuesta
+       ID_ENCUESTA      Varchar Indica cual es la encuesta asociada a dicho evento de encuesta
+       TIPO_EVENTO      Varchar          Tipo de evento del sistema que dispara dicha encuesta
+
+==================================================
+
+ARCHIVO: Encuesta_evento_view 2ca9a5b200c681bc8beac044c72b7e33_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Encuesta_evento_view 2ca9a5b200c681bc8beac044c72b7e33_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+            Nombre                                Descripción Tipo de Dato
+        ID_CLIENTE                 Indica el cliente asociado      Integer
+         ID_EVENTO                  Indica el evento asociado      Integer
+ID_ENCUESTA_EVENTO Identificador único del evento de encuesta      Integer
+
+==================================================
+
+ARCHIVO: Encuesta_respuesta_view 2ca9a5b200c681508712f7b21f864496.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Encuesta_respuesta_view 2ca9a5b200c681508712f7b21f864496.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+               Nombre Tipo de Dato                                    Descripción
+ID_ENCUESTA_RESPUESTA      Integer Identificador único del evento de la respuesta
+   ID_ENCUESTA_EVENTO      Integer  Indica cual es el evento de encuesta asociado
+             PREGUNTA      Varchar                                       pregunta
+
+==================================================
+
+ARCHIVO: Encuesta_respuesta_view 2ca9a5b200c681508712f7b21f864496_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Encuesta_respuesta_view 2ca9a5b200c681508712f7b21f864496_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+            Nombre                                   Descripción Tipo de Dato
+          PREGUNTA                                      pregunta      Varchar
+   VALOR_RESPUESTA                         Valor de la respuesta         Text
+ID_ENCUESTA_EVENTO Indica cual es el evento de encuesta asociado      Integer
+
+==================================================
+
+ARCHIVO: Encuesta_respuesta_view 2ca9a5b200c68152ae8bfb781c2afa7c.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Encuesta_respuesta_view 2ca9a5b200c68152ae8bfb781c2afa7c.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+         Nombre Tipo de Dato                                   Descripción
+ID_CONTRATO_LOG      Integer Identificador único del cambio en el contrato
+    ID_CONTRATO      Integer                    Identificador del contrato
+          FECHA    Date Time                               Fecha de cambio
+
+==================================================
+
+ARCHIVO: Encuesta_respuesta_view 2ca9a5b200c68152ae8bfb781c2afa7c_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Encuesta_respuesta_view 2ca9a5b200c68152ae8bfb781c2afa7c_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+     Nombre                                  Descripción Tipo de Dato
+ID_CONTRATO                   Identificador del contrato      Integer
+OBSERVACION Observación de los cambios que se realizaron         Text
+VALOR_NUEVO                   Valor nuevo en el contrato      Varchar
+
+==================================================
+
+ARCHIVO: Encuesta_view 2ca9a5b200c681c08b61fb7c1931b327.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Encuesta_view 2ca9a5b200c681c08b61fb7c1931b327.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+     Nombre Tipo de Dato                        Descripción
+ID_ENCUESTA      Integer Identificador único de la encuesta
+     NOMBRE      Varchar              Nombre de la encuesta
+DESCRIPCION         Text         Descripción de la encuesta
+
+==================================================
+
+ARCHIVO: Encuesta_view 2ca9a5b200c681c08b61fb7c1931b327_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Encuesta_view 2ca9a5b200c681c08b61fb7c1931b327_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+          Nombre                                   Descripción Tipo de Dato
+NOMBRE_PROYECTOS Proyectos a los que esta asociada la encuesta         Text
+          NOMBRE                         Nombre de la encuesta      Varchar
+     DESCRIPCION                    Descripción de la encuesta         Text
+
+==================================================
+
+ARCHIVO: ESCRITURACION_ESTADO_VIEW 2ca9a5b200c681b1b89bd8167b9c8c39.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\ESCRITURACION_ESTADO_VIEW 2ca9a5b200c681b1b89bd8167b9c8c39.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                 Nombre Tipo de Dato                                       Descripción
+ID_ESCRITURACION_ESTADO      Integer Identificaador único del estado de escrituración.
+         FECHA_REGISTRO    Date Time               Fecha en que se registra el estado.
+   ESTADO_ESCRITURACION     Tinytext Descripción o nombre del estado de escrituración.
+
+==================================================
+
+ARCHIVO: ESCRITURACION_ESTADO_VIEW 2ca9a5b200c681b1b89bd8167b9c8c39_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\ESCRITURACION_ESTADO_VIEW 2ca9a5b200c681b1b89bd8167b9c8c39_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                 Nombre                                           Descripción Tipo de Dato
+      ID_USUARIO_ESTADO Identificador único del usuario que asigna el estado.      Integer
+ID_ESCRITURACION_ESTADO     Identificaador único del estado de escrituración.      Integer
+         FECHA_REGISTRO                   Fecha en que se registra el estado.    Date Time
+
+==================================================
+
+ARCHIVO: ESCRITURACION_VIEW 2ca9a5b200c681fc9bffe68bf5d58ccc.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\ESCRITURACION_VIEW 2ca9a5b200c681fc9bffe68bf5d58ccc.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+          Nombre Tipo de Dato                                                          Descripción
+ID_ESCRITURACION      Integer                                Identificador único de escrituración.
+           BANCO      Varchar                        Banco que se carga al escriturar un contrato.
+ EJECUTIVO_BANCO      Varchar Ejecutivo Banco que se completa a la hora de escriturar un contrato.
+
+==================================================
+
+ARCHIVO: ESCRITURACION_VIEW 2ca9a5b200c681fc9bffe68bf5d58ccc_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\ESCRITURACION_VIEW 2ca9a5b200c681fc9bffe68bf5d58ccc_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+        Nombre                                                            Descripción Tipo de Dato
+          TASA   Tasa de interés que se completa a la hora de escriturar un contrato.      Varchar
+    REPERTORIO Número repertorio que se completa a la hora de escriturar un contrato.      Varchar
+TELEFONO_BANCO    Teléfono banco que se completa a la hora de escriturar un contrato.      Varchar
+
+==================================================
+
+ARCHIVO: ESTADOS_PARAM_VIEW 2ca9a5b200c681e490f0c20ff88cf8c7.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\ESTADOS_PARAM_VIEW 2ca9a5b200c681e490f0c20ff88cf8c7.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+Nombre Tipo de Dato                                       Descripción
+  TIPO      Varchar Indica si es Estado de Reserva o de Escrituración
+ESTADO      Varchar        Mostrará todos los estados parametrizados.
+ACTIVO      Boolean          Indica si el parámetro está activo o no.
+
+==================================================
+
+ARCHIVO: ESTADOS_PARAM_VIEW 2ca9a5b200c681e490f0c20ff88cf8c7_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\ESTADOS_PARAM_VIEW 2ca9a5b200c681e490f0c20ff88cf8c7_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+Nombre                                       Descripción Tipo de Dato
+ ORDEN Indica el orden en que se configuró el parámetro.      Integer
+ESTADO        Mostrará todos los estados parametrizados.      Varchar
+ACTIVO          Indica si el parámetro está activo o no.      Boolean
+
+==================================================
+
+ARCHIVO: Eventos_Contactos_View 2ca9a5b200c681ccb8fed3189458c8b3.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Eventos_Contactos_View 2ca9a5b200c681ccb8fed3189458c8b3.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+            Nombre Tipo de Dato                                                              Descripción
+ID_EVENTO_CONTACTO      Integer                                     Identificador único\n  del contacto.
+       DESCRIPCION         Text Detalla el evento (cotización, reserva,\n  llamada, actualización, etc.)
+       OBSERVACION         Text            Observación cargada por el usuario al\n  gestionar el evento.
+
+==================================================
+
+ARCHIVO: Eventos_Contactos_View 2ca9a5b200c681ccb8fed3189458c8b3_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Eventos_Contactos_View 2ca9a5b200c681ccb8fed3189458c8b3_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+             Nombre                                                            Descripción Tipo de Dato
+ID_USUARIO_ATENCION             Identificador único del usuario que\n  gestionó el evento.      Integer
+   FECHA_PROGRAMADA Indica fecha en la que se programa un\n  evento o atención al cliente.    Date Time
+          ID_EVENTO                                        Identificador único del Evento.      Integer
+
+==================================================
+
+ARCHIVO: Eventos_View 2ca9a5b200c681929c4cd6f7ecae4d8d.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Eventos_View 2ca9a5b200c681929c4cd6f7ecae4d8d.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+        Nombre Tipo de Dato                                              Descripción
+     ID_EVENTO      Integer                          Identificador único del evento.
+   DESCRIPCION         Text                       Detalla la descripción del evento.
+FECHA_REGISTRO    Date Time Indica fecha en que el evento se registra en el sistema.
+
+==================================================
+
+ARCHIVO: Eventos_View 2ca9a5b200c681929c4cd6f7ecae4d8d_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Eventos_View 2ca9a5b200c681929c4cd6f7ecae4d8d_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+               Nombre                                                                                                               Descripción Tipo de Dato
+       TITULO_INGRESO Si el evento es un ingreso detalla de que manera se creo (Ej: Creación de ingreso manual, Creación de ingreso automática)      Varchar
+              ID_PAGO                                                                                             Identificador único del pago.      Integer
+ID_EVENTO_IMPORTACION                                                                             Identificador único de evento de importación.      Integer
+
+==================================================
+
+ARCHIVO: Medio_informacion_View 2ca9a5b200c68107883bcf8ef3713ce5.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Medio_informacion_View 2ca9a5b200c68107883bcf8ef3713ce5.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+           Nombre Tipo de Dato                                                                   Descripción
+         ID_MEDIO      Integer                              Identificador único del Medio de\n  Información.
+DESCRIPCION_MEDIO      Varchar Detalla en general el medio de información (mailing, web, referidos,\n  etc.)
+     NOMBRE_MEDIO      Varchar          Detalla en especifico el medio (Toc toc, Instagram, Revista X, etc.)
+
+==================================================
+
+ARCHIVO: Medio_informacion_View 2ca9a5b200c68107883bcf8ef3713ce5_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Medio_informacion_View 2ca9a5b200c68107883bcf8ef3713ce5_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+           Nombre                                                                   Descripción Tipo de Dato
+     NOMBRE_MEDIO          Detalla en especifico el medio (Toc toc, Instagram, Revista X, etc.)      Varchar
+DESCRIPCION_MEDIO Detalla en general el medio de información (mailing, web, referidos,\n  etc.)      Varchar
+         ID_MEDIO                              Identificador único del Medio de\n  Información.      Integer
+
+==================================================
+
+ARCHIVO: Metas_view 2ca9a5b200c6813496facfe1a3cc967c.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Metas_view 2ca9a5b200c6813496facfe1a3cc967c.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+      Nombre Tipo de Dato                                                               Descripción
+    ID_METAS      Integer                                           Identificador único de la meta.
+     VERSION      Integer Indicador para desarrolladores a la hora de realizar alguna modificación.
+AVANCE_ITEMS      Integer                                Indica el monto de bienes/items de avance.
+
+==================================================
+
+ARCHIVO: Metas_view 2ca9a5b200c6813496facfe1a3cc967c_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Metas_view 2ca9a5b200c6813496facfe1a3cc967c_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+      Nombre                                               Descripción Tipo de Dato
+   AVANCE_UF                          Indica el monto en UF de avance.      Decimal
+AVANCE_ITEMS                Indica el monto de bienes/items de avance.      Integer
+FECHA_INICIO Indica la fecha inicio desde la que se considera la meta.    Date Time
+
+==================================================
+
+ARCHIVO: Pagos_View 2ca9a5b200c681868c1cd65c9b0d47fc.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Pagos_View 2ca9a5b200c681868c1cd65c9b0d47fc.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+      Nombre Tipo de Dato                                                                                          Descripción
+    ID_PAGOS      Integer                                                                   Identificador único\n  de un pago.
+NUMERO_CUOTA      Integer                                     Indica número de cuota del plan de pagos\n  que se está pagando.
+  DESC_PAGOS      Varchar Detalla la descripción de la cuota (cuota\n  durante construcción, cierre de negocio, crédito, etc.)
+
+==================================================
+
+ARCHIVO: Pagos_View 2ca9a5b200c681868c1cd65c9b0d47fc_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Pagos_View 2ca9a5b200c681868c1cd65c9b0d47fc_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                 Nombre                                                                                                                           Descripción Tipo de Dato
+               ORIGINAL Indica\n  si ese pago es original de la cotización o no, es decir, si venia\n  originalmente en la cotización o fue agregado después.      Boolean
+PORCENTAJE_TIPO_CALCULO              Detalla el tipo de\n  cálculo que se usa para obtener el porcentaje (valor venta negocio, valor\n  venta bien maestro).       Varchar
+                 CODIGO                                                                       Detalla código\n  asociado al pago, si se quiere pagar vía web.      Varchar
+
+==================================================
+
+ARCHIVO: Proceso_Escrituracion_View 2ca9a5b200c68111a471f1c38495c694.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Proceso_Escrituracion_View 2ca9a5b200c68111a471f1c38495c694.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+          Nombre Tipo de Dato                                                                     Descripción
+ID_ESCRITURACION      Integer                                     Identificador único\n  de la escrituración.
+           BANCO      Varchar Indica el Banco al cuál se encuentra\n  asociado el financiamiento del cliente.
+ EJECUTIVO_BANCO      Varchar                       Detalla persona del Banco que lleva a\n  cabo el proceso.
+
+==================================================
+
+ARCHIVO: Proceso_Escrituracion_View 2ca9a5b200c68111a471f1c38495c694_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Proceso_Escrituracion_View 2ca9a5b200c68111a471f1c38495c694_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+             Nombre                                                            Descripción Tipo de Dato
+        OBSERVACION Detalla observación que se carga al cargar un estado de escrituración.         Text
+   TELEFONO_NOTARIA      Detalla teléfono asociado a la notaría\n  indicada en el proceso.      Varchar
+ID_USUARIO_ATENCION                            Identificador unico del usuario de atención      Integer
+
+==================================================
+
+ARCHIVO: PROCESO_ESCRITURA_VIEW 2ca9a5b200c6819380b7cc82e535b21a.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\PROCESO_ESCRITURA_VIEW 2ca9a5b200c6819380b7cc82e535b21a.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                  Nombre Tipo de Dato                                          Descripción
+ID_PROCESO_ESCRITURACION      Integer       Identificador único del hito de escrituración.
+     DESCRIPCION_PROCESO      Varchar             Descripción o nombre del hito o proceso.
+           FECHA_PROCESO    Date Time Fecha en la que se completa el hito (fecha atención)
+
+==================================================
+
+ARCHIVO: PROCESO_ESCRITURA_VIEW 2ca9a5b200c6819380b7cc82e535b21a_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\PROCESO_ESCRITURA_VIEW 2ca9a5b200c6819380b7cc82e535b21a_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                Nombre                                               Descripción Tipo de Dato
+         FECHA_PROCESO      Fecha en la que se completa el hito (fecha atención)    Date Time
+           ID_CONTRATO Identificador único de contrato asociado a dicho proceso.      Integer
+FECHA_ENTREGA_VIVIENDA      Indica si dicho hito corresponde a la fecha entrega.     Booleano
+
+==================================================
+
+ARCHIVO: Proceso_seguimiento_firma_log_view 2ca9a5b200c681968903cc280ef347d5.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Proceso_seguimiento_firma_log_view 2ca9a5b200c681968903cc280ef347d5.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+            Nombre Tipo de Dato                                            Descripción
+FECHA_MODIFICACION    Date Time Fecha en la que se realizó la modificación del proceso
+        ID_PROMESA      Integer                      Identificador único de la promesa
+       DESCRIPCION     TinyText                                Descripción del proceso
+
+==================================================
+
+ARCHIVO: Proceso_seguimiento_firma_log_view 2ca9a5b200c681968903cc280ef347d5_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Proceso_seguimiento_firma_log_view 2ca9a5b200c681968903cc280ef347d5_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                  Nombre                                    Descripción Tipo de Dato
+                MONTO_UF                     Monto UF ligado al proceso      Decimal
+       FECHA_VENCIMIENTO Fecha en la que se vence el tiempo del proceso    Date Time
+FECHA_FIRMA_CONTABILIDAD      Fecha en la que se firma la contabiliadad    Date Time
+
+==================================================
+
+ARCHIVO: Promesa_Seguimiento_Firma_View 2ca9a5b200c681ccbf8fd416e5ec32f1.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Promesa_Seguimiento_Firma_View 2ca9a5b200c681ccbf8fd416e5ec32f1.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+     Nombre Tipo de Dato                                            Descripción
+ ID_PROMESA      Integer                  Identificador único\n  de la promesa.
+DESCRIPCION     Tinytext  Detalla descripción de hito asociado a la\n  promesa.
+FECHA_FIRMA    Date Time Indica fecha en la que se cumple el hito\n  descripto.
+
+==================================================
+
+ARCHIVO: Promesa_Seguimiento_Firma_View 2ca9a5b200c681ccbf8fd416e5ec32f1_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Promesa_Seguimiento_Firma_View 2ca9a5b200c681ccbf8fd416e5ec32f1_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                  Nombre                                                             Descripción Tipo de Dato
+          TIPO_DOCUMENTO               Detalla tipo de documento asociado al\n  hito, si aplica.      Varchar
+FECHA_FIRMA_CONTABILIDAD Indica fecha firma contabilidad, si\n  aplica. Ej: Distribución copias.    Date Time
+       FECHA_VENCIMIENTO         Indica fecha de vencimiento del hito, si\n  aplica. Ej: póliza.    Date Time
+
+==================================================
+
+ARCHIVO: Promesa_View 2ca9a5b200c681eeb7bdd928f4725214.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Promesa_View 2ca9a5b200c681eeb7bdd928f4725214.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+        Nombre Tipo de Dato                                               Descripción
+    ID_PROMESA      Integer                        Identificador único de la promesa.
+ FECHA_PROMESA    Date Time                          Indica fecha real de la promesa.
+FECHA_REGISTRO    Date Time Indica fecha en que la promesa se registra en el sistema.
+
+==================================================
+
+ARCHIVO: Promesa_View 2ca9a5b200c681eeb7bdd928f4725214_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Promesa_View 2ca9a5b200c681eeb7bdd928f4725214_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+        Nombre                                               Descripción Tipo de Dato
+FECHA_REGISTRO Indica fecha en que la promesa se registra en el sistema.    Date Time
+   ID_PROYECTO                         Identificador único del proyecto.      Integer
+ FECHA_PROMESA                          Indica fecha real de la promesa.    Date Time
+
+==================================================
+
+ARCHIVO: Prospecto_Configuracion_Tablero_View 2ca9a5b200c681068fb7f87b0dc33bc6.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Prospecto_Configuracion_Tablero_View 2ca9a5b200c681068fb7f87b0dc33bc6.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+            Nombre Tipo de Dato                                                     Descripción
+ID_EMPRESA_TABLERO      Integer                          Identificador único de empresa_tablero
+     TABLERO_VALOR      Varchar              Indica el nombre estándar del tablero (Prospectos)
+    TABLERO_NOMBRE      Varchar Indica el nombre particular del tablero (Tablero de prospectos)
+
+==================================================
+
+ARCHIVO: Prospecto_Configuracion_Tablero_View 2ca9a5b200c681068fb7f87b0dc33bc6_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Prospecto_Configuracion_Tablero_View 2ca9a5b200c681068fb7f87b0dc33bc6_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+            Nombre                                                                      Descripción Tipo de Dato
+  COLUMNA_ATRIBUTO Indica el estado del evento en el módulo de prospectos (prospect, success, lost)      Varchar
+ID_EMPRESA_TABLERO                                           Identificador único de empresa_tablero      Integer
+     TABLERO_VALOR                               Indica el nombre estándar del tablero (Prospectos)      Varchar
+
+==================================================
+
+ARCHIVO: Proyectos_View 2ca9a5b200c6813f8142d3098f680da0.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Proyectos_View 2ca9a5b200c6813f8142d3098f680da0.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+              Nombre Tipo de Dato                                                             Descripción
+         ID_PROYECTO      Integer                                    Identificador único\n  del proyecto.
+        RUT_PROYECTO      Varchar                                    Indica el RUT del proyecto indicado.
+RUT_PROYECTO_PROMESA      Varchar Indica el RUT del proyecto que aparecerá\n  en el documento de promesa.
+
+==================================================
+
+ARCHIVO: Proyectos_View 2ca9a5b200c6813f8142d3098f680da0_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Proyectos_View 2ca9a5b200c6813f8142d3098f680da0_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                   Nombre                                                                                       Descripción Tipo de Dato
+                ELIMINADO                                                    Indica si el proyecto se ha eliminado o\n  no.      Boolean
+HORARIO_ATENCION_PROYECTO Indica si el horario de atención cargado\n  en el proyecto aparece o no en el mail de cotización.      Boolean
+              DESCRIPCION                               Detalla una descripción del proyecto que\n  se carga en el sistema.         Text
+
+==================================================
+
+ARCHIVO: Reporte_asignaciones_view 2ca9a5b200c6817da18bc39a245bd0bd.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Reporte_asignaciones_view 2ca9a5b200c6817da18bc39a245bd0bd.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+        Nombre Tipo de Dato                                                                   Descripción
+nombreProyecto      Varchar                    Indica el nombre con el que proyecto aparece en MobySuite.
+    numeroBien         Text                               Número correspondiente del bien en el proyecto.
+estadoContrato      Varchar Indica estado en que se encuentra el contrato (Reservado, Promesado,\n  etc.)
+
+==================================================
+
+ARCHIVO: Reporte_asignaciones_view 2ca9a5b200c6817da18bc39a245bd0bd_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Reporte_asignaciones_view 2ca9a5b200c6817da18bc39a245bd0bd_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+             Nombre                                             Descripción Tipo de Dato
+superficiePonderada                Superficie útil + (Superficie Terraza/2)         Text
+       cambioValor2                                                     NaN      Binario
+    superficieTotal Suma de superficies que hacen al total de la propiedad.         Text
+
+==================================================
+
+ARCHIVO: Reporte_General_Pagos_View 2ca9a5b200c68179b5ead88ffa0720ab.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Reporte_General_Pagos_View 2ca9a5b200c68179b5ead88ffa0720ab.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+            Nombre Tipo de Dato                          Descripción
+          proyecto      Varchar Nombre del proyecto al que pertenece
+    numeroContrato      Integer      Identificador único de contrato
+etapaBienPrincipal         Text             Etapa del bien principal
+
+==================================================
+
+ARCHIVO: Reporte_General_Pagos_View 2ca9a5b200c68179b5ead88ffa0720ab_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Reporte_General_Pagos_View 2ca9a5b200c68179b5ead88ffa0720ab_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+            Nombre                    Descripción Tipo de Dato
+        estadoPago                Estado del pago      Varchar
+      emailCliente Correo electrónico del cliente      Varchar
+montoDocumentadoUF   Monto que se documentó en UF      Decimal
+
+==================================================
+
+ARCHIVO: Reserva_Estado_View 2ca9a5b200c68140bc03d2854f247957.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Reserva_Estado_View 2ca9a5b200c68140bc03d2854f247957.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+       Nombre Tipo de Dato                                                         Descripción
+   ID_RESERVA      Integer                                  Identificador único de la reserva.
+FECHA_RESERVA    Date Time                       Indica fecha en la que se realizó la reserva.
+ FECHA_ESTADO    Date Time Indica última fecha en la que adquirió el estado de reserva actual.
+
+==================================================
+
+ARCHIVO: Reserva_Estado_View 2ca9a5b200c68140bc03d2854f247957_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Reserva_Estado_View 2ca9a5b200c68140bc03d2854f247957_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+              Nombre                                                                                      Descripción Tipo de Dato
+  SUB_ESTADO_RESERVA                          Indica el/los sub estados de Reserva por los que ha pasado el contrato.     Tinytext
+      FECHA_REGISTRO Indica la fecha en la que se guardó la información del elemento en la tabla de la base de datos.    Date Time
+ESTADO_RESERVA_FINAL                                          Indica el estado actual y último que tiene el contrato.     Tinytext
+
+==================================================
+
+ARCHIVO: Reversa_contabilidad_view 2ca9a5b200c681618e04e0d076cd1ad8.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Reversa_contabilidad_view 2ca9a5b200c681618e04e0d076cd1ad8.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+              Nombre Tipo de Dato                                                           Descripción
+       FECHA_REVERSA    Date Time                      Indica la fecha en la que se realizo la reversa.
+         OBSERVACION      Varchar Muestra una descripción del motivo por el cual se realiza la reversa.
+ID_EJECUTIVO_REVERSA      Integer               Identificador único del usuario que realizó la reversa.
+
+==================================================
+
+ARCHIVO: Reversa_contabilidad_view 2ca9a5b200c681618e04e0d076cd1ad8_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Reversa_contabilidad_view 2ca9a5b200c681618e04e0d076cd1ad8_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+       Nombre                                       Descripción Tipo de Dato
+FECHA_REVERSA  Indica la fecha en la que se realizo la reversa.    Date Time
+    ID_RECIBO Identificador único del recibo, asociado al pago.      Integer
+     ID_PAGOS                     Identificador único del pago.      Integer
+
+==================================================
+
+ARCHIVO: Tipo_bien_view 2ca9a5b200c681bab384fab66093873c.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Tipo_bien_view 2ca9a5b200c681bab384fab66093873c.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+      Nombre Tipo de dato                                                                           Descripción
+ID_TIPO_BIEN      integer                                                   Identificador único de tipo de bien
+        NAME      varchar Identificar si corresponde a que tipo de bien ( estacionamiento,bodega, departamento)
+  ENUM_VALUE      varchar Identificar si corresponde a que tipo de bien ( estacionamiento,bodega, departamento)
+
+==================================================
+
+ARCHIVO: Tipo_bien_view 2ca9a5b200c681bab384fab66093873c_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Tipo_bien_view 2ca9a5b200c681bab384fab66093873c_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+    Nombre                                                                           Descripción Tipo de dato
+IS_PRIMARY                          responde a la pregunta si es un bien principal o secundario.      Boolean
+ENUM_VALUE Identificar si corresponde a que tipo de bien ( estacionamiento,bodega, departamento)      varchar
+ID_EMPRESA                                                        identificador único de empresa      integer
+
+==================================================
+
+ARCHIVO: Tipo_Contacto_View 2ca9a5b200c681b6a297d35d955a0e34.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Tipo_Contacto_View 2ca9a5b200c681b6a297d35d955a0e34.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+                   Nombre Tipo de Dato                                    Descripción
+         ID_TIPO_CONTACTO      Integer      Identificador único del tipo de contacto.
+DESCRIPCION_TIPO_CONTACTO      Varchar    Indica la descripción del tipo de contacto.
+      NOMBRE_TIP_CONTACTO      Varchar Indica el nombre asigando al tipo de contacto.
+
+==================================================
+
+ARCHIVO: Tipo_Contacto_View 2ca9a5b200c681b6a297d35d955a0e34_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Tipo_Contacto_View 2ca9a5b200c681b6a297d35d955a0e34_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+          Nombre                                                Descripción Tipo de Dato
+ID_TIPO_CONTACTO                  Identificador único del tipo de contacto.      Integer
+          ACTIVO Indica si dicho Tipo de Contacto se encuentra activo o no.      Boolean
+      ID_EMPRESA                             Identificador único de empresa      Integer
+
+==================================================
+
+ARCHIVO: Usuario_View 2ca9a5b200c681eb91ffec43809c5143.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Usuario_View 2ca9a5b200c681eb91ffec43809c5143.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Tipo de Dato         | Tipo: str
+  • Descripción          | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+        Nombre Tipo de Dato                                                Descripción
+    ID_USUARIO      Integer                           Identificador único del usuario.
+NOMBRE_USUARIO      Varchar Indica nombre de usuario con el que ingresará a MobySuite.
+           RUT      Varchar                                     Indica RUT del usuario
+
+==================================================
+
+ARCHIVO: Usuario_View 2ca9a5b200c681eb91ffec43809c5143_all.csv
+RUTA: C:\proyectos\visor_leads\csv_diccionario\bbdd\ExportBlock-1a417a17-da08-421d-a555-e4f416b94bb3-Part-1\Usuario_View 2ca9a5b200c681eb91ffec43809c5143_all.csv
+----------------------------------------
+COLUMNAS Y TIPOS:
+  • Nombre               | Tipo: str
+  • Descripción          | Tipo: str
+  • Tipo de Dato         | Tipo: str
+
+EJEMPLO DE DATOS (Primeras 3 filas):
+        Nombre                                                Descripción Tipo de Dato
+      APELLIDO         Indica apellido de la persona asociada al usuario.      Varchar
+           RUT                                     Indica RUT del usuario      Varchar
+NOMBRE_USUARIO Indica nombre de usuario con el que ingresará a MobySuite.      Varchar
+
+==================================================
+

@@ -1,0 +1,19 @@
+﻿Nombre,Descripción,Tipo de Dato
+TITULO_INGRESO,"Si el evento es un ingreso detalla de que manera se creo (Ej: Creación de ingreso manual, Creación de ingreso automática)",Varchar
+ID_PAGO,Identificador único del pago.,Integer
+ID_EVENTO_IMPORTACION,Identificador único de evento de importación.,Integer
+ID_ULTIMO_EVENTO_CONTACTO,Identificador único de evento de contacto,Integer
+ID_ESCRITURACION_EVENTO,Identificador único de la escrituración.,Integer
+DESCRIPCION,Detalla la descripción del evento.,Text
+ID_EVENTO,Identificador único del evento.,Integer
+MOTIVO_CIERRE,Identificar motivo de cierre,Varchar
+SUBESTADO_COLUMNA,Detalla el subestado de la columna del módulo de prospectos.,Varchar
+ID_CLIENTE,Identificador único del cliente.,Integer
+ORDEN_TABLERO,orden de prioridad del tablero,Integer
+TIPO_EVENTO,"Detalla tipo de evento (ingreso nuevo cliente, contacto, actualización,
+  etc.)",Varchar
+ID_USUARIO,Identificador único del usuario.,Integer
+ID_CONTRATO,Identificador único del contrato.,Integer
+COLUMNA_TABLERO,Indica el nombre estándar de la columna en el tablero de prospectos.,Varchar
+FECHA_REGISTRO,Indica fecha en que el evento se registra en el sistema.,Date Time
+TABLERO,Detalla el nombre del tablero en el módulo de prospectos.,Varchar

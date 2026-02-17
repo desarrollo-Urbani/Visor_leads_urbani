@@ -1,0 +1,13 @@
+﻿Nombre,Descripción,Tipo de Dato
+FECHA_REGISTRO,Indica fecha en que la promesa se registra en el sistema.,Date Time
+ID_PROYECTO,Identificador único del proyecto.,Integer
+FECHA_PROMESA,Indica fecha real de la promesa.,Date Time
+NOTARIA,"Identifica la Notaría que se detalló a la hora de generar la promesa en
+  el sistema.",Tinytext
+ESTADO_AUTORIZACION,"Indica si la promesa está autorizada, no autorizada o pendiente.",Text
+ID_USUARIO,Identificador único del usuario.,Integer
+ID_PROMESA,Identificador único de la promesa.,Integer
+ID_CONTRATO,Identificador único del contrato.,Integer
+ELIMINADO,Indica si el contrato ha sido reversado o no.,Boolean
+FECHA_AUTORIZACION,Indica fecha en la que se autorizó pasar a estado Promesado el contrato.,Date Time
+ID_CLIENTE,Identificador único del cliente.,Integer

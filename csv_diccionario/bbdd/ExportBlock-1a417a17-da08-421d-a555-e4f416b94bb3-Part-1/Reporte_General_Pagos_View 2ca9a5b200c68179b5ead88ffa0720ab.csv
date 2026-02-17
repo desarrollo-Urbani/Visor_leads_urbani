@@ -1,0 +1,50 @@
+﻿Nombre,Tipo de Dato,Descripción
+proyecto,Varchar,Nombre del proyecto al que pertenece
+numeroContrato,Integer,Identificador único de contrato
+etapaBienPrincipal,Text,Etapa del bien principal
+bienPrincipal,Text,Numero de bien principal
+bienesSecundarios,Text,Bienes secundarios anexados al contrato
+estadoContrato,Varchar,Estado del contrato
+fechaCreacionReserva,Date Time,Fecha en la que se creó la reserva
+fechaAprobacionReserva,Date Time,Fecha en la que se aprobó la reserva
+fechaCreacionPromesa,Date Time,Fecha en la que se creó la promesa
+fechaAprobacionPromesa,Date Time,Fecha en la que se aprobó la promesa
+fechaFirmaClientePromesa,Date Time,Fecha en la que el cliente firmó la promesa
+fechaFirmaClienteEscritura,Date Time,Fecha en la que el cliente firmó la escritura
+ejecutivoReserva,Varchar,Ejecutivo que realizó la reserva
+clienteNombre,Varchar,Nombre del cliente del contrato
+rutCliente,Varchar,RUT del cliente
+emailCliente,Varchar,Correo electrónico del cliente
+telefono1Cliente,Varchar,Teléfono celular del cliente
+telefono2Cliente,Varchar,Número telefónico adicional del cliente
+idPago,Integer,Identificador único del pago
+conceptoPago,Varchar,Concepto del pago
+numeroCuotaPago,Integer,Número de cuota del pago
+codigoPago,Varchar,Código regidtrado en el pago
+numeroRecibo,Integer,Numero de recibo del pago
+pagoEnCuotas,Varchar,Muestra el pago en cuotas
+montoPactadoUF,Decimal,Monto pactado UF del pago
+montoPactadoPesos,Double,Monto pactado en moneda secundaria del pago
+montoPactadoCuotasUF,Decimal,Monto en UF de las cuotas
+fechaPactadaPago,Date Time,Fecha en la que se pactó el pago
+estadoPago,Varchar,Estado del pago
+fechaDocumentadoUF,Date Time,Fecha en la que se documentó el pago
+fechaCapturaDocumento,Date Time,Fecha captura de documento asociado al pago
+fechaDocumento,Date Time,Fecha de documento
+fechaRecibo,Date Time,Fecha del recibo
+estadoContable,Varchar,Estado contable del pago
+fechaContable,Date Time,Fecha en la que se asignó el estado contable
+fechaReversa,Date Time,Fecha de reversa de contrato
+fechaBancaria,Date Time,Fecha bancaria asociada
+nombreBanco,Varchar,"Nombre del banco asociado "
+nCuenta,Varchar,Número de cuenta asociada al pago
+montoDocumentadoUF,Decimal,Monto que se documentó en UF
+MontoDocumentadoPesos,Decimal,Monto que se documentó en valor de la moneda secundaria
+montoContableUF,Decimal,Monto contable en UF
+montoContablePesos,Decimal,Monto contable en moneda secundaria
+bancoCreditoHipotecario,Varchar,Banco asociado al crédito hipotecario
+tipoPago,Varchar,Tipo de pago realizado
+numeroDocumento,Varchar,Numero de documento
+cumplimientoFechaPactada,Varchar,Cumplimiento de la fecha pactada
+codigoAutorizacion,Varchar,Codigo de autorización asociado al pago
+pagoAutomatizado,Text,Dato que indica si el pago se realizó de manera automática

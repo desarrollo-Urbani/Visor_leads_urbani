@@ -1,0 +1,13 @@
+﻿Nombre,Tipo de Dato,Descripción
+ID_COT_DESC,Integer,"Identificador único del descuento en
+  cotización."
+NOMBRE_DESCUENTO,Varchar,"Detalla si el descuento es por proyecto, por contrato, no autorizado,
+  etc."
+FECHA,Date Time,Fecha en que se aplica el descuento a la cotización.
+AUTORIZADO,Boolean,Indica si el descuento aplicado es autorizado o no autorizado.
+MONTO_PESOS,Decimal,Monto en pesos del descuento aplicado.
+MONTO_CONSTANTE,Decimal,Monto en pesos del descuento een UF.
+MONTO_PORCENTAJE,Decimal,Indica el descuento aplicado en un valor porcentual.
+ID_COTIZACION,Integer,Identificador único de la cotización a la que se aplicó el descuento.
+ID_USUARIO,Integer,Identificador único del usuario MobySuite que aplicó el descuento.
+VERSION,Integer,Indicador para desarrolladores a la hora de realizar alguna modificación.

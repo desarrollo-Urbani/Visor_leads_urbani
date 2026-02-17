@@ -1,0 +1,16 @@
+﻿Nombre,Tipo de Dato,Descripción
+ID_RESERVA,Integer,Identificador único de la reserva.
+FECHA_RESERVA,Date Time,Indica fecha en la que se realizó la reserva.
+FECHA_ESTADO,Date Time,Indica última fecha en la que adquirió el estado de reserva actual.
+FECHA_REGISTRO,Date Time,Indica la fecha en la que se guardó la información del elemento en la tabla de la base de datos.
+ESTADO_RESERVA,Tinytext,Indica el/los estados de Reserva por los que ha pasado el contrato.
+SUB_ESTADO_RESERVA,Tinytext,Indica el/los sub estados de Reserva por los que ha pasado el contrato.
+OBSERVACION,Text,"Detalla
+  observaciones asociadas al contrato."
+ID_USUARIO,Integer,Identificador único del usuario que realiza la reserva.
+ID_CONTRATO,Integer,Identificador único del contrato.
+ELIMINADO,Boolean,Indica si el contrato ha sido eliminado o no.
+ID_PROYECTO,Integer,Identificador único del proyecto al que corresponde la reserva.
+ESTADO_RESERVA_FINAL,Tinytext,Indica el estado actual y último que tiene el contrato.
+SUB_ESTADO_RESERVA_FINAL,Tinytext,Indica el sub estado actual y último que tiene el contrato.
+FECHA_INFORME_INMOBILIARIA,Date Time,Indica la fecha en que el gestor inmobiliario avisa a la inmobiliaria una venta.

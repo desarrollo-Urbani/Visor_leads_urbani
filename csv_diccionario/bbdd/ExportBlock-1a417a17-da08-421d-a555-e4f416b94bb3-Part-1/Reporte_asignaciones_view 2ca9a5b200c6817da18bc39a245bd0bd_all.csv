@@ -1,0 +1,134 @@
+﻿Nombre,Descripción,Tipo de Dato
+superficiePonderada,Superficie útil + (Superficie Terraza/2),Text
+cambioValor2,,Binario
+superficieTotal,Suma de superficies que hacen al total de la propiedad.,Text
+cambioUsuario3,,Binario
+numeroDormitorios,Cantidad de dormitorios que posee el bien.,Text
+tipo,"Indica la tipología del bien Ej: A, B, C, D.",Varchar
+superficieUtil,Superficie cubierta del bien.,Text
+numeroBanos,Cantidad de baños que posee el bien.,Text
+rolBien,Número de rol de la propiedad otorgado por CBRS.,Text
+modelo,Modelo del bien,Char
+cambioValor3,,Binario
+valorListaCierre,Valor lista del bien,Text
+casaEstudiosCliente,,Varchar
+orientacion,"Posición de la vivienda respecto del sol (Sur, Oriente, Poniente, Empty,
+  etc.)",Text
+fechaPromesa,Fecha en la que se realizó la promesa,Date Time
+superficieTerraza,Superficie terraza del bien.,Text
+nombreProyecto,Indica el nombre con el que proyecto aparece en MobySuite.,Varchar
+estadoContrato,"Indica estado en que se encuentra el contrato (Reservado, Promesado,
+  etc.)",Varchar
+estadoCivilRL,Estado civil del representante legal,Varchar
+totalPasivo,,Decimal
+nacionalidadRL,Nacionalidad del representante legal,Varchar
+fechaAprobacionReserva,Fecha en la que se aprobó la reserva,Date Time
+comunaLaboralCliente,Comuna donde labura el cliente,Varchar
+piso,N° de piso en el que se ubica el bien en el proyecto.,Text
+precioSuperficieTotal,,Text
+ejecutivoReserva,Usuario o ejecutivo que realizó la reserva,Varchar
+saldoPorDocumentar,Monto que falta por documentar,Decimal
+precioBase,Precio base del bien,Text
+numeroBien,Número correspondiente del bien en el proyecto.,Text
+totalDescuentoPorcentaje,Monto total del descuento en porcentaje,Decimal
+valorPromocion,Valor de la promoción,Text
+ciudadRL,Ciudad del representante legal,Varchar
+actividadCliente,Actividad actual del cliente,Varchar
+fechaCierreReserva,Fecha en la que se hizo el cierre de la reserva,"Date Time "
+telefonoUnoCliente,Telefono celular del cliente,Varchar
+expectativaCliente,Expectativa de compra del cliente,Varchar
+direccionLaboralCliente,Dirección del lugar donde labura el cliente,Varchar
+profesionRL,Profesión del representante legal,Varchar
+nombreAdicional,Nombre del bien adicional,Text
+bodegas,Bodegas asociadas,Text
+cargoCliente,Cargo actual del cliente,Varchar
+independienteTipoCargoCliente,Cargo del cliente en caso de ser independiente,Varchar
+fechaNacimientoCliente,Fecha de nacimiento del cliente,Date Time
+emailCliente,Correo electrónico del cliente,Varchar
+nombreRL,Nombre del representante legal,Varchar
+conyugeNombreCliente,Nombre del conyuge del cliente,Varchar
+precioEstacionamientos,Precio de los estacionamientos asociados,Text
+rosCliente,,Varchar
+totalPatrimonio,,Decimal
+valorAdicionalUF,,Text
+empresaCliente,Empresa en la que labura el cliente,Varchar
+precioTotal,Monto del total del contrato,Decimal
+totalDescuentoUF,Monto total de descuento en UF,Decimal
+precioVentaUFM,,Text
+habilitacionActual,Monto de habilitacion actual,Text
+direccionCliente,Dirección del cliente,Varchar
+empleadorCliente,Empleador del cliente,Varchar
+paisRL,País del representante legal,Varchar
+conyugeApellidoCliente,Apellido del conyuge del cliente,Varchar
+razonSocialCliente,"Razón social del cliente ",Varchar
+nacionalidadCliente,Nacionalidad del cliente,Varchar
+estadoReserva,Estado de la reserva,Varchar
+pieFecha,,Date Time
+idContrato,Identificador único del contrato,Integer
+pepParienteSegundoGradoCliente,,Varchar
+cambioValorFinal,,Text
+grupoFamiliarCliente,Cantidad de personas incluidas en el grupo familiar del cliente,Varchar
+dniCliente,Valor que indica si el cliente tiene DNI,Varchar
+direccionRL,Dirección del representante legal,Varchar
+totalPagado,Monto que se ha pagado hasta el momento,Decimal
+referenciaCliente,,Long Text
+pepPactoActuacionConjuntaCliente,,Varchar
+descuentoNoAutorizado,Monto de descuento no autorizado,Text
+cambioUsuario1,,Binario
+profesionCliente,Profesión del cliente,Varchar
+destinoCompraCliente,Destino de la compra del cliente,Varchar
+"
+
+rangoEdadCliente",Rango de edad en la que se incluye al cliente,Varchar
+totalDocumentado,,Decimal
+promocion,Promoción aplicada al contrato,Text
+cambioValor1,,Binario
+habilitacionCierre,Monto de habilitacion al momento de cierre,Text
+descuentoAutorizado,Monto de descuento autorizado,Text
+saldoPorPagar,Monto que falta por pagar,Decimal
+usuarioCotizacion,Usuario o ejecutivo que realizó la cotización,Varchar
+tipoCompradorCliente,Tipo de comprador que es el cliente,Varchar
+fechaRegistroReserva,Fecha en la que se registró la reserva,Date Time
+comunaCliente,Comuna en la que se encuentra la dirección del cliente,Varchar
+valorAgregadoActual,,Text
+descripcionPagoSubsidio,,Text
+subEstadoReserva,Sub estado de la reserva,Varchar
+paisCliente,País en el que se encuentra la dirección del cliente,Varchar
+fechaFirmaClienteReserva,Fecha en la que se registró la firma del cliente de la reserva,Date Time
+fechaEscritura,Fecha en la que se registró la escritura,Date Time
+medioInformacionCotizacion,Medio de información que se registró al momento de realizar la cotización,Varchar
+comunaRL,Comuna del representante legal,Varchar
+precioVenta,Precio de venta el bien,Text
+cambioUsuario2,,Binario
+estacionamientos,Estacionamientos asociados,Text
+rutCliente,RUT del cliente asociado al contrato o cotización,Varchar
+permanenciaPromesa,,Integer
+precioBodegas,Precios de las bodegas asociadas,Text
+Name_exp_116,,Text
+antiguedadCliente,Tiempo que lleva el cliente con el empleador,Varchar
+idCotizacion,Identificador único de la cotización,Integer
+permanenciaEscritura,,Integer
+valorAgregadoCierre,,Text
+precioSuperficieUtil,,Text
+sexoCliente,Sexo del cliente,Varchar
+pepCliente,,Varchar
+permanenciaReserva,,Integer
+fechaFirmaPromesa,Fecha en la que se firmó la promesa,Date Time
+regimenPatrimonialCliente,Régimen patrimonial del cliente,Varchar
+tipoRazonSocialCliente,Tipo de razón social del cliente,Varchar
+rutRL,RUT del representante legal,Varchar
+fechaEnvioBorrador,Fecha en la que se envió el borrador de la promesa,Date Time
+descuento,,Text
+rangoRentaCliente,Rango de renta que busca el cliente,Varchar
+rutEmpleadorCliente,RUT del empleador del cliente,Varchar
+rentaRealCliente,Renta real asociada al cliente,Integer
+nombreUsuarioPromesa,Nombre del usuario o ejecutivo que realizó la promesa,Varchar
+telefonoDosCliente,Segundo telefono asociado al cliente,Varchar
+piePorcentaje,,Decimal
+nombreUsuarioEscrituracion,Nombre del ejecutivo o usuario que se encargó de la escritura,Varchar
+ciudadCliente,Ciudad en la que se encuentra la dirección del cliente,Varchar
+fechaEstimadaPromesa,Fecha en la que se estima la promesa,Date Time
+actividadCargoCliente,,Varchar
+estadoCivilCliente,Estado civil del cliente,Varchar
+etapaBien,Etapa del bien,Text
+recibirNovedadesCliente,,Varchar

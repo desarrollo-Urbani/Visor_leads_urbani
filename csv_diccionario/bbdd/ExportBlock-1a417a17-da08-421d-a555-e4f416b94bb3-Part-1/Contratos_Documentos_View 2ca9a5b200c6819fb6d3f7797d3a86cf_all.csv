@@ -1,0 +1,18 @@
+﻿Nombre,Descripción,Tipo de Dato
+ID_USUARIO_CARGA_DOCUMENTO,Idetificador único del usuario que cargo el documento a la base de datos.,Integer
+FECHA_ACTUALIZACION_AUTORIZACION,Indica la fecha en la que se autrizó la actualización el documento.,Date Time
+ORDEN,Muestra el orden en el que se mostrara el documento.,Integer
+ID_USUARIO_ACTUALIZACION_AUTORIZACION,Idetificador único del usuario que autorizó la actualización del documento.,Integer
+ESTADO_APROBACION,"Indica si el documento esta aprobado o no (Ej: Aprobado, No aprobado, Sin estado)",Varchar
+FECHA_CARGA_DOCUMENTO,Indica la fecha en la que se cargó el documento.,Date Time
+REQUERIDO,Indica si el documento es obligatorio.,TinyInt
+TIPO_DOCUMENTO,"Indica el tipo de documento (Ej: Cédula de identidad, comprobante de pago reserva, Reserva(sistema))",Varchar
+FECHA_REGISTRO,Indica la fecha en la que se registró el documento.,Date Time
+ID_CONTRATO,Identificador único del contrato al que pertenece el documento.,Integer
+ID_CONTRATO_DOCUMENTO,Identificador único del elemento.,Integer
+CARGADO,Indica si el documento esta cargado en la bd.,TinyInt
+ID_USUARIO_AUTORIZACION,Idetificador único del usuario que autorizó el documento.,Integer
+ACTIVO,Indica si el documento se encuentra en uso.,TinyInt
+FECHA_AUTORIZACION,Indica la fecha en la que se autorizó el documento.,Date Time
+ID_USUARIO_ACTUALIZACION,Idetificador único del usuario que actualizó el documento.,Integer
+FECHA_ACTUALIZACION,Indica la fecha en la que se actualizó el documento.,Date Time

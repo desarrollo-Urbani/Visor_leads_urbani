@@ -1,0 +1,12 @@
+﻿Nombre,Descripción,Tipo de Dato
+DESCRIPCION,Detalla la descripción de la promoción.,Varchar
+ID_COTIZACION,Identificador único de la Cotización.,Integer
+FECHA,Indica fecha en que se aplica la promoción en cotización.,Date Time
+VALOR_UNIDAD_CAMBIO,Valor que representa la promoción en Unidad de cambio.,Decimal
+ID_PROYECTO_PROMOCION,Identificador único de la Promoción.,Integer
+APLICAR_EN_VALOR,Detalla si se aplica en Moneda Local o en Unidad de cambio.,Varchar
+ID_USUARIO,Identificador único del usuario MobySuite.,Integer
+VERSION,Indicador para desarrolladores a la hora de realizar alguna modificación.,Integer
+ID_COTIZACION_PROMOCION,"Identificador único de la promoción en
+  cotización.",Integer
+VALOR_MONEDA_LOCAL,Valor que representa la promoción en Moneda Loca.,Decimal

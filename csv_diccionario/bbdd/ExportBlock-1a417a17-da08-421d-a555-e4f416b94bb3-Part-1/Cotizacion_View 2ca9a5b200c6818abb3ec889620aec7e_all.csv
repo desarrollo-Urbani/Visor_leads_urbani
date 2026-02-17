@@ -1,0 +1,74 @@
+﻿Nombre,Descripción,Tipo de Dato
+TASA_INTERES,"Tasa de interés estimada en la cotización
+  para crédito hipotecario, traída desde proyecto.",Decimal
+APROBADA,"Indica si la cotización fue aprobada o
+  no.",Boolean
+HASH_DOCUMENTO,"Campo utilizado para identificar el pdf
+  de la cotización.",Varchar
+TASA_HIP,"Indica
+  la tasa con la que se hizo la cotización, el dato se configura en el proyecto
+  y al cotizar, si se cambia, lo guarda en la tabla de cotización.",Decimal
+ID_USUARIO,"Identificador único del usuario
+  MobySuite.",Integer
+EMAIL,"Detalla mail del cliente asociado a la
+  cotización.",Varchar
+BANCO_SUBSIDIO,"Detalla Banco que se enncuentra asociado
+  al subsidio, en caso de aplicar.",Varchar
+G_GLS_HIP1_CUOT,"Detalla cantidad y valor de cuotas
+  durante la construcción que acordó en el plan de pagos.",Longtext
+G_GLS_HIP2,"Detalla valor de dividendos a la tasa
+  cargada desde proyecto, y a la opción 2 de años de crédito (20 años).",Longtext
+TASA_INTERES_ANIOS,"Indica a cuántos años se va a calcular el
+  crédito hipotecario.",Integer
+ESTADO_SUBSIDIO,"Detalla estado en que se encuentra el
+  subsidio.",Varchar
+NOMBRE_CAMPANIA,"Detalla
+  nombre campaña de marketing que generó la cotización (debe usarse en
+  AddQuote).",Varchar
+TOTAL_DESCUENTO_PORCENTAJE,"Indica el valor en % de los descuentos
+  aplicados.",Decimal
+ID_EVENTO,Identificador único del evento.,Integer
+G_GLS_HIP1,"Detalla valor de dividendos a la tasa
+  cargada desde proyecto, y a la opción 1 de años de crédito (25 años).",Longtext
+G_GLS_HIP2_CUOT,"Detalla cantidad y valor de cuotas
+  durante la construcción que acordó en el plan de pagos.",Longtext
+G_GLS_DC,"Detalla las glosas, en caso de que se
+  necesite alguna extra a las anteriores.",Longtext
+DESTINO_COMPRA,"Indica si la cotización está destinada a
+  vivienda o a inversión.",Varchar
+ID_COTIZACION,"Identificador único
+  de la cotización.",Integer
+ID_CLIENTE,Identificador único del cliente.,Integer
+TOTAL_DESCUENTO,"Indica el valor en UF de los descuentos
+  aplicados.",Decimal
+FECHA_COTIZ,"Indica fecha en que se realizó la
+  cotización.",Date Time
+ID_TIPO_CONTACTO,"Identificador único del tipo de contacto
+  de la cotización.",Integer
+NEGOCIO,"Indica si la cotización se convirtió en
+  Reserva o no.",Boolean
+DIVIDENDO_VISIBLE,"Indica si el cálculo de dividendos
+  aparecerá o no en la cotización.",Boolean
+ID_PROYECTO,Identificador único del proyecto.,Integer
+RATING,"Detalla expectativa de venta, cargada por
+  el ejecutivo al momento de la cotización.",Varchar
+DESCUENTO_TIPO_CALCULO,"Indica cómo se calculó el descuento, si
+  sobre el bien principal o si sobre el total del negocio.",Varchar
+ID_MEDIO,"Identificador único del medio de contacto
+  de la cotización.",Integer
+G_GLS_HIP3_CUOT,"Detalla cantidad y valor de cuotas
+  durante la construcción que acordó en el plan de pagos.",Longtext
+VERSION,"Indicador para desarrolladores a la hora
+  de realizar alguna modificación.",Integer
+G_GLS_HIP3,"Detalla valor de dividendos a la tasa
+  cargada desde proyecto, y a la opción 3 de años de crédito (30 años).",Longtext
+LIBRETA_SUBSIDIO,"Detalla libreta de subsidio, en caso de
+  aplicar.",Varchar
+ORIGEN,"Indica el origen de la cotización
+  (Mobysuite, cotizador, centralizador, importación, etc.)",Varchar
+CODIGO,"Indica código de reserva web asociada a
+  dicha cotización, que se envía en el mail con la cotización.",Varchar
+UID,"Indica un identificador de usuario, para
+  hacer match con el MobyTracker.",Varchar
+TOTAL_COTIZ,Indica el valor total de la cotización.,Decimal
+SERIE_SUBSIDIO,Detalla serie del subsidio.,Varchar

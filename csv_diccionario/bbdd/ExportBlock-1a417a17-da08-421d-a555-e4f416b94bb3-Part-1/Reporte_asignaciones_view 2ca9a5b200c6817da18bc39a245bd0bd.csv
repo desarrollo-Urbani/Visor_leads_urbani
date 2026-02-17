@@ -1,0 +1,134 @@
+﻿Nombre,Tipo de Dato,Descripción
+nombreProyecto,Varchar,Indica el nombre con el que proyecto aparece en MobySuite.
+numeroBien,Text,Número correspondiente del bien en el proyecto.
+estadoContrato,Varchar,"Indica estado en que se encuentra el contrato (Reservado, Promesado,
+  etc.)"
+piso,Text,N° de piso en el que se ubica el bien en el proyecto.
+orientacion,Text,"Posición de la vivienda respecto del sol (Sur, Oriente, Poniente, Empty,
+  etc.)"
+tipo,Varchar,"Indica la tipología del bien Ej: A, B, C, D."
+modelo,Char,Modelo del bien
+rolBien,Text,Número de rol de la propiedad otorgado por CBRS.
+numeroDormitorios,Text,Cantidad de dormitorios que posee el bien.
+numeroBanos,Text,Cantidad de baños que posee el bien.
+superficiePonderada,Text,Superficie útil + (Superficie Terraza/2)
+superficieUtil,Text,Superficie cubierta del bien.
+superficieTerraza,Text,Superficie terraza del bien.
+superficieTotal,Text,Suma de superficies que hacen al total de la propiedad.
+precioBase,Text,Precio base del bien
+valorListaCierre,Text,Valor lista del bien
+cambioValor3,Binario,
+cambioUsuario3,Binario,
+cambioValor2,Binario,
+cambioUsuario2,Binario,
+cambioValor1,Binario,
+cambioUsuario1,Binario,
+cambioValorFinal,Text,
+totalDescuentoUF,Decimal,Monto total de descuento en UF
+totalDescuentoPorcentaje,Decimal,Monto total del descuento en porcentaje
+descuentoAutorizado,Text,Monto de descuento autorizado
+descuentoNoAutorizado,Text,Monto de descuento no autorizado
+habilitacionActual,Text,Monto de habilitacion actual
+habilitacionCierre,Text,Monto de habilitacion al momento de cierre
+precioVenta,Text,Precio de venta el bien
+precioSuperficieUtil,Text,
+precioVentaUFM,Text,
+precioSuperficieTotal,Text,
+bodegas,Text,Bodegas asociadas
+precioBodegas,Text,Precios de las bodegas asociadas
+estacionamientos,Text,Estacionamientos asociados
+precioEstacionamientos,Text,Precio de los estacionamientos asociados
+idCotizacion,Integer,Identificador único de la cotización
+idContrato,Integer,Identificador único del contrato
+rutCliente,Varchar,RUT del cliente asociado al contrato o cotización
+dniCliente,Varchar,Valor que indica si el cliente tiene DNI
+tipoRazonSocialCliente,Varchar,Tipo de razón social del cliente
+razonSocialCliente,Varchar,"Razón social del cliente "
+fechaNacimientoCliente,Date Time,Fecha de nacimiento del cliente
+telefonoUnoCliente,Varchar,Telefono celular del cliente
+telefonoDosCliente,Varchar,Segundo telefono asociado al cliente
+emailCliente,Varchar,Correo electrónico del cliente
+conyugeNombreCliente,Varchar,Nombre del conyuge del cliente
+conyugeApellidoCliente,Varchar,Apellido del conyuge del cliente
+tipoCompradorCliente,Varchar,Tipo de comprador que es el cliente
+profesionCliente,Varchar,Profesión del cliente
+sexoCliente,Varchar,Sexo del cliente
+estadoCivilCliente,Varchar,Estado civil del cliente
+regimenPatrimonialCliente,Varchar,Régimen patrimonial del cliente
+nacionalidadCliente,Varchar,Nacionalidad del cliente
+"
+
+rangoEdadCliente",Varchar,Rango de edad en la que se incluye al cliente
+expectativaCliente,Varchar,Expectativa de compra del cliente
+destinoCompraCliente,Varchar,Destino de la compra del cliente
+grupoFamiliarCliente,Varchar,Cantidad de personas incluidas en el grupo familiar del cliente
+empresaCliente,Varchar,Empresa en la que labura el cliente
+actividadCliente,Varchar,Actividad actual del cliente
+cargoCliente,Varchar,Cargo actual del cliente
+rangoRentaCliente,Varchar,Rango de renta que busca el cliente
+rentaRealCliente,Integer,Renta real asociada al cliente
+recibirNovedadesCliente,Varchar,
+direccionCliente,Varchar,Dirección del cliente
+ciudadCliente,Varchar,Ciudad en la que se encuentra la dirección del cliente
+comunaCliente,Varchar,Comuna en la que se encuentra la dirección del cliente
+paisCliente,Varchar,País en el que se encuentra la dirección del cliente
+referenciaCliente,Long Text,
+casaEstudiosCliente,Varchar,
+actividadCargoCliente,Varchar,
+empleadorCliente,Varchar,Empleador del cliente
+rutEmpleadorCliente,Varchar,RUT del empleador del cliente
+antiguedadCliente,Varchar,Tiempo que lleva el cliente con el empleador
+independienteTipoCargoCliente,Varchar,Cargo del cliente en caso de ser independiente
+direccionLaboralCliente,Varchar,Dirección del lugar donde labura el cliente
+comunaLaboralCliente,Varchar,Comuna donde labura el cliente
+pepCliente,Varchar,
+pepParienteSegundoGradoCliente,Varchar,
+pepPactoActuacionConjuntaCliente,Varchar,
+rosCliente,Varchar,
+medioInformacionCotizacion,Varchar,Medio de información que se registró al momento de realizar la cotización
+usuarioCotizacion,Varchar,Usuario o ejecutivo que realizó la cotización
+fechaCierreReserva,"Date Time ",Fecha en la que se hizo el cierre de la reserva
+ejecutivoReserva,Varchar,Usuario o ejecutivo que realizó la reserva
+fechaAprobacionReserva,Date Time,Fecha en la que se aprobó la reserva
+fechaFirmaClienteReserva,Date Time,Fecha en la que se registró la firma del cliente de la reserva
+estadoReserva,Varchar,Estado de la reserva
+subEstadoReserva,Varchar,Sub estado de la reserva
+fechaEstimadaPromesa,Date Time,Fecha en la que se estima la promesa
+fechaPromesa,Date Time,Fecha en la que se realizó la promesa
+nombreUsuarioPromesa,Varchar,Nombre del usuario o ejecutivo que realizó la promesa
+fechaRegistroReserva,Date Time,Fecha en la que se registró la reserva
+fechaEnvioBorrador,Date Time,Fecha en la que se envió el borrador de la promesa
+fechaFirmaPromesa,Date Time,Fecha en la que se firmó la promesa
+fechaEscritura,Date Time,Fecha en la que se registró la escritura
+nombreUsuarioEscrituracion,Varchar,Nombre del ejecutivo o usuario que se encargó de la escritura
+permanenciaReserva,Integer,
+permanenciaPromesa,Integer,
+permanenciaEscritura,Integer,
+totalDocumentado,Decimal,
+saldoPorDocumentar,Decimal,Monto que falta por documentar
+totalPagado,Decimal,Monto que se ha pagado hasta el momento
+saldoPorPagar,Decimal,Monto que falta por pagar
+precioTotal,Decimal,Monto del total del contrato
+piePorcentaje,Decimal,
+etapaBien,Text,Etapa del bien
+pieFecha,Date Time,
+descuento,Text,
+promocion,Text,Promoción aplicada al contrato
+valorPromocion,Text,Valor de la promoción
+nombreAdicional,Text,Nombre del bien adicional
+valorAdicionalUF,Text,
+valorAgregadoActual,Text,
+valorAgregadoCierre,Text,
+Name_exp_116,Text,
+descripcionPagoSubsidio,Text,
+rutRL,Varchar,RUT del representante legal
+nombreRL,Varchar,Nombre del representante legal
+nacionalidadRL,Varchar,Nacionalidad del representante legal
+estadoCivilRL,Varchar,Estado civil del representante legal
+profesionRL,Varchar,Profesión del representante legal
+direccionRL,Varchar,Dirección del representante legal
+ciudadRL,Varchar,Ciudad del representante legal
+comunaRL,Varchar,Comuna del representante legal
+paisRL,Varchar,País del representante legal
+totalPasivo,Decimal,
+totalPatrimonio,Decimal,

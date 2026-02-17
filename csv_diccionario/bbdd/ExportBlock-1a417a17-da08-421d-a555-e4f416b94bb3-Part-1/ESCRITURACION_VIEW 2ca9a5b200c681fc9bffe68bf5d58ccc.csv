@@ -1,0 +1,19 @@
+﻿Nombre,Tipo de Dato,Descripción
+ID_ESCRITURACION,Integer,Identificador único de escrituración.
+BANCO,Varchar,Banco que se carga al escriturar un contrato.
+EJECUTIVO_BANCO,Varchar,Ejecutivo Banco que se completa a la hora de escriturar un contrato.
+EJECUTIVO_NOTARIA,Varchar,Ejecutivo Notaría que se completa a la hora de escriturar un contrato.
+FECHA_FIRMA_ESCRITURA,Date Time,Fecha firma escritura que se completa a la hora de escriturar un contrato.
+NOTARIA,Varchar,Nombre de notaría que se completa a la hora de escriturar un contrato.
+TELEFONO_BANCO,Varchar,Teléfono banco que se completa a la hora de escriturar un contrato.
+TELEFONO_NOTARIA,Varchar,Teléfono notaría que se completa a la hora de escriturar un contrato.
+TIPO_CREDITO,Varchar,Tipo de financiamiento que se completa a la hora de escriturar un contrato.
+TASA,Varchar,Tasa de interés que se completa a la hora de escriturar un contrato.
+ID_USUARIO,Integer,Usuario que escritura un contrato.
+REPERTORIO,Varchar,Número repertorio que se completa a la hora de escriturar un contrato.
+FDA_PAGADO,Varchar,Indica si los Fondos de Administración están pagados
+PLAZO_MESES_FDA,Varchar,Indica meses en que se paga el Fondo de administración.
+TASA_INTERES_FDA,Varchar,Indica tasa de interés con que se paga el Fondo de administración.
+ID_CONTRATO,Integer,Identificador único del contrato
+ELIMINADO,Booleano,Indica si el contrato está reversado o no.
+ID_PROYECTO,Integer,Identificador único del proyecto.

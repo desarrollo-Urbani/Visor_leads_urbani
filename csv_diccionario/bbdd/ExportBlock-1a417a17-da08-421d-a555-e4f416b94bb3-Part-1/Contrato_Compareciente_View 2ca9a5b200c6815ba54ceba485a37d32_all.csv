@@ -1,0 +1,12 @@
+﻿Nombre,Descripción,Tipo de Dato
+ID_USUARIO_MODIFICACION,Identificador único del usuario u ejecutivo que modificó el compareciente,Integer
+ACTIVO,Indica si el compareciente está activo,TinyInt
+NIVEL,Nivel del compareciente,Varchar
+ID_USUARIO,Identificador único del ejecutivo o usuario que asignó el compareciente,Integer
+ID_CONTRATO,Identificador único del contrato,Integer
+ID_CONTRATO_COMPARECIENTE,Identificador único del compareciente del contrato,Integer
+FECHA_REGISTRO,Fecha en la que se registró el compareciente,Date Time
+TIPO,Tipo de compareciente,Varchar
+ID_CLIENTE,Identificador único del cliente,Integer
+OBSERVACIONES,Texto que incluye alguna observación del compareciente,Varchar
+FECHA_MODIFICACION,Fecha en la que se modificó el compareciente,Date Time

@@ -1,0 +1,10 @@
+﻿Nombre,Tipo de Dato,Descripción
+ID_MEDIO,Integer,"Identificador único del Medio de
+  Información."
+DESCRIPCION_MEDIO,Varchar,"Detalla en general el medio de información (mailing, web, referidos,
+  etc.)"
+NOMBRE_MEDIO,Varchar,"Detalla en especifico el medio (Toc toc, Instagram, Revista X, etc.)"
+ACTIVO,Boolean,Indica si dicho medio de información se encuentra activo o no.
+FILTRO_PROSPECTO,Boolean,"Indica si dicho medio de información se podrá filtrar en módulo de
+  prospectos o no."
+ID_EMPRESA,Integer,Identificador único de empresa

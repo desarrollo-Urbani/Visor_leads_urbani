@@ -1,0 +1,49 @@
+﻿Nombre,Descripción,Tipo de Dato
+OBSERVACION,Detalla observación que se carga al cargar un estado de escrituración.,Text
+TELEFONO_NOTARIA,"Detalla teléfono asociado a la notaría
+  indicada en el proceso.",Varchar
+ID_USUARIO_ATENCION,Identificador unico del usuario de atención,Integer
+FDA_PAGADO,"Indica si el contrato se encuentra con el tipo de pago ""FDA""
+  pagado o no.",Varchar
+DESCRIPCION_PROCESO,"Detalla qué hito del proceso es (Fecha
+  entrega, fecha firma cliente, fecha de alzamiento, etc.)",Varchar
+ESTADO_ESCRITURACION,Indica el estado de escrituración en que se encuentra el contrato.,Text
+FECHA_ESTADO,"Indica fecha en la que el contrato adquirió dicho estado de escrituración
+  (realmente).",Date Time
+ID_CONTRATO,"Identificador único del número de contrato
+  que se escritura.",Integer
+FECHA_REGISTRO,"Indica la fecha de captura del estado en el sistema (cuando se carga el
+  estado al sistema).",Date Time
+NOTARIA,"Indica el nombre de la Notaría donde se
+  realiza el proceso de escrituración.",Varchar
+FIRMA_INMOBILIARIA,"Indica si el representante legal de la inmobiliaria ha firmado la
+  escritura o no.",Tinyint
+FIRMA_CLIENTE,Indica si el cliente ha firmado la escritura o no.,Tinyint
+FECHA_PROGRAMADA,"Indica fecha en la que se estima se
+  cumplirá cada hito del proceso descripto.",Date Time
+FECHA_FIRMA_ESCRITURA_CLIENTE,"Indica fecha en la que el cliente firma
+  escritura.",Date Time
+FECHA_ENTREGA_VIVIENDA,Indica si el contrato tiene fecha de entrega de vivienda cargada o no.,Tinyint
+REPERTORIO,"Número de repertorio, asociado al bien del contrato.",Varchar
+FECHA_PROCESO,"Indica fecha en la que efectivamente
+  ocurre el hito y se cargó al sistema.",Date Time
+BANCO,"Indica el Banco al cuál se encuentra
+  asociado el financiamiento del cliente.",Varchar
+TASA,"Detalla tasa asociada al crédito, cargada
+  en el proceso de escrituración en el sistema.",Varchar
+TELEFONO_BANCO,"Detalla teléfono del Banco asociado al
+  proceso de escrituración del cliente.",Varchar
+ID_ESCRITURACION,"Identificador único
+  de la escrituración.",Integer
+ID_COTIZACION,"Identificador único de la cotización
+  asociada a la escritura.",Integer
+ID_USUARIO,"Identificador único del usuario que realiza la escrituración en el
+  sistema.",Integer
+EJECUTIVO_BANCO,"Detalla persona del Banco que lleva a
+  cabo el proceso.",Varchar
+TASA_INTERES_FDA,Indica intereses por plazo en el que se abona FDA.,Varchar
+TIPO_CREDITO,"Detalla qué tipo de financiamiento tiene
+  asociada la escritura (ej: Crédito Hipotecario + Subsidio)",Varchar
+PLAZO_MESES_FDA,Indica plazo para abonar el tipo de pago FDA.,Varchar
+EJECUTIVO_NOTARIA,"Detalla persona de la Notaría que lleva a
+  cabo el proceso.",Varchar

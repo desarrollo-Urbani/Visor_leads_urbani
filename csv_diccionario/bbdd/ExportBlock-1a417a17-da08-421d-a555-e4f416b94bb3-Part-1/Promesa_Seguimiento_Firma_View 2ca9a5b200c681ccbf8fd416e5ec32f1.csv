@@ -1,0 +1,23 @@
+﻿Nombre,Tipo de Dato,Descripción
+ID_PROMESA,Integer,"Identificador único
+  de la promesa."
+DESCRIPCION,Tinytext,"Detalla descripción de hito asociado a la
+  promesa."
+FECHA_FIRMA,Date Time,"Indica fecha en la que se cumple el hito
+  descripto."
+FECHA_FIRMA_CLIENTE,Date Time,"Indica la fecha en que el cliente firmó
+  el hito asociado."
+FECHA_FIRMA_CONTABILIDAD,Date Time,"Indica fecha firma contabilidad, si
+  aplica. Ej: Distribución copias."
+FECHA_VENCIMIENTO,Date Time,"Indica fecha de vencimiento del hito, si
+  aplica. Ej: póliza."
+ASEGURADORA,Varchar,"Detalla la aseguradora en el hito Póliza
+  o boleta en Garantía."
+TIPO_DOCUMENTO,Varchar,"Detalla tipo de documento asociado al
+  hito, si aplica."
+FOLIO_DOCUMENTO,Varchar,"Detalla folio del documento, si aplica.
+  Ej: Boleta de Garantía."
+MONTO_UF,Decimal,"Detalla monto del hito asociado, si
+  aplica. Ej: monto póliza."
+BANCO,Varchar,"Detalla Banco asociado al hito, si
+  aplica."

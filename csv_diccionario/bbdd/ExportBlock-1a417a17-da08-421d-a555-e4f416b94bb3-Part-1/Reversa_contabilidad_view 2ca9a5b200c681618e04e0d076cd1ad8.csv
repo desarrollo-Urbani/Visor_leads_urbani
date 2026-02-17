@@ -1,0 +1,29 @@
+﻿Nombre,Tipo de Dato,Descripción
+FECHA_REVERSA,Date Time,Indica la fecha en la que se realizo la reversa.
+OBSERVACION,Varchar,Muestra una descripción del motivo por el cual se realiza la reversa.
+ID_EJECUTIVO_REVERSA,Integer,Identificador único del usuario que realizó la reversa.
+ID_EJECUTIVO_SOLICITUD_REVERSA,Integer,Identificador único del usuario que realizó la solicitud de la reversa.
+ID_EJECUTIVO_AUTORIZACION_REVERSA,Integer,Identificador único del usuario que autorizó la reversa.
+ID_PAGOS,Integer,Identificador único del pago.
+CUOTA,Integer,"Número de cuota que está pagando el
+cliente."
+ID_RECIBO,Integer,"Identificador único del recibo, asociado al pago."
+DESCRIPCION_PAGO,Varchar,"Describe el ítem que está pagando (Cierre de negocio, cuotas de la
+construcción, etc.)"
+ESTADO_CONTABLE,Varchar,"Indica el estado asignado por contabilidad (Depositado, En cartera,
+Conciliado, etc.)"
+FECHA_PACTADA,Date Time,Indica fecha pactada de pago para esa cuota.
+FECHA_PAGO,Date Time,"Indica fecha que se toma de la UF, se puede cambiar al documentar o al
+contabilizar."
+FECHA_TIPO_PAGO,Date Time,"Indica la fecha detallada en el documento asociado al pago (ej: si paga
+con cheque, es la fecha del mismo)"
+MONTO_PACTADO_PESOS,Decimal,Monto pactado para el pago en pesos chilenos.
+MONTO_PACTADO_UF,Decimal,Monto pactado para el pago en UF.
+DOCUMENTADO_PESOS,Decimal,Monto pagado por el cliente en pesos chilenos.
+DOCUMENTADO_UF,Decimal,Monto pactado para el pago en UF.
+TIPO_DOCUMENTO,Varchar,"Tipo de Pago (Cheque, Transbank, Depósito, Transferencia, etc.)"
+NOMBRE_BANCO,Varchar,Banco vinculante al tipo de pago.
+SERIE_PAGO,Varchar,Número de serie del cheque.
+MONTO_UF_CONTABLE,Decimal,Indica el monto en UF del pago registrado por contabilidad.
+MONTO_PESOS_CONTABLE,Decimal,Indica el monto en pesos chilenos del pago registrado por contabilidad.
+ID_CONTRATO,Integer,Identificador único del contrato asociado al pago.

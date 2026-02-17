@@ -1,0 +1,23 @@
+﻿Nombre,Descripción,Tipo de Dato
+TIPO_DOCUMENTO,"Detalla tipo de documento asociado al
+  hito, si aplica.",Varchar
+FECHA_FIRMA_CONTABILIDAD,"Indica fecha firma contabilidad, si
+  aplica. Ej: Distribución copias.",Date Time
+FECHA_VENCIMIENTO,"Indica fecha de vencimiento del hito, si
+  aplica. Ej: póliza.",Date Time
+BANCO,"Detalla Banco asociado al hito, si
+  aplica.",Varchar
+MONTO_UF,"Detalla monto del hito asociado, si
+  aplica. Ej: monto póliza.",Decimal
+ASEGURADORA,"Detalla la aseguradora en el hito Póliza
+  o boleta en Garantía.",Varchar
+FOLIO_DOCUMENTO,"Detalla folio del documento, si aplica.
+  Ej: Boleta de Garantía.",Varchar
+FECHA_FIRMA_CLIENTE,"Indica la fecha en que el cliente firmó
+  el hito asociado.",Date Time
+DESCRIPCION,"Detalla descripción de hito asociado a la
+  promesa.",Tinytext
+FECHA_FIRMA,"Indica fecha en la que se cumple el hito
+  descripto.",Date Time
+ID_PROMESA,"Identificador único
+  de la promesa.",Integer

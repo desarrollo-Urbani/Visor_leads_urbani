@@ -1,0 +1,18 @@
+﻿Nombre,Tipo de Dato,Descripción
+ID_EMPRESA,Integer,Identificador Unico Empresa
+NOM_EMPRESA,varchar,Mostrará el nombre de la empresa
+PAIS,varchar,Pais donde se encuentra la empresa
+ACTIVA,boolean,Si es una empresa activa
+ELIMINADO,boolean,Indica si la empresa está eliminada o no.
+TELEFONO,varchar,Corresponde al Dato telefono de la empresa
+CORREO,varchar,Indica el correo electrónico de la empresa.
+PAGINA_WEB,varchar,Indica el link a la página web de la empresa.
+CALLE,varchar,Dirección correspondiente a la empresa
+PROVINCIA,varchar,Ciudad donde esta ubicada la empresa
+CODIGO_POSTAL,varchar,Codigo postal referente a la región y comuna
+COMUNA,varchar,Comuna donde esta ubicada la empresa
+REGION,varchar,Región donde esta ubicada la empresa
+MUNICIPALIDAD,varchar,Indica la municipalidad de la empresa
+NUM_EXTERIOR,varchar,Indica el número externo de la dirección de la empresa.
+NUM_INTERIOR,varchar,"Indica el número interno de la dirección de la empresa (oficina x, puerta x, etc)"
+REFERENCIA,text,Indica referencias sobre la dirección o ubicación

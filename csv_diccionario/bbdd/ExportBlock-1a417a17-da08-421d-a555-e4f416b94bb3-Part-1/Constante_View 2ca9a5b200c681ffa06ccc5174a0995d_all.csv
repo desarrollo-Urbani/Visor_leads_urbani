@@ -1,0 +1,5 @@
+﻿Nombre,Descripción,Tipo de Dato
+VALOR_PROYECTADO,Valor estimado de la constante en la fecha indicada.,Double
+FECHA,Fecha en la que aplica la constante.,Date Time
+ID_EMPRESA,Identificador de la empresa,Integer
+VALOR,Valor de la constante.,Double

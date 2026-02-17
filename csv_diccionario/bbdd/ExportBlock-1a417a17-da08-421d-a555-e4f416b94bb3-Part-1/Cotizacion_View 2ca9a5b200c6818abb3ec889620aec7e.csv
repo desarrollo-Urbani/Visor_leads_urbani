@@ -1,0 +1,74 @@
+﻿Nombre,Tipo de Dato,Descripción
+ID_COTIZACION,Integer,"Identificador único
+  de la cotización."
+FECHA_COTIZ,Date Time,"Indica fecha en que se realizó la
+  cotización."
+APROBADA,Boolean,"Indica si la cotización fue aprobada o
+  no."
+NEGOCIO,Boolean,"Indica si la cotización se convirtió en
+  Reserva o no."
+G_GLS_HIP2,Longtext,"Detalla valor de dividendos a la tasa
+  cargada desde proyecto, y a la opción 2 de años de crédito (20 años)."
+G_GLS_HIP2_CUOT,Longtext,"Detalla cantidad y valor de cuotas
+  durante la construcción que acordó en el plan de pagos."
+G_GLS_HIP3,Longtext,"Detalla valor de dividendos a la tasa
+  cargada desde proyecto, y a la opción 3 de años de crédito (30 años)."
+G_GLS_HIP3_CUOT,Longtext,"Detalla cantidad y valor de cuotas
+  durante la construcción que acordó en el plan de pagos."
+G_GLS_HIP1,Longtext,"Detalla valor de dividendos a la tasa
+  cargada desde proyecto, y a la opción 1 de años de crédito (25 años)."
+G_GLS_HIP1_CUOT,Longtext,"Detalla cantidad y valor de cuotas
+  durante la construcción que acordó en el plan de pagos."
+G_GLS_DC,Longtext,"Detalla las glosas, en caso de que se
+  necesite alguna extra a las anteriores."
+RATING,Varchar,"Detalla expectativa de venta, cargada por
+  el ejecutivo al momento de la cotización."
+DESTINO_COMPRA,Varchar,"Indica si la cotización está destinada a
+  vivienda o a inversión."
+NOMBRE_CAMPANIA,Varchar,"Detalla
+  nombre campaña de marketing que generó la cotización (debe usarse en
+  AddQuote)."
+TOTAL_COTIZ,Decimal,Indica el valor total de la cotización.
+TOTAL_DESCUENTO,Decimal,"Indica el valor en UF de los descuentos
+  aplicados."
+TOTAL_DESCUENTO_PORCENTAJE,Decimal,"Indica el valor en % de los descuentos
+  aplicados."
+DESCUENTO_TIPO_CALCULO,Varchar,"Indica cómo se calculó el descuento, si
+  sobre el bien principal o si sobre el total del negocio."
+TASA_INTERES,Decimal,"Tasa de interés estimada en la cotización
+  para crédito hipotecario, traída desde proyecto."
+TASA_INTERES_ANIOS,Integer,"Indica a cuántos años se va a calcular el
+  crédito hipotecario."
+TASA_HIP,Decimal,"Indica
+  la tasa con la que se hizo la cotización, el dato se configura en el proyecto
+  y al cotizar, si se cambia, lo guarda en la tabla de cotización."
+ORIGEN,Varchar,"Indica el origen de la cotización
+  (Mobysuite, cotizador, centralizador, importación, etc.)"
+CODIGO,Varchar,"Indica código de reserva web asociada a
+  dicha cotización, que se envía en el mail con la cotización."
+HASH_DOCUMENTO,Varchar,"Campo utilizado para identificar el pdf
+  de la cotización."
+ID_CLIENTE,Integer,Identificador único del cliente.
+ID_PROYECTO,Integer,Identificador único del proyecto.
+ID_USUARIO,Integer,"Identificador único del usuario
+  MobySuite."
+ID_EVENTO,Integer,Identificador único del evento.
+ID_MEDIO,Integer,"Identificador único del medio de contacto
+  de la cotización."
+ID_TIPO_CONTACTO,Integer,"Identificador único del tipo de contacto
+  de la cotización."
+VERSION,Integer,"Indicador para desarrolladores a la hora
+  de realizar alguna modificación."
+EMAIL,Varchar,"Detalla mail del cliente asociado a la
+  cotización."
+DIVIDENDO_VISIBLE,Boolean,"Indica si el cálculo de dividendos
+  aparecerá o no en la cotización."
+BANCO_SUBSIDIO,Varchar,"Detalla Banco que se enncuentra asociado
+  al subsidio, en caso de aplicar."
+LIBRETA_SUBSIDIO,Varchar,"Detalla libreta de subsidio, en caso de
+  aplicar."
+ESTADO_SUBSIDIO,Varchar,"Detalla estado en que se encuentra el
+  subsidio."
+SERIE_SUBSIDIO,Varchar,Detalla serie del subsidio.
+UID,Varchar,"Indica un identificador de usuario, para
+  hacer match con el MobyTracker."

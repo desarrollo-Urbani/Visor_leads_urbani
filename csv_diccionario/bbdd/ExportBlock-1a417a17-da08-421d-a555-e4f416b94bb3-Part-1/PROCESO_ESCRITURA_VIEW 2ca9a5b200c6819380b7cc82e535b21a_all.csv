@@ -1,0 +1,12 @@
+﻿Nombre,Descripción,Tipo de Dato
+FECHA_PROCESO,Fecha en la que se completa el hito (fecha atención),Date Time
+ID_CONTRATO,Identificador único de contrato asociado a dicho proceso.,Integer
+FECHA_ENTREGA_VIVIENDA,Indica si dicho hito corresponde a la fecha entrega.,Booleano
+ID_USUARIO_ATENCION,Identificador único del usuario que completa el hito (usuario atención),Integer
+ID_PROCESO_ESCRITURACION,Identificador único del hito de escrituración.,Integer
+FIRMA_INMOBILIARIA,Indica si dicho hito corresponde a la fecha firma inmobiliaria.,Booleano
+FECHA_PROGRAMADA,Fecha en que se programa que se completará el hito.,Date Time
+OBSERVACION,Observación cargada en el hito o proceso.,Text
+DESCRIPCION_PROCESO,Descripción o nombre del hito o proceso.,Varchar
+FIRMA_CLIENTE,Indica si dicho hito corresponde a la fecha firma cliente.,Booleano
+ID_ESCRITURACION,Identificador único de escrituración.,Integer

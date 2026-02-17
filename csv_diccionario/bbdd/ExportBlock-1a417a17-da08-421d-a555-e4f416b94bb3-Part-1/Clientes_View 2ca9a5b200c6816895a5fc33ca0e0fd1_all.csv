@@ -1,0 +1,117 @@
+﻿Nombre,Descripción,Tipo de Dato
+RENTA_REAL,Indica la renta real del cliente,Varchar
+EMPLEADOR,Detalla la empresa u organización empleadora del cliente.,Varchar
+CODIGO_POSTAL,Código Postal de la ciudad donde reside el cliente.,Varchar
+COMUNA_REPRESENTANTE_LEGAL_DOS,Indica comuna de la dirección detallada del representante legal 2.,Varchar
+REFERENCIA,Detalla alguna referencia respecto de la dirección del cliente.,Longtext
+SEXO,Género con el cuál el cliente se siente identificado.,Varchar
+MEDIO_INFORMACION_INGRESO,Indica el medio por el cual el cliente ingreso,BigInt
+MISMA_DIRECCION_PERSONA_JURIDICA_REPRESENTANTE_LEGAL,Indica si tiene la misma dirección de la PJ a la que representa o no.,Boolean
+RUT,"Rol único Triburario del cliente, tiene validación, no se repite.",Varchar
+EMAIL,Dirección de email del cliente.,Varchar
+ID_EMPRESA,Identificador único del elemento empresa,Integer
+DIRECCION_LABORAL,"Indica la dirección en la que el cliente desarrolla sus actividades
+  laborales.",Varchar
+ID_TOKI,Identificador único del cliente en Toky.,Integer
+NACIONALIDAD_REPRESENTANTE_LEGAL_DOS,"Indica Nacionalidad del representante legal 2, del cliente Persona
+  Jurídica.",Varchar
+CIUDAD_REPRESENTANTE_LEGAL,Indica ciudad de la dirección detallada del representante legal 1.,Varchar
+DESTINO_COMPRA,"Indica si es Primera o Segunda vivienda, o si es Inversión.",Varchar
+DIRECCION_REPRESENTANTE_LEGAL,"Detalla dirección del representante legal 1, en caso que no coincida con
+  la del cliente PJ.",Varchar
+NOMBRE_REPRESENTANTE_LEGAL_TRES,"Indica Nombre del representante legal 3, del cliente Persona Jurídica.",Varchar
+ACTIVIDAD_CARGO,Indica la actividad laboral o cargo en que el cliente se desempeña.,Varchar
+COMUNA_REPRESENTANTE_LEGAL,Indica comuna de la dirección detallada del representante legal 1.,Varchar
+CONYUGUE_NOMBRE,Detalla el nombre del cónyuge del cliente.,Varchar
+WEB_ACTIVO, Dato asociado a pagos web del cliente.,Boolean
+APELLIDO,Apellido del cliente con el que se registra por primera vez en la DB.,Varchar
+PEP_PACTO_ACTUACION_CONJUNTA,Indica si el cliente actúa en sociedad con alguien PEP.,Boolean
+PROFESION_REPRESENTANTE_LEGAL_DOS,"Indica profesión del representante legal 2, del cliente Persona Jurídica.",Varchar
+TIPO_RAZON_SOCIAL,Indica si es Persona Natural o Persona Jurídica.,Varchar
+RUT_REPRESENTANTE_LEGAL_DOS,"Indica RUT del representante legal 2, del cliente Persona Jurídica.",Varchar
+EMAIL_CONYUGUE,Indica el mail del cónyuge del cliente.,Varchar
+CIUDAD,Ciudad donde vive y a la cuál pertenece la calle indicada.,Varchar
+COMUNA_LABORAL,Indica comuna a la cuál corresponde la dirección laboral.,Varchar
+NOMBRE,Nombre del cliente con el que se registra por primera vez en la DB.,Varchar
+MENSAJE_PROMESA_ARGENTA,"Indica si la promesa va o no con esa cláusula (aplica sólo al cliente
+  Argenta).",Boolean
+FECHA_IMPORTACION,"Si el cliente fue importado al sistema por BD, indica fecha de la misma.",Date Time
+WEB_PASSWORD, Dato asociado a pagos web del cliente.,Varchar
+PROFESION_REPRESENTANTE_LEGAL,"Indica profesión del representante legal 1, del cliente Persona Jurídica.",Varchar
+ESTADO_CIVIL_REPRESENTANTE_LEGAL,"Indica estado civil del representante legal 1, del cliente Persona
+  Jurídica.",Varchar
+NUM_INTERIOR,"Indica numeración interna de la calle donde declara dirección (Ej: número
+  de depto)",Varchar
+RECIBIR_NOVEDADES,Indica si el cliente está de acuerdo con recibir o no novedades.,Boolean
+NOMBRE_REPRESENTANTE_LEGAL,"Indica Nombre del representante legal 1, del cliente Persona Jurídica.",Varchar
+REGION,Región a la que pertenece la ciudad donde reside el cliente.,Varchar
+DIRECCION_REPRESENTANTE_LEGAL_TRES,Detalla dirección del representante legal 3.,Varchar
+CASA_ESTUDIOS,Detalla establecimiento dónde el cliente estudia o estudió.,Varchar
+ACTIVIDAD,"Indica si el cliente se desempeña como empleado fijo, independiente, por
+  honorarios, etc.",Varchar
+TELEFONO1,Número de teléfono del cliente.,Varchar
+RANGO_RENTA,Indica el rango al cuál corresponde su nivel de renta.,Varchar
+FECHA_INGRESO,"Indica fecha en la que el cliente ingresa a la Base de Clientes de
+  MobySuite.",Date Time
+CANTIDAD_NEGOCIOS,Indica la cantidad de contratos que el cliente posee con nosotros.,Integer
+ID_CLIENTE,Identificador único del elemento.,Integer
+TELEFONO1_CONYUGUE,Indica el teléfono del cónyuge del cliente.,Varchar
+ANTIGUEDAD,"Indica antigüedad que posee el cliente desarrollándose en la actividad
+  descripta.",Varchar
+TELEFONO2,Número de teléfono alternativo del cliente.,Varchar
+CALLE,Indica nombre de calle donde vive el cliente.,Varchar
+ESTADO_CIVIL_REPRESENTANTE_LEGAL_TRES,"Indica estado civil del representante legal 3, del cliente Persona
+  Jurídica.",Varchar
+FECHA_NACIMIENTO,Indica fecha de nacimiento del cliente,Date Time
+INGRESOS_ARRIENDO,"Indica los ingresos que el cliente posea por arriendos de sus
+  propiedades.",Decimal
+REG_PATRIMONIAL,"Indica condición patrimonial conyugal (Sociedad, separación de bienes,
+  etc.)",Varchar
+RUT_REPRESENTANTE_LEGAL,"Indica RUT del representante legal 1, del cliente Persona Jurídica.",Varchar
+DNI,Indica si el dato ingresado en RUT es o no DNI (para extranjeros por ej),Boolean
+CONYUGUE_APELLIDO,Detalla el apellido del cónyuge del cliente.,Varchar
+NACIONALIDAD_REPRESENTANTE_LEGAL_TRES,"Indica Nacionalidad del representante legal 3, del cliente Persona
+  Jurídica.",Varchar
+RUT_EMPLEADOR,Indica el RUT del empleador del cliente.,Varchar
+ID_HUBSPOT,Identificador único del cliente en Hubspot.,Integer
+PEP_PARIENTE_SEGUNDO_GRADO,Indica si el cliente es pariende de una persona PEP o no.,Boolean
+PAIS_REPRESENTANTE_LEGAL_TRES,"Indica país al que pertenece la dirección detallada del representante
+  legal 3.",Varchar
+ORIGEN,"Cómo ingresó a la BD de MobySuite (Importación, MS, etc)",Varchar
+FECHA_ULTIMA_COTIZACION,Indica fecha de la última cotización del cliente.,Date Time
+NACIONALIDAD,País de origen del cliente.,Varchar
+RATING,Indica la expectativa de compra que tenemos sobre este cliente.,Varchar
+RUT_REPRESENTANTE_LEGAL_TRES,"Indica RUT del representante legal 3, del cliente Persona Jurídica.",Varchar
+EMAIL_2,Indica dirección de email secundaria del cliente.,Varchar
+PAIS_REPRESENTANTE_LEGAL,"Indica país al que pertenece la dirección detallada del representante
+  legal 1.",Varchar
+ESTADO_CIVIL,"Estado civil del cliente (Soltero, casado, etc)",Varchar
+COMUNA_REPRESENTANTE_LEGAL_TRES,Indica comuna de la dirección detallada del representante legal 3.,Varchar
+NUM_EXTERIOR,Indica numeración externa de la calle donde declara dirección.,Varchar
+WEB_FRASE, Dato asociado a pagos web del cliente.,Varchar
+PROFESION,Profesión del cliente.,Varchar
+NACIONALIDAD_REPRESENTANTE_LEGAL,"Indica Nacionalidad del representante legal 1, del cliente Persona
+  Jurídica.",Varchar
+ROS,"Indica si el cliente aplica como ROS (Reporte de Operaciones Sospechosas)
+  o no.",Boolean
+RAZON_SOCIAL,"Detalla el nombre de la razón social del cliente, cuando es persona
+  Jurídica.",Varchar
+DIRECCION_REPRESENTANTE_LEGAL_DOS,Detalla dirección del representante legal 2.,Varchar
+TIPO_COMPRADOR,Indica si es persona natural o inversionista.,Varchar
+COMUNA,Comuna a la que pertenece la residencia del cliente.,Varchar
+PROFESION_REPRESENTANTE_LEGAL_TRES,"Indica profesión del representante legal 3, del cliente Persona Jurídica.",Varchar
+PAIS,País donde reside el cliente.,Varchar
+RANGO_EDAD,Rango al que pertenece la edad que el cliente posee.,Varchar
+ESTADO_CIVIL_REPRESENTANTE_LEGAL_DOS,"Indica estado civil del representante legal 2, del cliente Persona
+  Jurídica.",Varchar
+GRUPO_FAMILIAR,"Indica rango de cantidad de personas que componen su grupo familiar
+  primario.",Varchar
+CIUDAD_REPRESENTANTE_LEGAL_DOS,Indica ciudad de la dirección detallada del representante legal 2.,Varchar
+PEP,"Indica si el cliente aplica como PEP (Persona Expuesta Politicamente) o
+  no.",Boolean
+INDEPENDIENTE_TIPO_CARGO,Detalla actividad o cargo que desempeña en forma independiente.,Varchar
+NOMBRE_REPRESENTANTE_LEGAL_DOS,"Indica Nombre del representante legal 2, del cliente Persona Jurídica.",Varchar
+CIUDAD_REPRESENTANTE_LEGAL_TRES,Indica ciudad de la dirección detallada del representante legal 3.,Varchar
+VERSION,Indicador para desarrolladores a la hora de realizar alguna modificación.,Integer
+PAIS_REPRESENTANTE_LEGAL_DOS,"Indica país al que pertenece la dirección detallada del representante
+  legal 2.",Varchar
