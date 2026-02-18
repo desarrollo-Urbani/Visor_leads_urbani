@@ -339,14 +339,7 @@ export default function Dashboard() {
     };
 
 
-    const goBack = () => {
-        setShowUpload(false);
-        setShowAudit(false);
-        setShowCampaigns(false);
-        setShowUsersAdmin(false);
-    };
 
-    const isSubView = showUpload || showAudit || showCampaigns;
 
     const openHistory = async (lead: Lead) => {
         setHistoryLead(lead);
