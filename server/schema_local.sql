@@ -52,6 +52,11 @@ CREATE TABLE IF NOT EXISTS public.leads (
     notas_ejecutivo TEXT
 );
 
+-- 3. Usuario Administrador Inicial (Password: 123)
+INSERT INTO public.usuarios_sistema (nombre, email, password_hash, role, activo)
+VALUES ('Admin Urbani', 'admin@urbani.com', '123', 'admin', true)
+ON CONFLICT (email) DO NOTHING;
+
 -- Indices recomendados
 CREATE INDEX IF NOT EXISTS idx_leads_email ON public.leads(email);
 CREATE INDEX IF NOT EXISTS idx_leads_asignado ON public.leads(asignado_a);
