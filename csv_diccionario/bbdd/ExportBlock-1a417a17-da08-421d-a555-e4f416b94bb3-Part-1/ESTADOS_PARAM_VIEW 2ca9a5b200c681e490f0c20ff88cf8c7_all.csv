@@ -1,7 +1,0 @@
-﻿Nombre,Descripción,Tipo de Dato
-ORDEN,Indica el orden en que se configuró el parámetro.,Integer
-ESTADO,Mostrará todos los estados parametrizados.,Varchar
-ACTIVO,Indica si el parámetro está activo o no.,Boolean
-DESCRIPCION,Indica el nombre del estado.,Varchar
-TIPO,Indica si es Estado de Reserva o de Escrituración,Varchar
-PAIS,Corresponde al Dato País,Varchar

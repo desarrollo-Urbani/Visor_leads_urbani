@@ -1,8 +1,0 @@
-﻿Nombre,Tipo de Dato,Descripción
-ID_ESCRITURACION_ESTADO,Integer,Identificaador único del estado de escrituración.
-FECHA_REGISTRO,Date Time,Fecha en que se registra el estado.
-ESTADO_ESCRITURACION,Tinytext,Descripción o nombre del estado de escrituración.
-FECHA_ESTADO,Date Time,Fecha en que se asigna el estado al contrato.
-OBSERVACION,Text,Observación o comentario cargada al estado.
-ID_USUARIO_ESTADO,Integer,Identificador único del usuario que asigna el estado.
-ID_CONTRATO,Integer,Identificador único del contrato.

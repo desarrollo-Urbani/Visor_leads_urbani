@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { getLeads, getUsers, uploadLeads, getDashboardSummary, updateLeadStatus, getLeadHistory, assignLead } from "@/lib/api";
+import { getLeads, getUsers, uploadLeads, getDashboardSummary, updateLeadStatus, getLeadHistory, assignLead, getContactEvents, downloadCsv, deleteContactEvent, getAdminUsers, createAdminUser, updateAdminUser, resetAdminUserPassword, purgeLeads } from "@/lib/api";
 import type { Lead, User } from "@/types";
-import { Phone, MessageCircle, User as UserIcon, LayoutList, Upload, CheckSquare, Square, Search, History, Calendar, ChevronRight } from "lucide-react";
+import { Phone, MessageCircle, Mail, User as UserIcon, LayoutList, Upload, CheckSquare, Square, Search, History, Calendar, ChevronRight, Download, BarChart2, Trash2, UserPlus, Key, UserCheck, UserX, X } from "lucide-react";
 import MetricsDashboard from "@/components/MetricsDashboard";
 import { Input } from "@/components/ui/input";
 
@@ -38,9 +38,33 @@ export default function Dashboard() {
     const [managementStatus, setManagementStatus] = useState("");
     const [managementDate, setManagementDate] = useState("");
 
+    // Audit Advanced Filters
+    const [filterEjecutivo, setFilterEjecutivo] = useState("");
+    const [filterProyecto, setFilterProyecto] = useState("");
+    const [filterEstado, setFilterEstado] = useState("");
+    const [filterJefe, setFilterJefe] = useState("");
+
+    // Main Lead Filters
+    const [filterProyectoLead, setFilterProyectoLead] = useState("");
+    const [filterStatusLead, setFilterStatusLead] = useState("");
+    const [filterQualityLead, setFilterQualityLead] = useState("");
+
     // Reassignment State
     const [reassignLeadId, setReassignLeadId] = useState<string | null>(null);
     const [isReassigning, setIsReassigning] = useState(false);
+
+    // Campaigns View State
+    const [showCampaigns, setShowCampaigns] = useState(false);
+    const [campaignsData, setCampaignsData] = useState<any[]>([]);
+    const [loadingCampaigns, setLoadingCampaigns] = useState(false);
+
+    // User Management State
+    const [showUsersAdmin, setShowUsersAdmin] = useState(false);
+    const [adminUsersList, setAdminUsersList] = useState<User[]>([]);
+    const [loadingAdminUsers, setLoadingAdminUsers] = useState(false);
+    const [showUserModal, setShowUserModal] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [userForm, setUserForm] = useState({ nombre: '', email: '', role: 'ejecutivo', password: '', jefe_id: '', company_id: 'Urbani' });
 
     const loadSummary = async () => {
         setLoadingSummary(true);
@@ -52,6 +76,66 @@ export default function Dashboard() {
             setSummaryData([]);
         } finally {
             setLoadingSummary(false);
+        }
+    };
+
+    const loadCampaigns = async () => {
+        setLoadingCampaigns(true);
+        try {
+            const data = await getContactEvents();
+            setCampaignsData(data);
+        } catch (err) {
+            console.error("Error loading campaigns:", err);
+        } finally {
+            setLoadingCampaigns(false);
+        }
+    };
+
+    const loadAdminUsers = async () => {
+        setLoadingAdminUsers(true);
+        try {
+            const data = await getAdminUsers(currentUser?.id, currentUser?.role);
+            setAdminUsersList(data);
+        } catch (err) {
+            console.error("Error loading admin users:", err);
+        } finally {
+            setLoadingAdminUsers(false);
+        }
+    };
+
+    const handleToggleUserStatus = async (user: User) => {
+        const success = await updateAdminUser(user.id, { activo: !user.activo });
+        if (success) loadAdminUsers();
+        else alert("Error al cambiar estado de usuario");
+    };
+
+    const handleSaveUser = async () => {
+        if (!userForm.nombre || !userForm.email) return alert("Nombre y email obligatorios");
+
+        let res;
+        if (editingUser) {
+            res = await updateAdminUser(editingUser.id, userForm);
+        } else {
+            if (!userForm.password) return alert("Contraseña obligatoria para nuevos usuarios");
+            res = await createAdminUser(userForm);
+        }
+
+        if (res && !res.error) {
+            setShowUserModal(false);
+            setEditingUser(null);
+            setUserForm({ nombre: '', email: '', role: 'ejecutivo', password: '', jefe_id: '', company_id: 'Urbani' });
+            loadAdminUsers();
+        } else {
+            alert("Error: " + (res?.error || "Operación fallida"));
+        }
+    };
+
+    const handleResetPassword = async (userId: string) => {
+        const newPass = window.prompt("Ingresa la nueva contraseña:");
+        if (newPass) {
+            const success = await resetAdminUserPassword(userId, newPass);
+            if (success) alert("Contraseña actualizada");
+            else alert("Error al actualizar contraseña");
         }
     };
 
@@ -67,8 +151,15 @@ export default function Dashboard() {
         const userId = user?.id;
         const role = user?.role?.toLowerCase();
 
+        const filters = {
+            ejecutivo_id: filterEjecutivo,
+            proyecto: filterProyecto,
+            estado: filterEstado,
+            jefe_id: filterJefe
+        };
+
         Promise.all([
-            getLeads(userId, role),
+            getLeads(userId, role, filters),
             getUsers()
         ])
             .then(([leadsData, usersData]) => {
@@ -86,9 +177,20 @@ export default function Dashboard() {
     useEffect(() => {
         const stored = localStorage.getItem('visor_user');
         if (stored) {
-            const user = JSON.parse(stored);
-            setCurrentUser(user);
-            refreshData(user);
+            try {
+                const user = JSON.parse(stored);
+                if (user && user.id) {
+                    setCurrentUser(user);
+                    refreshData(user);
+                } else {
+                    localStorage.removeItem('visor_user');
+                    window.location.href = '/login';
+                }
+            } catch (e) {
+                console.error("Session parse error:", e);
+                localStorage.removeItem('visor_user');
+                window.location.href = '/login';
+            }
         } else {
             window.location.href = '/login';
         }
@@ -188,9 +290,16 @@ export default function Dashboard() {
     const selectedExecs = Object.keys(allocations);
     const totalAllocated = Object.values(allocations).reduce((a: number, b: number) => a + b, 0);
 
-    if (loading) return <div className="p-10 text-center">Cargando datos...</div>;
-
     const isAdmin = currentUser?.role === 'admin';
+
+    if (loading) return (
+        <div className="min-h-screen bg-[#09090b] flex items-center justify-center text-white p-10">
+            <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
+                <p className="text-xl font-bold tracking-tight">Cargando datos...</p>
+            </div>
+        </div>
+    );
 
     // Status Badge Color Logic
     const getStatusColor = (status: string) => {
@@ -222,18 +331,22 @@ export default function Dashboard() {
     };
 
     const handleLogout = () => {
-        if (window.confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+        const confirmLogout = window.confirm("¿Estás seguro de que deseas salir del sistema? Tendrás que volver a iniciar sesión para ingresar.");
+        if (confirmLogout) {
             localStorage.removeItem('visor_user');
             window.location.href = '/login';
         }
     };
 
+
     const goBack = () => {
         setShowUpload(false);
         setShowAudit(false);
+        setShowCampaigns(false);
+        setShowUsersAdmin(false);
     };
 
-    const isSubView = showUpload || showAudit;
+    const isSubView = showUpload || showAudit || showCampaigns;
 
     const openHistory = async (lead: Lead) => {
         setHistoryLead(lead);
@@ -271,293 +384,442 @@ export default function Dashboard() {
         }
     };
 
+    const handleDeleteCampaign = async (id: string) => {
+        if (confirm("¿Estás seguro de eliminar este registro de carga?")) {
+            const success = await deleteContactEvent(id);
+            if (success) {
+                loadCampaigns();
+            } else {
+                alert("Error al eliminar la carga");
+            }
+        }
+    };
+
     return (
-        <div className="min-h-screen bg-[#09090b] text-white p-6 relative font-sans">
-            {/* Background Gradient Accents */}
-            <div className="fixed inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full" />
-                <div className="absolute bottom-10 left-10 w-[30%] h-[30%] bg-blue-500/5 blur-[100px] rounded-full" />
-            </div>
-
-            {/* Modal Overlay */}
-            {selectedLead && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <Card className="w-full max-w-md bg-[#18181b] border-white/10 shadow-2xl rounded-2xl overflow-hidden">
-                        <CardHeader className="border-b border-white/5 pb-4">
-                            <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                                Gestionar Lead: {selectedLead.nombre}
-                            </CardTitle>
-                            <CardDescription className="text-gray-400">Actualiza el estado y agrega notas de seguimiento.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-5 pt-6">
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-gray-300 ml-1">Estado del Lead</label>
-                                <select
-                                    className="w-full h-11 px-3 bg-black/40 border-white/10 rounded-xl text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none"
-                                    value={managementStatus}
-                                    onChange={(e) => setManagementStatus(e.target.value)}
-                                >
-                                    <option value="No Gestionado" disabled>No Gestionado</option>
-                                    <option value="Por Contactar">📅 Por Contactar / Agendar</option>
-                                    <option value="En Proceso">En Proceso</option>
-                                    <option value="Visita">Visita</option>
-                                    <option value="No Efectivo">No Efectivo</option>
-                                    <option value="Venta Cerrada">Venta Cerrada</option>
-                                </select>
-                            </div>
-
-                            {managementStatus === 'Por Contactar' && (
-                                <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300 p-4 bg-primary/10 border border-primary/20 rounded-2xl ring-4 ring-primary/5">
-                                    <label className="text-sm font-bold text-primary flex items-center gap-2">
-                                        <Calendar className="h-4 w-4" /> AGENDAR PRÓXIMO CONTACTO
-                                    </label>
-                                    <input
-                                        type="datetime-local"
-                                        className="w-full h-12 px-4 bg-black/60 border-primary/30 rounded-xl text-white font-bold focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
-                                        value={managementDate}
-                                        onChange={(e) => setManagementDate(e.target.value)}
-                                    />
-                                    <p className="text-[10px] text-primary/70 font-semibold uppercase tracking-wider">Aparecerá como recordatorio en tu pantalla principal.</p>
-                                </div>
-                            )}
-
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-gray-300 ml-1">Notas / Bitácora</label>
-                                <textarea
-                                    className="w-full p-4 bg-black/40 border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none min-h-[120px]"
-                                    placeholder="Detalles de la llamada o visita..."
-                                    value={managementNote}
-                                    onChange={(e) => setManagementNote(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="flex gap-3 pt-2">
-                                <Button variant="ghost" className="flex-1 h-11 rounded-xl text-gray-400 hover:text-white hover:bg-white/5" onClick={closeManagement}>
-                                    Cancelar
-                                </Button>
-                                <Button className="flex-1 h-11 rounded-xl bg-primary hover:bg-[#a3e635] text-black font-bold shadow-lg shadow-primary/20" onClick={saveManagement}>
-                                    Guardar Cambios
-                                </Button>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-
-            <header className="mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative z-10">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center ring-1 ring-primary/30">
-                        <UserIcon className="h-6 w-6 text-primary" />
+        <div className="flex min-h-screen bg-[#0d0d0f] text-white font-sans selection:bg-primary/30">
+            {/* Sidebar Lateral */}
+            <aside className="w-72 bg-[#09090b] border-r border-white/5 flex flex-col fixed inset-y-0 z-40 p-8">
+                <div className="flex items-center gap-3 mb-12">
+                    <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+                        <LayoutList className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-                            {isAdmin ? 'Panel de Administración' : 'Mi Gestión Comercial'}
-                        </h1>
-                        <p className="text-gray-400 text-sm font-medium">
-                            Conectado como <span className="text-primary">{currentUser?.nombre}</span>
-                            <span className="ml-2 px-2 py-0.5 bg-white/5 rounded-full text-[10px] uppercase tracking-wider border border-white/5">{currentUser?.role}</span>
-                        </p>
+                        <h1 className="text-lg font-black tracking-tighter leading-none text-white italic">Lead Console</h1>
+                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Sales Enterprise v3</span>
                     </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                    {isSubView && (
-                        <Button
-                            variant="ghost"
-                            onClick={goBack}
-                            className="bg-white/5 hover:bg-white/10 text-white rounded-xl h-10 px-4 group"
-                        >
-                            <LayoutList className="mr-2 h-4 w-4 text-primary group-hover:scale-110 transition-transform" /> Volver
-                        </Button>
-                    )}
+                <nav className="flex-1 space-y-2">
+                    <Button variant="ghost" className="w-full justify-start h-12 rounded-2xl bg-primary/10 text-primary border border-primary/10 hover:bg-primary/20 font-black">
+                        <LayoutList className="mr-3 h-5 w-5" /> Dashboard
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        onClick={() => setShowAudit(true)}
+                        className="w-full justify-start h-12 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5 font-bold"
+                    >
+                        <History className="mr-3 h-5 w-5" /> Gestionar
+                    </Button>
+                </nav>
 
-                    {isAdmin && !isSubView && (
-                        <>
+                <div className="pt-8 border-t border-white/5 space-y-4">
+                    <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-4">Sistema</div>
+                    {isAdmin && (
+                        <div className="space-y-4">
                             <Button
-                                variant="outline"
                                 onClick={() => setShowUpload(true)}
-                                className="bg-[#18181b] border-white/10 text-white hover:bg-white/5 rounded-xl h-10 px-4"
+                                className="w-full h-14 rounded-2xl bg-primary/10 border border-primary/20 text-primary font-black hover:bg-primary hover:text-black transition-all shadow-lg shadow-primary/5 mt-4"
                             >
-                                <Upload className="mr-2 h-4 w-4 text-primary" /> Carga Masiva
+                                + Cargar Leads
                             </Button>
                             <Button
-                                variant="outline"
-                                onClick={() => setShowAudit(true)}
-                                className="bg-[#18181b] border-white/10 text-white hover:bg-white/5 rounded-xl h-10 px-4"
+                                onClick={async () => {
+                                    if (confirm("⚠️ ¿ESTÁS SEGURO? Esta acción borrará TODOS los leads, campañas e historiales del sistema. Esta acción es irreversible.")) {
+                                        try {
+                                            const success = await purgeLeads();
+                                            if (success) {
+                                                alert("Base de datos limpiada correctamente.");
+                                                window.location.reload();
+                                            } else {
+                                                alert("Error al purgar los datos.");
+                                            }
+                                        } catch (error) {
+                                            console.error("Purge Error:", error);
+                                            alert("Error de comunicación con el servidor.");
+                                        }
+                                    }
+                                }}
+                                variant="ghost"
+                                className="w-full h-10 rounded-xl text-red-500/40 hover:text-red-400 hover:bg-red-500/5 text-[10px] font-black uppercase tracking-widest transition-all"
                             >
-                                <History className="mr-2 h-4 w-4 text-primary" /> Auditoría de Leads
+                                <Trash2 className="mr-2 h-3 w-3" /> Borrar Todo
                             </Button>
-                        </>
+                        </div>
                     )}
-
                     <Button
                         onClick={handleLogout}
-                        className="bg-transparent hover:bg-red-500/10 text-red-500 hover:text-red-400 border border-red-500/20 rounded-xl h-10 px-4 transition-all"
+                        className="w-full h-10 rounded-xl text-red-500/60 hover:text-red-400 hover:bg-red-500/5 text-xs font-bold transition-all"
                     >
                         Cerrar Sesión
                     </Button>
                 </div>
-            </header>
+            </aside>
 
-            {/* Upload Section */}
-            {showUpload && isAdmin && (
-                <Card className="mb-8 border-primary/20 bg-primary/5 rounded-2xl relative z-10 overflow-hidden ring-1 ring-primary/20">
-                    <CardHeader>
-                        <CardTitle className="text-xl font-bold text-white">Importar Nuevos Leads</CardTitle>
-                        <CardDescription className="text-gray-400">Distribución inteligente de cartera comercial vía CSV.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div className="grid md:grid-cols-2 gap-6">
-                            <div className="space-y-4">
-                                <label className="text-sm font-semibold text-gray-300 block">1. Archivo de Origen</label>
-                                <div className="h-32 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center bg-black/40 hover:border-primary/50 transition-colors cursor-pointer relative group">
-                                    <Input
-                                        type="file"
-                                        accept=".csv"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                                        onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                                    />
-                                    <Upload className="h-8 w-8 text-primary/40 mb-2 group-hover:text-primary transition-colors pointer-events-none relative z-10" />
-                                    <span className="text-sm font-medium text-gray-400 group-hover:text-gray-200 transition-colors pointer-events-none relative z-10">
-                                        {uploadFile ? uploadFile.name : "Soltar CSV aquí o hacer clic"}
-                                    </span>
+            {/* Contenido Principal */}
+            <main className="flex-1 ml-72 p-12 bg-gradient-to-br from-[#0d0d0f] to-[#09090b]">
+                {/* Background Gradient Accents */}
+                <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+                    <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-primary/5 blur-[120px] rounded-full" />
+                    <div className="absolute bottom-10 left-10 w-[30%] h-[30%] bg-blue-500/5 blur-[100px] rounded-full" />
+                </div>
+
+                {/* Modal Overlay */}
+                {selectedLead && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <Card className="w-full max-w-md bg-[#18181b] border-white/10 shadow-2xl rounded-2xl overflow-hidden">
+                            <CardHeader className="border-b border-white/5 pb-4">
+                                <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                                    Gestionar Lead: {selectedLead.nombre}
+                                </CardTitle>
+                                <CardDescription className="text-gray-400">Actualiza el estado y agrega notas de seguimiento.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-5 pt-6">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-300 ml-1">Estado del Lead</label>
+                                    <select
+                                        className="w-full h-11 px-3 bg-black/40 border-white/10 rounded-xl text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none"
+                                        value={managementStatus}
+                                        onChange={(e) => setManagementStatus(e.target.value)}
+                                    >
+                                        <option value="No Gestionado" disabled>No Gestionado</option>
+                                        <option value="Por Contactar">📅 Por Contactar / Agendar</option>
+                                        <option value="En Proceso">En Proceso</option>
+                                        <option value="Visita">Visita</option>
+                                        <option value="No Efectivo">No Efectivo</option>
+                                        <option value="Venta Cerrada">Venta Cerrada</option>
+                                    </select>
                                 </div>
-                            </div>
 
-                            <div className="space-y-4">
-                                <div className="flex justify-between items-center">
-                                    <label className="text-sm font-semibold text-gray-300 block">2. Seleccionar Ejecutivos y %</label>
-                                    <div className="flex items-center gap-3">
-                                        {selectedExecs.length > 0 && (
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                type="button"
-                                                onClick={distributeEqually}
-                                                className="h-7 px-2 text-[10px] uppercase font-bold text-primary/60 hover:text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 rounded-lg"
-                                            >
-                                                Repartir Equitativamente
-                                            </Button>
-                                        )}
-                                        <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${totalAllocated === 100 ? 'bg-primary/20 text-primary border-primary/30' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
-                                            TOTAL: {totalAllocated}%
+                                {managementStatus === 'Por Contactar' && (
+                                    <div className="space-y-3 animate-in fade-in zoom-in-95 duration-300 p-4 bg-primary/10 border border-primary/20 rounded-2xl ring-4 ring-primary/5">
+                                        <label className="text-sm font-bold text-primary flex items-center gap-2">
+                                            <Calendar className="h-4 w-4" /> AGENDAR PRÓXIMO CONTACTO
+                                        </label>
+                                        <input
+                                            type="datetime-local"
+                                            className="w-full h-12 px-4 bg-black/60 border-primary/30 rounded-xl text-white font-bold focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none"
+                                            value={managementDate}
+                                            onChange={(e) => setManagementDate(e.target.value)}
+                                        />
+                                        <p className="text-[10px] text-primary/70 font-semibold uppercase tracking-wider">Aparecerá como recordatorio en tu pantalla principal.</p>
+                                    </div>
+                                )}
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-semibold text-gray-300 ml-1">Notas / Bitácora</label>
+                                    <textarea
+                                        className="w-full p-4 bg-black/40 border-white/10 rounded-xl text-white placeholder:text-gray-600 focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none min-h-[120px]"
+                                        placeholder="Detalles de la llamada o visita..."
+                                        value={managementNote}
+                                        onChange={(e) => setManagementNote(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="flex gap-3 pt-2">
+                                    <Button variant="ghost" className="flex-1 h-11 rounded-xl text-gray-400 hover:text-white hover:bg-white/5" onClick={closeManagement}>
+                                        Cancelar
+                                    </Button>
+                                    <Button className="flex-1 h-11 rounded-xl bg-primary hover:bg-[#a3e635] text-black font-bold shadow-lg shadow-primary/20" onClick={saveManagement}>
+                                        Guardar Cambios
+                                    </Button>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
+                {/* Search Bar & User Profile */}
+                <div className="flex items-center justify-between mb-12 gap-8 sticky top-0 z-30 bg-[#0d0d0f]/80 backdrop-blur-xl p-4 -m-4 rounded-3xl border border-white/5 shadow-2xl">
+                    <div className="flex-1 max-w-2xl relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-primary transition-colors" />
+                        <Input
+                            placeholder="Buscar leads, proyectos o etiquetas..."
+                            className="w-full h-14 pl-12 pr-4 bg-white/5 border-white/10 rounded-2xl text-white placeholder:text-gray-600 focus:ring-primary/20 focus:border-primary/40 transition-all text-lg font-medium"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        <div className="text-right">
+                            <span className="block text-sm font-black text-white">{currentUser?.nombre}</span>
+                            <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest">{currentUser?.role} Lead</span>
+                        </div>
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-700 to-gray-800 border border-white/10 flex items-center justify-center p-0.5 shadow-xl">
+                            <div className="w-full h-full rounded-xl bg-[#161618] flex items-center justify-center">
+                                <UserIcon className="h-6 w-6 text-gray-500" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Upload Section */}
+                {showUpload && isAdmin && (
+                    <Card className="mb-8 border-primary/20 bg-primary/5 rounded-2xl relative z-10 overflow-hidden ring-1 ring-primary/20">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-bold text-white">Importar Nuevos Leads</CardTitle>
+                            <CardDescription className="text-gray-400">Distribución inteligente de cartera comercial vía CSV.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-6">
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-4">
+                                    <label className="text-sm font-semibold text-gray-300 block">1. Archivo de Origen</label>
+                                    <div className="h-32 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center bg-black/40 hover:border-primary/50 transition-colors cursor-pointer relative group">
+                                        <Input
+                                            type="file"
+                                            accept=".csv"
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                                            onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                                        />
+                                        <Upload className="h-8 w-8 text-primary/40 mb-2 group-hover:text-primary transition-colors pointer-events-none relative z-10" />
+                                        <span className="text-sm font-medium text-gray-400 group-hover:text-gray-200 transition-colors pointer-events-none relative z-10">
+                                            {uploadFile ? uploadFile.name : "Soltar CSV aquí o hacer clic"}
                                         </span>
                                     </div>
                                 </div>
 
-                                {selectedExecs.length > 0 && totalAllocated !== 100 && (
-                                    <div className={`p-2 rounded-lg text-center text-[11px] font-bold animate-in fade-in slide-in-from-top-1 ${totalAllocated > 100 ? 'bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'bg-orange-500/10 text-orange-400 border border-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.1)]'}`}>
-                                        {totalAllocated > 100
-                                            ? `⚠️ Exceso detectado: Sobra un ${totalAllocated - 100}%`
-                                            : `⚠️ Pendiente por asignar: Falta un ${100 - totalAllocated}%`
-                                        }
+                                <div className="space-y-4">
+                                    <div className="flex justify-between items-center">
+                                        <label className="text-sm font-semibold text-gray-300 block">2. Seleccionar Ejecutivos y %</label>
+                                        <div className="flex items-center gap-3">
+                                            {selectedExecs.length > 0 && (
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    type="button"
+                                                    onClick={distributeEqually}
+                                                    className="h-7 px-2 text-[10px] uppercase font-bold text-primary/60 hover:text-primary bg-primary/5 hover:bg-primary/10 border border-primary/20 rounded-lg"
+                                                >
+                                                    Repartir Equitativamente
+                                                </Button>
+                                            )}
+                                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${totalAllocated === 100 ? 'bg-primary/20 text-primary border-primary/30' : 'bg-red-500/10 text-red-500 border-red-500/20'}`}>
+                                                TOTAL: {totalAllocated}%
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {selectedExecs.length > 0 && totalAllocated !== 100 && (
+                                        <div className={`p-2 rounded-lg text-center text-[11px] font-bold animate-in fade-in slide-in-from-top-1 ${totalAllocated > 100 ? 'bg-red-500/10 text-red-400 border border-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.1)]' : 'bg-orange-500/10 text-orange-400 border border-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.1)]'}`}>
+                                            {totalAllocated > 100
+                                                ? `⚠️ Exceso detectado: Sobra un ${totalAllocated - 100}%`
+                                                : `⚠️ Pendiente por asignar: Falta un ${100 - totalAllocated}%`
+                                            }
+                                        </div>
+                                    )}
+                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                                        {users.filter(u => u.role !== 'admin').map(u => {
+                                            const isSelected = allocations[u.id] !== undefined;
+                                            return (
+                                                <div key={u.id} className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${isSelected ? 'bg-primary/5 border-primary/30 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' : 'bg-black/20 border-white/5 opacity-60'}`}>
+                                                    <button
+                                                        onClick={() => toggleExec(u.id)}
+                                                        className={`flex items-center gap-3 flex-1 text-left`}
+                                                    >
+                                                        {isSelected ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5 text-gray-500" />}
+                                                        <span className={`font-bold ${isSelected ? 'text-white' : 'text-gray-400'}`}>{u.nombre}</span>
+                                                    </button>
+                                                    {isSelected && (
+                                                        <div className="flex items-center gap-2 bg-black/40 rounded-lg px-2 py-1 border border-white/10">
+                                                            <input
+                                                                type="number"
+                                                                value={allocations[u.id]}
+                                                                onChange={(e) => updateAllocation(u.id, parseInt(e.target.value) || 0)}
+                                                                className="w-12 bg-transparent text-center font-mono font-bold text-primary outline-none"
+                                                                min="0"
+                                                                max="100"
+                                                            />
+                                                            <span className="text-xs font-bold text-gray-500">%</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col gap-4 pt-4 border-t border-white/5">
+                                {uploading && (
+                                    <div className="w-full space-y-2">
+                                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-primary/70">
+                                            <span>Procesando Bases de Datos...</span>
+                                            <span>{Math.round(uploadProgress)}%</span>
+                                        </div>
+                                        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                            <div
+                                                className="h-full bg-primary shadow-[0_0_10px_rgba(132,204,22,0.5)] transition-all duration-500 ease-out"
+                                                style={{ width: `${uploadProgress}%` }}
+                                            />
+                                        </div>
                                     </div>
                                 )}
-                                <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                                    {users.filter(u => u.role !== 'admin').map(u => {
-                                        const isSelected = allocations[u.id] !== undefined;
-                                        return (
-                                            <div key={u.id} className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${isSelected ? 'bg-primary/5 border-primary/30 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' : 'bg-black/20 border-white/5 opacity-60'}`}>
-                                                <button
-                                                    onClick={() => toggleExec(u.id)}
-                                                    className={`flex items-center gap-3 flex-1 text-left`}
-                                                >
-                                                    {isSelected ? <CheckSquare className="h-5 w-5 text-primary" /> : <Square className="h-5 w-5 text-gray-500" />}
-                                                    <span className={`font-bold ${isSelected ? 'text-white' : 'text-gray-400'}`}>{u.nombre}</span>
-                                                </button>
-                                                {isSelected && (
-                                                    <div className="flex items-center gap-2 bg-black/40 rounded-lg px-2 py-1 border border-white/10">
-                                                        <input
-                                                            type="number"
-                                                            value={allocations[u.id]}
-                                                            onChange={(e) => updateAllocation(u.id, parseInt(e.target.value) || 0)}
-                                                            className="w-12 bg-transparent text-center font-mono font-bold text-primary outline-none"
-                                                            min="0"
-                                                            max="100"
-                                                        />
-                                                        <span className="text-xs font-bold text-gray-500">%</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        );
-                                    })}
+                                <div className="flex justify-end gap-3">
+                                    <Button
+                                        variant="ghost"
+                                        onClick={() => setShowUpload(false)}
+                                        disabled={uploading}
+                                        className="text-gray-400 hover:text-white"
+                                    >
+                                        Cancelar
+                                    </Button>
+                                    <Button
+                                        onClick={handleUpload}
+                                        disabled={uploading || !uploadFile || selectedExecs.length === 0 || totalAllocated !== 100}
+                                        className="bg-primary hover:bg-[#a3e635] disabled:opacity-50 disabled:bg-gray-700 disabled:text-gray-400 text-black font-bold h-11 px-8 rounded-xl shadow-[0_0_15px_rgba(132,204,22,0.2)]"
+                                    >
+                                        {uploading ? "Sincronizando..." : "Iniciar Carga Masiva"}
+                                    </Button>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="flex flex-col gap-4 pt-4 border-t border-white/5">
-                            {uploading && (
-                                <div className="w-full space-y-2">
-                                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider text-primary/70">
-                                        <span>Procesando Bases de Datos...</span>
-                                        <span>{Math.round(uploadProgress)}%</span>
-                                    </div>
-                                    <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
-                                        <div
-                                            className="h-full bg-primary shadow-[0_0_10px_rgba(132,204,22,0.5)] transition-all duration-500 ease-out"
-                                            style={{ width: `${uploadProgress}%` }}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                            <div className="flex justify-end gap-3">
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => setShowUpload(false)}
-                                    disabled={uploading}
-                                    className="text-gray-400 hover:text-white"
-                                >
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    onClick={handleUpload}
-                                    disabled={uploading || !uploadFile || selectedExecs.length === 0 || totalAllocated !== 100}
-                                    className="bg-primary hover:bg-[#a3e635] disabled:opacity-50 disabled:bg-gray-700 disabled:text-gray-400 text-black font-bold h-11 px-8 rounded-xl shadow-[0_0_15px_rgba(132,204,22,0.2)]"
-                                >
-                                    {uploading ? "Sincronizando..." : "Iniciar Carga Masiva"}
-                                </Button>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            )}
-
-            {/* Success Notification Modal */}
-            {uploadSuccess && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
-                    <Card className="w-full max-w-sm bg-[#121212] border-primary/30 shadow-[0_0_40px_rgba(132,204,22,0.1)] rounded-3xl overflow-hidden text-center p-8 border-2">
-                        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/20">
-                            <Upload className="h-10 w-10 text-primary animate-bounce" />
-                        </div>
-                        <h3 className="text-2xl font-black text-white mb-2">¡Carga Exitosa!</h3>
-                        <p className="text-gray-400 text-sm mb-6">
-                            Se han procesado y asignado <span className="text-primary font-bold">{uploadSuccess.count} leads</span> correctamente en la base de datos.
-                        </p>
-                        <Button
-                            className="w-full bg-primary hover:bg-[#a3e635] text-black font-bold py-6 rounded-2xl"
-                            onClick={() => {
-                                setUploadSuccess(null);
-                                setShowUpload(false);
-                            }}
-                        >
-                            Ver Resultados
-                        </Button>
+                        </CardContent>
                     </Card>
-                </div>
-            )}
+                )}
 
-            {isAdmin ? (
-                <div className="space-y-8 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {!showAudit ? (
-                        <>
-                            <MetricsDashboard leads={leads} />
-                            <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5">
-                                <CardHeader className="bg-white/[0.02] py-6 px-8 flex flex-row items-center justify-between">
-                                    <div>
-                                        <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                                            Productividad por Ejecutivo
-                                        </CardTitle>
-                                        <CardDescription className="text-gray-500 font-medium">Resumen de leads asignados y estados de gestión.</CardDescription>
+                {/* Success Notification Modal */}
+                {uploadSuccess && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
+                        <Card className="w-full max-w-sm bg-[#121212] border-primary/30 shadow-[0_0_40px_rgba(132,204,22,0.1)] rounded-3xl overflow-hidden text-center p-8 border-2">
+                            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-primary/20">
+                                <Upload className="h-10 w-10 text-primary animate-bounce" />
+                            </div>
+                            <h3 className="text-2xl font-black text-white mb-2">¡Carga Exitosa!</h3>
+                            <p className="text-gray-400 text-sm mb-6">
+                                Se han procesado y asignado <span className="text-primary font-bold">{uploadSuccess.count} leads</span> correctamente en la base de datos.
+                            </p>
+                            <Button
+                                className="w-full bg-primary hover:bg-[#a3e635] text-black font-bold py-6 rounded-2xl"
+                                onClick={() => {
+                                    setUploadSuccess(null);
+                                    setShowUpload(false);
+                                }}
+                            >
+                                Ver Resultados
+                            </Button>
+                        </Card>
+                    </div>
+                )}
+
+                {isAdmin ? (
+                    <div className="space-y-8 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {showCampaigns ? (
+                            <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <CardHeader className="bg-white/[0.02] py-6 px-8 border-b border-white/5">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 font-black">
+                                                Historial de Cargas y Campañas
+                                            </CardTitle>
+                                            <CardDescription className="text-gray-500 font-medium">Resumen detallado de importaciones y rendimiento de bases.</CardDescription>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                            <span className="text-[10px] text-primary font-black uppercase tracking-widest">{campaignsData.length} CARGAS</span>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="divide-y divide-white/5">
+                                        {loadingCampaigns ? (
+                                            <div className="p-20 text-center text-gray-500 italic">Cargando historial de campañas...</div>
+                                        ) : campaignsData.length === 0 ? (
+                                            <div className="p-20 text-center text-gray-500 italic text-sm">No se han registrado cargas masivas aún.</div>
+                                        ) : campaignsData.map((campaign) => (
+                                            <div key={campaign.id} className="p-6 hover:bg-white/[0.02] transition-all group">
+                                                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+                                                    <div className="flex-1 space-y-2">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="p-2 bg-primary/10 rounded-lg border border-primary/20">
+                                                                <BarChart2 className="h-4 w-4 text-primary" />
+                                                            </div>
+                                                            <h3 className="text-lg font-black text-white group-hover:text-primary transition-colors tracking-tight">
+                                                                {campaign.description}
+                                                            </h3>
+                                                        </div>
+                                                        <div className="flex items-center gap-3 text-[11px] text-gray-500 font-bold uppercase tracking-tighter">
+                                                            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(campaign.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                                                            <span className="w-1 h-1 rounded-full bg-gray-700" />
+                                                            <span className="text-gray-400">ID: {campaign.id.substring(0, 8)}...</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex flex-wrap items-center gap-8 lg:gap-12 bg-black/20 p-4 rounded-2xl border border-white/5">
+                                                        <div className="text-center">
+                                                            <p className="text-[9px] text-gray-500 font-black uppercase tracking-widest mb-1">Destinatarios</p>
+                                                            <p className="text-xl font-black text-white">{campaign.total_leads}</p>
+                                                            <p className="text-[10px] text-gray-600 font-bold">100%</p>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-[9px] text-primary/60 font-black uppercase tracking-widest mb-1">Cestión</p>
+                                                            <p className="text-xl font-black text-primary">{campaign.processed_leads}</p>
+                                                            <p className="text-[10px] text-primary/40 font-bold">
+                                                                {campaign.total_leads > 0 ? (campaign.processed_leads / campaign.total_leads * 100).toFixed(1) : 0}%
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-center">
+                                                            <p className="text-[9px] text-blue-500/60 font-black uppercase tracking-widest mb-1">Ventas</p>
+                                                            <p className="text-xl font-black text-blue-500">{campaign.sales}</p>
+                                                            <p className="text-[10px] text-blue-500/40 font-bold">
+                                                                {campaign.total_leads > 0 ? (campaign.sales / campaign.total_leads * 100).toFixed(1) : 0}%
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex gap-2 w-full lg:w-auto">
+                                                        <Button
+                                                            variant="ghost"
+                                                            onClick={() => downloadCsv(campaign.id, `Carga_${campaign.id.substring(0, 8)}.csv`)}
+                                                            disabled={!campaign.has_file}
+                                                            className="flex-1 lg:flex-none h-11 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold border border-white/10 group/btn"
+                                                        >
+                                                            <Download className={`h-4 w-4 mr-2 ${campaign.has_file ? 'text-primary' : 'text-gray-600'} group-hover/btn:scale-110 transition-transform`} />
+                                                            {campaign.has_file ? 'Descargar Original' : 'Sin Archivo'}
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            onClick={() => handleDeleteCampaign(campaign.id)}
+                                                            className="flex-none h-11 w-11 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl border border-red-500/20 transition-all"
+                                                            title="Eliminar Carga"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ) : showUsersAdmin ? (
+                            <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                <CardHeader className="bg-white/[0.02] py-6 px-8 border-b border-white/5">
+                                    <div className="flex justify-between items-center">
+                                        <div>
+                                            <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 font-black">
+                                                Gestión de Usuarios del Sistema
+                                            </CardTitle>
+                                            <CardDescription className="text-gray-500 font-medium">Administra personal, roles y permisos de acceso.</CardDescription>
+                                        </div>
+                                        <Button
+                                            onClick={() => {
+                                                setEditingUser(null);
+                                                setUserForm({ nombre: '', email: '', role: 'ejecutivo', password: '', jefe_id: '', company_id: 'Urbani' });
+                                                setShowUserModal(true);
+                                            }}
+                                            className="bg-primary hover:bg-[#a3e635] text-black font-bold rounded-xl h-11 px-6 shadow-[0_0_20px_rgba(132,204,22,0.2)]"
+                                        >
+                                            <UserPlus className="mr-2 h-4 w-4" /> Nuevo Usuario
+                                        </Button>
                                     </div>
                                 </CardHeader>
                                 <CardContent className="p-0">
@@ -565,43 +827,86 @@ export default function Dashboard() {
                                         <table className="w-full text-sm text-left">
                                             <thead className="bg-white/[0.03] text-gray-500 uppercase text-[10px] font-bold tracking-widest border-b border-white/5">
                                                 <tr>
-                                                    <th className="px-8 py-5">Ejecutivo Comercial</th>
-                                                    <th className="px-8 py-5">Asignados</th>
-                                                    <th className="px-8 py-5 text-orange-500">Sin Gestión</th>
-                                                    <th className="px-8 py-5 text-primary">Por Contactar</th>
-                                                    <th className="px-8 py-5 text-blue-500">En Proceso</th>
-                                                    <th className="px-8 py-5 text-purple-500">Visitas</th>
-                                                    <th className="px-8 py-5 text-primary">Ventas</th>
-                                                    <th className="px-8 py-5">Ratio Conversión</th>
+                                                    <th className="px-8 py-5">Nombre y Contacto</th>
+                                                    <th className="px-8 py-5 text-center">Rol</th>
+                                                    <th className="px-8 py-5 text-center">Estado</th>
+                                                    <th className="px-8 py-5 text-center">Creado en</th>
+                                                    <th className="px-8 py-5 text-right">Acciones</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-white/5 bg-transparent">
-                                                {loadingSummary ? (
-                                                    <tr><td colSpan={7} className="px-8 py-16 text-center text-gray-500 italic">Actualizando métricas...</td></tr>
-                                                ) : summaryData.map((row) => (
-                                                    <tr key={row.id} className="hover:bg-white/[0.02] transition-colors border-b border-white/5">
-                                                        <td className="px-8 py-6 font-semibold text-white">{row.nombre}</td>
-                                                        <td className="px-8 py-6 font-mono text-gray-400">{row.total_assigned}</td>
-                                                        <td className="px-8 py-6">
-                                                            <span className={`px-2 py-1 rounded-lg text-xs ${row.no_gestionado > 0 ? 'bg-orange-500/10 text-orange-500 font-bold' : 'bg-white/5 text-gray-600'}`}>
-                                                                {row.no_gestionado}
+                                            <tbody className="divide-y divide-white/5">
+                                                {loadingAdminUsers ? (
+                                                    <tr><td colSpan={5} className="p-20 text-center text-gray-500 italic">Cargando usuarios...</td></tr>
+                                                ) : adminUsersList.map((user) => (
+                                                    <tr key={user.id} className="hover:bg-white/[0.02] transition-colors group">
+                                                        <td className="px-8 py-5">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                                                                    <UserIcon className="h-5 w-5 text-primary" />
+                                                                </div>
+                                                                <div>
+                                                                    <div className="font-bold text-white group-hover:text-primary transition-colors">{user.nombre}</div>
+                                                                    <div className="text-xs text-gray-500">{user.email}</div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-8 py-5 text-center">
+                                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
+                                                                user.role === 'jefe' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' :
+                                                                    'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                                                                }`}>
+                                                                {user.role}
                                                             </span>
                                                         </td>
-                                                        <td className="px-8 py-6 text-primary/80 font-medium">{row.por_contactar || 0}</td>
-                                                        <td className="px-8 py-6 text-blue-500/80 font-medium">{row.en_proceso}</td>
-                                                        <td className="px-8 py-6 text-purple-500/80 font-medium">{row.visita}</td>
-                                                        <td className="px-8 py-6 text-primary font-bold">{row.venta_cerrada}</td>
-                                                        <td className="px-8 py-6">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden max-w-[80px] ring-1 ring-white/5">
-                                                                    <div
-                                                                        className="h-full bg-primary shadow-[0_0_8px_rgba(132,204,22,0.4)]"
-                                                                        style={{ width: `${row.total_assigned > 0 ? (row.venta_cerrada / row.total_assigned * 100) : 0}%` }}
-                                                                    />
-                                                                </div>
-                                                                <span className="text-[11px] font-mono text-primary font-bold">
-                                                                    {row.total_assigned > 0 ? (row.venta_cerrada / row.total_assigned * 100).toFixed(0) : 0}%
-                                                                </span>
+                                                        <td className="px-8 py-5 text-center">
+                                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${user.activo ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
+                                                                <div className={`h-1.5 w-1.5 rounded-full ${user.activo ? 'bg-green-400' : 'bg-red-400'}`} />
+                                                                {user.activo ? 'ACTIVO' : 'INACTIVO'}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-8 py-5 text-center text-gray-500 font-medium">
+                                                            {user.created_at ? new Date(user.created_at).toLocaleDateString('es-CL') : 'N/A'}
+                                                        </td>
+                                                        <td className="px-8 py-5 text-right">
+                                                            <div className="flex justify-end gap-2">
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setEditingUser(user);
+                                                                        setUserForm({
+                                                                            nombre: user.nombre,
+                                                                            email: user.email,
+                                                                            role: user.role,
+                                                                            password: '',
+                                                                            jefe_id: user.jefe_id || '',
+                                                                            company_id: user.company_id || 'Urbani'
+                                                                        });
+                                                                        setShowUserModal(true);
+                                                                    }}
+                                                                    className="h-9 w-9 p-0 bg-white/5 hover:bg-white/10 text-white rounded-lg border border-white/10"
+                                                                    title="Editar Usuario"
+                                                                >
+                                                                    <ChevronRight className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => handleResetPassword(user.id)}
+                                                                    className="h-9 w-9 p-0 bg-white/5 hover:bg-white/10 text-primary rounded-lg border border-white/10"
+                                                                    title="Cambiar Password"
+                                                                >
+                                                                    <Key className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => handleToggleUserStatus(user)}
+                                                                    className={`h-9 w-9 p-0 rounded-lg border flex items-center justify-center transition-all ${user.activo ? 'bg-red-500/10 hover:bg-red-500/20 text-red-500 border-red-500/20' : 'bg-green-500/10 hover:bg-green-500/20 text-green-500 border-green-500/20'}`}
+                                                                    title={user.activo ? "Desactivar" : "Activar"}
+                                                                >
+                                                                    {user.activo ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                                                                </Button>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -611,404 +916,579 @@ export default function Dashboard() {
                                     </div>
                                 </CardContent>
                             </Card>
-                        </>
-                    ) : (
-                        <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5">
-                            <CardHeader className="bg-white/[0.02] py-6 px-8 space-y-4">
-                                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                    <div>
-                                        <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                                            Auditoría de Leads
-                                        </CardTitle>
-                                        <CardDescription className="text-gray-500 font-medium">Búsqueda detallada e historial de gestiones.</CardDescription>
-                                    </div>
-                                    <div className="relative w-full sm:w-80">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                        <Input
-                                            placeholder="Buscar por nombre, email o ejecutivo..."
-                                            className="pl-10 bg-black/40 border-white/10 rounded-xl focus:ring-primary/40 focus:border-primary"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm text-left">
-                                        <thead className="bg-white/[0.03] text-gray-500 uppercase text-[10px] font-bold tracking-widest border-b border-white/5">
-                                            <tr>
-                                                <th className="px-8 py-5">Prospecto</th>
-                                                <th className="px-8 py-5">Ejecutivo</th>
-                                                <th className="px-8 py-5">Proyecto</th>
-                                                <th className="px-8 py-5">Estado Actual</th>
-                                                <th className="px-8 py-5 text-right">Acciones</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-white/5 bg-transparent">
-                                            {leads
-                                                .filter(l =>
-                                                    l.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                                    l.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                                    (l.nombre_ejecutivo || '').toLowerCase().includes(searchTerm.toLowerCase())
-                                                )
-                                                .map((lead) => (
-                                                    <tr key={lead.id} className="hover:bg-white/[0.02] transition-colors border-b border-white/5">
-                                                        <td className="px-8 py-6">
-                                                            <div className="font-semibold text-white">{lead.nombre}</div>
-                                                            <div className="text-[11px] text-gray-500 font-mono">{lead.email}</div>
-                                                        </td>
-                                                        <td className="px-8 py-6">
-                                                            <div className="flex items-center gap-2 text-gray-300">
-                                                                <UserIcon className="h-3 w-3 text-primary/60" />
-                                                                {lead.nombre_ejecutivo || 'Sin Asignar'}
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-8 py-6 text-gray-400 font-medium">{lead.proyecto}</td>
-                                                        <td className="px-8 py-6">
-                                                            <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${getStatusColor(lead.estado_gestion)} border border-white/5`}>
-                                                                {lead.estado_gestion}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-8 py-6 text-right">
-                                                            <div className="flex justify-end gap-2">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() => openHistory(lead)}
-                                                                    className="h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 font-bold border border-white/10 transition-all text-xs"
-                                                                >
-                                                                    <History className="h-3 w-3 mr-2" /> Historial
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() => setReassignLeadId(lead.id)}
-                                                                    className="h-8 rounded-lg bg-primary/5 hover:bg-primary/20 text-primary font-bold border border-primary/10 transition-all text-xs"
-                                                                >
-                                                                    <UserIcon className="h-3 w-3 mr-2" /> Reasignar
-                                                                </Button>
-                                                            </div>
-                                                        </td>
+                        ) : !showAudit ? (
+                            <>
+                                <MetricsDashboard leads={leads} />
+                                <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5">
+                                    <CardHeader className="bg-white/[0.02] py-6 px-8 flex flex-row items-center justify-between">
+                                        <div>
+                                            <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                                                Productividad por Ejecutivo
+                                            </CardTitle>
+                                            <CardDescription className="text-gray-500 font-medium">Resumen de leads asignados y estados de gestión.</CardDescription>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm text-left">
+                                                <thead className="bg-white/[0.03] text-gray-500 uppercase text-[10px] font-bold tracking-widest border-b border-white/5">
+                                                    <tr>
+                                                        <th className="px-8 py-5">Ejecutivo Comercial</th>
+                                                        <th className="px-8 py-5">Asignados</th>
+                                                        <th className="px-8 py-5 text-orange-500">Sin Gestión</th>
+                                                        <th className="px-8 py-5 text-primary">Por Contactar</th>
+                                                        <th className="px-8 py-5 text-blue-500">En Proceso</th>
+                                                        <th className="px-8 py-5 text-purple-500">Visitas</th>
+                                                        <th className="px-8 py-5 text-primary">Ventas</th>
+                                                        <th className="px-8 py-5">Ratio Conversión</th>
                                                     </tr>
-                                                ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-            ) : (
-                <div className="space-y-10 relative z-10 animate-in fade-in duration-700">
-                    {/* Status Summary Row (Executive) */}
-                    <div className="flex flex-wrap gap-4 overflow-x-auto pb-2 custom-scrollbar">
-                        {["No Gestionado", "Por Contactar", "En Proceso", "Visita", "No Efectivo", "Venta Cerrada"].map((status) => {
-                            const count = leads.filter(l => l.estado_gestion === status).length;
-                            return (
-                                <div key={status} className="flex-none bg-[#18181b]/40 border border-white/5 px-5 py-3 rounded-2xl flex flex-col items-center min-w-[120px]">
-                                    <span className="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">{status}</span>
-                                    <span className={`text-xl font-black ${count > 0 ? 'text-white' : 'text-gray-700'}`}>{count}</span>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Priority Follow-ups Section */}
-                    {leads.filter(l => l.estado_gestion === 'Por Contactar').length > 0 && (
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-black text-primary flex items-center gap-3 italic">
-                                    <Calendar className="h-6 w-6" /> COMPROMISOS AGENDADOS
-                                </h2>
-                                <span className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-[10px] text-primary font-bold">
-                                    {leads.filter(l => l.estado_gestion === 'Por Contactar').length} PENDIENTES
-                                </span>
-                            </div>
-
-                            <div className="grid gap-6">
-                                {/* Today Group */}
-                                {(() => {
-                                    const todayStr = new Date().toISOString().split('T')[0];
-                                    const todayLeads = leads
-                                        .filter(l => l.estado_gestion === 'Por Contactar' && (l.fecha_proximo_contacto || '').startsWith(todayStr))
-                                        .sort((a, b) => new Date(a.fecha_proximo_contacto || '').getTime() - new Date(b.fecha_proximo_contacto || '').getTime());
-
-                                    if (todayLeads.length === 0) return null;
-
-                                    return (
-                                        <div className="space-y-4">
-                                            <div className="flex items-center gap-2 text-red-500">
-                                                <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                                                <span className="text-xs font-black uppercase tracking-widest">URGENTES PARA HOY</span>
-                                            </div>
-                                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                                {todayLeads.map((lead) => (
-                                                    <Card key={lead.id} className="bg-red-500/10 border-red-500/30 shadow-[0_0_20px_rgba(239,68,68,0.1)] rounded-2xl overflow-hidden ring-2 ring-red-500/20">
-                                                        <CardContent className="p-5 flex flex-col justify-between h-full">
-                                                            <div>
-                                                                <div className="flex justify-between items-start mb-2">
-                                                                    <div className="flex flex-col">
-                                                                        <h3 className="font-bold text-white text-base leading-tight">{lead.nombre}</h3>
-                                                                        <span className="text-[10px] text-red-400 font-bold uppercase tracking-tighter">CONTACTAR AHORA</span>
+                                                </thead>
+                                                <tbody className="divide-y divide-white/5 bg-transparent">
+                                                    {loadingSummary ? (
+                                                        <tr><td colSpan={7} className="px-8 py-16 text-center text-gray-500 italic">Actualizando métricas...</td></tr>
+                                                    ) : summaryData.map((row) => (
+                                                        <tr key={row.id} className="hover:bg-white/[0.02] transition-colors border-b border-white/5">
+                                                            <td className="px-8 py-6 font-semibold text-white">{row.nombre}</td>
+                                                            <td className="px-8 py-6 font-mono text-gray-400">{row.total_assigned}</td>
+                                                            <td className="px-8 py-6">
+                                                                <span className={`px-2 py-1 rounded-lg text-xs ${row.no_gestionado > 0 ? 'bg-orange-500/10 text-orange-500 font-bold' : 'bg-white/5 text-gray-600'}`}>
+                                                                    {row.no_gestionado}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-8 py-6 text-primary/80 font-medium">{row.por_contactar || 0}</td>
+                                                            <td className="px-8 py-6 text-blue-500/80 font-medium">{row.en_proceso}</td>
+                                                            <td className="px-8 py-6 text-purple-500/80 font-medium">{row.visita}</td>
+                                                            <td className="px-8 py-6 text-primary font-bold">{row.venta_cerrada}</td>
+                                                            <td className="px-8 py-6">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden max-w-[80px] ring-1 ring-white/5">
+                                                                        <div
+                                                                            className="h-full bg-primary shadow-[0_0_8px_rgba(132,204,22,0.4)]"
+                                                                            style={{ width: `${row.total_assigned > 0 ? (row.venta_cerrada / row.total_assigned * 100) : 0}%` }}
+                                                                        />
                                                                     </div>
-                                                                    <span className="text-[11px] bg-red-500 text-white font-black px-3 py-1 rounded-full flex items-center gap-1">
-                                                                        {new Date(lead.fecha_proximo_contacto || '').toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                                                                    <span className="text-[11px] font-mono text-primary font-bold">
+                                                                        {row.total_assigned > 0 ? (row.venta_cerrada / row.total_assigned * 100).toFixed(0) : 0}%
                                                                     </span>
                                                                 </div>
-                                                                <p className="text-xs text-gray-400 mb-4 line-clamp-1 opacity-70 italic">{lead.email}</p>
-                                                            </div>
-                                                            <div className="flex gap-2">
-                                                                <Button
-                                                                    onClick={() => openManagement(lead)}
-                                                                    className="w-full h-10 rounded-xl bg-red-500 text-white font-black hover:bg-red-400 transition-all border-none shadow-lg shadow-red-500/20"
-                                                                >
-                                                                    Gestionar Urgente
-                                                                </Button>
-                                                            </div>
-                                                        </CardContent>
-                                                    </Card>
-                                                ))}
-                                            </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
                                         </div>
-                                    );
-                                })()}
-
-                                {/* Upcoming Group */}
-                                {(() => {
-                                    const todayStr = new Date().toISOString().split('T')[0];
-                                    const upcomingLeads = leads
-                                        .filter(l => l.estado_gestion === 'Por Contactar' && !(l.fecha_proximo_contacto || '').startsWith(todayStr))
-                                        .sort((a, b) => new Date(a.fecha_proximo_contacto || '').getTime() - new Date(b.fecha_proximo_contacto || '').getTime());
-
-                                    if (upcomingLeads.length === 0) return null;
-
-                                    return (
-                                        <div className="space-y-4">
-                                            <span className="text-xs font-black text-gray-500 uppercase tracking-widest pl-1">PRÓXIMOS DÍAS</span>
-                                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                                {upcomingLeads.map((lead) => (
-                                                    <Card key={lead.id} className="bg-primary/5 border-primary/20 shadow-lg shadow-primary/5 rounded-2xl overflow-hidden ring-1 ring-primary/20 hover:ring-primary/40 transition-all">
-                                                        <CardContent className="p-5 flex flex-col justify-between h-full">
-                                                            <div>
-                                                                <div className="flex justify-between items-start mb-2">
-                                                                    <h3 className="font-bold text-white text-base">{lead.nombre}</h3>
-                                                                    <span className="text-[10px] bg-primary/20 text-primary font-bold px-2 py-0.5 rounded-full border border-primary/30">
-                                                                        {new Date(lead.fecha_proximo_contacto || '').toLocaleDateString('es-CL', { month: 'short', day: 'numeric' })}
-                                                                    </span>
-                                                                </div>
-                                                                <p className="text-xs text-gray-400 mb-4 line-clamp-1">{lead.email}</p>
-                                                            </div>
-                                                            <div className="flex gap-2">
-                                                                <Button
-                                                                    variant="secondary"
-                                                                    size="sm"
-                                                                    onClick={() => openManagement(lead)}
-                                                                    className="w-full h-9 rounded-xl bg-primary/10 text-primary font-bold hover:bg-primary hover:text-black transition-all border border-primary/20"
-                                                                >
-                                                                    Ver Agendamiento
-                                                                </Button>
-                                                            </div>
-                                                        </CardContent>
-                                                    </Card>
-                                                ))}
-                                            </div>
+                                    </CardContent>
+                                </Card>
+                            </>
+                        ) : (
+                            <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5">
+                                <CardHeader className="bg-white/[0.02] py-6 px-8 space-y-4">
+                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                        <div>
+                                            <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                                                Auditoría de Leads
+                                            </CardTitle>
+                                            <CardDescription className="text-gray-500 font-medium">Búsqueda detallada e historial de gestiones.</CardDescription>
                                         </div>
-                                    );
-                                })()}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="space-y-6">
-                        <h2 className="text-xl font-black text-white flex items-center gap-3 italic">
-                            <LayoutList className="h-6 w-6 text-gray-500" /> TODA TU CARTERA
-                        </h2>
-                        {Array.isArray(leads) && leads.length === 0 && (
-                            <div className="col-span-3 text-center py-20 bg-[#18181b]/30 border border-white/5 rounded-3xl text-gray-500">
-                                <div className="mb-4 opacity-20 flex justify-center"><LayoutList className="h-12 w-12" /></div>
-                                No hay leads asignados a tu cuenta actualmente.
-                            </div>
-                        )}
-                        {Array.isArray(leads) && leads.map((lead) => (
-                            <Card key={lead.id} className="group hover:scale-[1.02] transition-all duration-300 bg-[#18181b] border-white/5 hover:border-primary/30 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5">
-                                <CardHeader className="pb-4 bg-white/[0.01]">
-                                    <div className="flex justify-between items-start">
-                                        <div className="flex-1 pr-2">
-                                            <CardTitle className="text-lg font-bold text-white group-hover:text-primary transition-colors truncate">{lead.nombre}</CardTitle>
-                                            <CardDescription className="text-gray-500 truncate">{lead.email}</CardDescription>
+                                        <div className="relative w-full sm:w-80">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                                            <Input
+                                                placeholder="Buscar por nombre, email o ejecutivo..."
+                                                className="pl-10 bg-black/40 border-white/10 rounded-xl focus:ring-primary/40 focus:border-primary"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                            />
                                         </div>
-                                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${getStatusColor(lead.estado_gestion)} border border-white/5`}>
-                                            {lead.estado_gestion}
-                                        </span>
                                     </div>
-                                </CardHeader>
-                                <CardContent className="flex-1 flex flex-col justify-between pt-2">
-                                    <div className="space-y-4 text-sm">
-                                        <div className="flex justify-between items-center py-2 border-b border-white/5">
-                                            <span className="text-gray-500 font-medium">Renta Declarada</span>
-                                            <span className="font-bold text-white">${lead.renta}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center py-1">
-                                            <span className="text-gray-500 font-medium">Asignación</span>
-                                            <span className="text-gray-300 font-mono text-xs">{new Date(lead.fecha_registro).toLocaleDateString('es-CL')}</span>
-                                        </div>
 
-                                        {lead.fecha_proximo_contacto && (
-                                            <div className="flex justify-between items-center py-2 px-3 bg-primary/5 border border-primary/10 rounded-xl">
-                                                <span className="text-primary font-black text-[10px] uppercase tracking-wider">Próximo Contacto</span>
-                                                <span className="font-bold text-white text-xs flex items-center gap-1.5">
-                                                    <Calendar className="h-3 w-3 text-primary" />
-                                                    {new Date(lead.fecha_proximo_contacto).toLocaleString('es-CL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
-                                                </span>
+                                    {/* Dynamic Filter Bar */}
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-white/5">
+                                        {(currentUser?.role === 'admin') && (
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Filtrar por Jefe</label>
+                                                <select
+                                                    className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
+                                                    value={filterJefe}
+                                                    onChange={(e) => { setFilterJefe(e.target.value); refreshData(currentUser); }}
+                                                >
+                                                    <option value="">Todos los Jefes</option>
+                                                    {users.filter(u => u.role === 'jefe').map(u => (
+                                                        <option key={u.id} value={u.id}>{u.nombre}</option>
+                                                    ))}
+                                                </select>
                                             </div>
                                         )}
-
-                                        {/* Exec Name Display */}
-                                        <div className="flex justify-between items-center text-[10px] text-gray-500 uppercase tracking-widest pt-2">
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="w-5 h-5 bg-white/5 rounded-full flex items-center justify-center border border-white/10">
-                                                    <UserIcon className="h-2.5 w-2.5" />
-                                                </div>
-                                                {lead.nombre_ejecutivo || 'Sin Asignar'}
+                                        {(currentUser?.role === 'admin' || currentUser?.role === 'jefe') && (
+                                            <div className="space-y-1">
+                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Filtrar por Ejecutivo</label>
+                                                <select
+                                                    className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
+                                                    value={filterEjecutivo}
+                                                    onChange={(e) => { setFilterEjecutivo(e.target.value); refreshData(currentUser); }}
+                                                >
+                                                    <option value="">Todos los Ejecutivos</option>
+                                                    {users.filter(u => u.role === 'ejecutivo' && (!filterJefe || u.jefe_id === filterJefe)).map(u => (
+                                                        <option key={u.id} value={u.id}>{u.nombre}</option>
+                                                    ))}
+                                                </select>
                                             </div>
-                                            {lead.contact_event_id && <span className="text-primary/60 border border-primary/20 px-1 rounded" title="Carga Masiva">MASIVA</span>}
-                                        </div>
-
-                                        <div className="flex justify-between items-center pt-5 gap-3">
-                                            <div className="flex gap-2">
-                                                <Button size="icon" variant="ghost" className="h-9 w-9 text-primary bg-primary/5 hover:bg-primary/20 border border-primary/10 rounded-xl transition-all">
-                                                    <Phone className="h-4 w-4" />
-                                                </Button>
-                                                <Button size="icon" variant="ghost" className="h-9 w-9 text-blue-400 bg-blue-400/5 hover:bg-blue-400/20 border border-blue-400/10 rounded-xl transition-all">
-                                                    <MessageCircle className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                            <Button
-                                                variant="secondary"
-                                                size="sm"
-                                                onClick={() => openManagement(lead)}
-                                                className="h-9 px-6 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold border border-white/10 transition-all"
+                                        )}
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Proyecto</label>
+                                            <select
+                                                className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
+                                                value={filterProyecto}
+                                                onChange={(e) => { setFilterProyecto(e.target.value); refreshData(currentUser); }}
                                             >
-                                                Gestionar
-                                            </Button>
+                                                <option value="">Todos los Proyectos</option>
+                                                {Array.from(new Set(leads.map(l => l.proyecto))).filter(Boolean).map(p => (
+                                                    <option key={p} value={p}>{p}</option>
+                                                ))}
+                                            </select>
                                         </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Estado Gestión</label>
+                                            <select
+                                                className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
+                                                value={filterEstado}
+                                                onChange={(e) => { setFilterEstado(e.target.value); refreshData(currentUser); }}
+                                            >
+                                                <option value="">Todos los Estados</option>
+                                                <option value="No Gestionado">No Gestionado</option>
+                                                <option value="Por Contactar">Por Contactar</option>
+                                                <option value="En Proceso">En Proceso</option>
+                                                <option value="Visita">Visita</option>
+                                                <option value="Venta Cerrada">Venta Cerrada</option>
+                                                <option value="No Efectivo">No Efectivo</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm text-left">
+                                            <thead className="bg-white/[0.03] text-gray-500 uppercase text-[10px] font-bold tracking-widest border-b border-white/5">
+                                                <tr>
+                                                    <th className="px-8 py-5">Prospecto</th>
+                                                    <th className="px-8 py-5">Ejecutivo</th>
+                                                    <th className="px-8 py-5">Proyecto</th>
+                                                    <th className="px-8 py-5">Estado Actual</th>
+                                                    <th className="px-8 py-5 text-right">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-white/5 bg-transparent">
+                                                {leads
+                                                    .filter(l =>
+                                                        l.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                                        l.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                                                        (l.nombre_ejecutivo || '').toLowerCase().includes(searchTerm.toLowerCase())
+                                                    )
+                                                    .map((lead) => (
+                                                        <tr key={lead.id} className="hover:bg-white/[0.02] transition-colors border-b border-white/5">
+                                                            <td className="px-8 py-6">
+                                                                <div className="font-semibold text-white">{lead.nombre}</div>
+                                                                <div className="text-[11px] text-gray-500 font-mono">{lead.email}</div>
+                                                            </td>
+                                                            <td className="px-8 py-6">
+                                                                <div className="flex items-center gap-2 text-gray-300">
+                                                                    <UserIcon className="h-3 w-3 text-primary/60" />
+                                                                    {lead.nombre_ejecutivo || 'Sin Asignar'}
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-8 py-6 text-gray-400 font-medium">{lead.proyecto}</td>
+                                                            <td className="px-8 py-6">
+                                                                <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${getStatusColor(lead.estado_gestion)} border border-white/5`}>
+                                                                    {lead.estado_gestion}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-8 py-6 text-right">
+                                                                <div className="flex justify-end gap-2">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        onClick={() => openHistory(lead)}
+                                                                        className="h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 font-bold border border-white/10 transition-all text-xs"
+                                                                    >
+                                                                        <History className="h-3 w-3 mr-2" /> Historial
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="sm"
+                                                                        onClick={() => setReassignLeadId(lead.id)}
+                                                                        className="h-8 rounded-lg bg-primary/5 hover:bg-primary/20 text-primary font-bold border border-primary/10 transition-all text-xs"
+                                                                    >
+                                                                        <UserIcon className="h-3 w-3 mr-2" /> Reasignar
+                                                                    </Button>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </CardContent>
                             </Card>
-                        ))}
+                        )}
                     </div>
-                </div>
-            )}
-            {/* History Modal */}
-            {historyLead && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-                    <Card className="w-full max-w-2xl bg-[#18181b] border-white/10 shadow-2xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        <CardHeader className="border-b border-white/5 pb-4 shrink-0">
-                            <div className="flex justify-between items-start">
+                ) : (
+                    <>
+                        <div className="space-y-8">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
                                 <div>
-                                    <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
-                                        <History className="h-5 w-5 text-primary" /> Historial de {historyLead.nombre}
-                                    </CardTitle>
-                                    <CardDescription className="text-gray-400">Trazabilidad de gestiones y cambios de estado.</CardDescription>
+                                    <h2 className="text-5xl font-black text-white tracking-tighter mb-2">Gestión de Leads</h2>
+                                    <p className="text-gray-500 font-medium text-lg">Monitorea y gestiona tu flujo de entrada con puntajes IA.</p>
                                 </div>
-                                <Button variant="ghost" size="icon" onClick={() => setHistoryLead(null)} className="h-8 w-8 text-gray-500 hover:text-white">
-                                    <LayoutList className="h-4 w-4" />
-                                </Button>
                             </div>
-                        </CardHeader>
-                        <CardContent className="overflow-y-auto custom-scrollbar py-6">
-                            {loadingHistory ? (
-                                <div className="text-center py-10 text-gray-500 italic">Cargando historial...</div>
-                            ) : leadHistoryData.length === 0 ? (
-                                <div className="text-center py-10 text-gray-500 italic">No hay registros históricos para este lead.</div>
-                            ) : (
-                                <div className="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary/50 before:via-white/5 before:to-transparent">
-                                    {leadHistoryData.map((entry, idx) => (
-                                        <div key={entry.id} className="relative flex items-start gap-6 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${idx * 50}ms` }}>
-                                            <div className="absolute left-0 mt-1.5 w-10 h-10 rounded-full bg-black border-2 border-primary/40 flex items-center justify-center z-10 shadow-[0_0_10px_rgba(163,230,53,0.2)]">
-                                                <Calendar className="h-4 w-4 text-primary" />
-                                            </div>
-                                            <div className="ml-14 flex-1">
-                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                                                    <div className="flex items-center gap-3">
-                                                        <span className="text-[10px] font-mono text-gray-500 bg-white/5 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                                                            {new Date(entry.changed_at).toLocaleString('es-CL')}
-                                                        </span>
-                                                        <div className="flex items-center gap-2 text-[11px] font-bold text-white">
-                                                            <div className={`h-1.5 w-1.5 rounded-full ${getStatusColor(entry.new_status).includes('green') ? 'bg-primary' : 'bg-blue-400'}`} />
-                                                            {entry.new_status}
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-                                                        <UserIcon className="h-3 w-3 text-primary/40" />
-                                                        {entry.changed_by_name || 'Sistema'}
-                                                    </div>
-                                                </div>
-                                                {entry.notes && (
-                                                    <div className="p-4 bg-white/[0.03] border border-white/5 rounded-xl text-sm text-gray-300 leading-relaxed italic relative">
-                                                        <div className="absolute -left-1.5 top-3 w-3 h-3 bg-[#18181b] border-l border-t border-white/5 rotate-[-45deg]" />
-                                                        "{entry.notes}"
-                                                    </div>
-                                                )}
-                                                {entry.old_status !== entry.new_status && !entry.notes && (
-                                                    <div className="text-[11px] text-gray-500 italic flex items-center gap-1">
-                                                        Cambio de estado: <span className="line-through">{entry.old_status}</span> <ChevronRight className="h-2 w-2" /> <span className="text-gray-400">{entry.new_status}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
+
+                            {/* Dedicated Filter Bar */}
+                            <div className="flex flex-wrap items-center gap-6 p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] backdrop-blur-sm">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Filtro por Proyecto</label>
+                                    <select
+                                        className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
+                                        value={filterProyectoLead}
+                                        onChange={(e) => setFilterProyectoLead(e.target.value)}
+                                    >
+                                        <option value="">Todos los Proyectos</option>
+                                        {Array.from(new Set(leads.map(l => l.proyecto))).filter(Boolean).sort().map(p => (
+                                            <option key={p} value={p}>{p}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="w-px h-10 bg-white/5 hidden md:block" />
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Estado de Gestión</label>
+                                    <select
+                                        className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
+                                        value={filterStatusLead}
+                                        onChange={(e) => setFilterStatusLead(e.target.value)}
+                                    >
+                                        <option value="">Todos los Estados</option>
+                                        <option value="No Gestionado">No Gestionado</option>
+                                        <option value="En Proceso">En Proceso</option>
+                                        <option value="Visita">Visita</option>
+                                        <option value="Por Contactar">Por Contactar</option>
+                                        <option value="Venta Cerrada">Venta Cerrada</option>
+                                    </select>
+                                </div>
+
+                                <div className="w-px h-10 bg-white/5 hidden md:block" />
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Calidad IA</label>
+                                    <select
+                                        className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
+                                        value={filterQualityLead}
+                                        onChange={(e) => setFilterQualityLead(e.target.value)}
+                                    >
+                                        <option value="">Cualquier Calidad</option>
+                                        <option value="hot">🔥 Hot Lead</option>
+                                        <option value="ia">🤖 Data IA</option>
+                                    </select>
+                                </div>
+
+                                <div className="flex-1" />
+
+                                <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
+                                    <span className="text-[10px] font-black text-primary uppercase">Leads: {leads.filter(l => {
+                                        const searchLower = searchTerm.toLowerCase();
+                                        const matchesSearch = l.nombre.toLowerCase().includes(searchLower) || (l.email || '').toLowerCase().includes(searchLower);
+                                        const matchesProyecto = !filterProyectoLead || l.proyecto === filterProyectoLead;
+                                        const matchesStatus = !filterStatusLead || l.estado_gestion === filterStatusLead;
+                                        const matchesQuality = !filterQualityLead || (filterQualityLead === 'hot' && l.es_caliente) || (filterQualityLead === 'ia' && l.es_ia);
+                                        return matchesSearch && matchesProyecto && matchesStatus && matchesQuality;
+                                    }).length}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Lead Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-32">
+                            {Array.isArray(leads) && leads.length === 0 && (
+                                <div className="col-span-full py-40 flex flex-col items-center justify-center bg-[#1a1d23]/40 border-4 border-dashed border-white/5 rounded-[4rem] group hover:border-primary/20 transition-all duration-700">
+                                    <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-8 border border-white/10 group-hover:scale-110 transition-transform duration-500">
+                                        <LayoutList className="w-10 h-10 text-gray-700 group-hover:text-primary/40 transition-colors" />
+                                    </div>
+                                    <h3 className="text-3xl font-black text-gray-700 group-hover:text-gray-600 transition-colors tracking-tighter uppercase mb-4">Base de Datos Vacía</h3>
+                                    <p className="text-sm font-bold text-gray-500/40 uppercase tracking-[0.3em]">No hay leads registrados en el sistema</p>
                                 </div>
                             )}
-                        </CardContent>
-                        <div className="p-4 border-t border-white/5 shrink-0 bg-white/[0.01]">
-                            <Button className="w-full h-11 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold border border-white/10" onClick={() => setHistoryLead(null)}>
-                                Cerrar Historial
-                            </Button>
+                            {Array.isArray(leads) && leads
+                                .filter(l => {
+                                    const searchLower = searchTerm.toLowerCase();
+                                    const matchesSearch = l.nombre.toLowerCase().includes(searchLower) ||
+                                        (l.email || '').toLowerCase().includes(searchLower) ||
+                                        (l.apellido || '').toLowerCase().includes(searchLower) ||
+                                        (l.proyecto || '').toLowerCase().includes(searchLower);
+
+                                    const matchesProyecto = !filterProyectoLead || l.proyecto === filterProyectoLead;
+                                    const matchesStatus = !filterStatusLead || l.estado_gestion === filterStatusLead;
+                                    const matchesQuality = !filterQualityLead ||
+                                        (filterQualityLead === 'hot' && l.es_caliente) ||
+                                        (filterQualityLead === 'ia' && l.es_ia);
+
+                                    return matchesSearch && matchesProyecto && matchesStatus && matchesQuality;
+                                })
+                                .map((lead) => {
+                                    const initials = (lead.nombre || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                                    const matchScore = lead.es_caliente ? Math.floor(Math.random() * 10 + 85) : Math.floor(Math.random() * 30 + 40);
+
+                                    const formatCurrency = (val: string | undefined) => {
+                                        if (!val) return null;
+                                        const clean = val.replace(/\./g, '').replace(/,/g, '.').replace(/[^0-9.]/g, '');
+                                        const n = parseFloat(clean);
+                                        return isNaN(n) ? null : new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
+                                    };
+
+                                    return (
+                                        <Card key={lead.id} className="group transition-all duration-500 bg-[#1a1d23]/80 backdrop-blur-md border-white/5 hover:border-primary/40 hover:-translate-y-3 shadow-2xl rounded-[2.5rem] overflow-hidden">
+                                            <CardHeader className="p-8 pb-4">
+                                                <div className="flex justify-between items-start mb-6">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center border border-white/10 shadow-inner group-hover:scale-110 transition-transform duration-500">
+                                                            <span className="text-2xl font-black text-primary/80 tracking-tighter">{initials}</span>
+                                                        </div>
+                                                        <div>
+                                                            <CardTitle className="text-xl font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
+                                                                {lead.nombre} {lead.apellido || ''}
+                                                            </CardTitle>
+                                                            <CardDescription className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mt-2">
+                                                                {lead.proyecto || "Generic Project"}
+                                                            </CardDescription>
+                                                        </div>
+                                                    </div>
+                                                    <div className="relative w-14 h-14 flex items-center justify-center">
+                                                        <svg className="w-full h-full -rotate-90">
+                                                            <circle cx="28" cy="28" r="24" fill="transparent" stroke="currentColor" strokeWidth="4" className="text-white/5" />
+                                                            <circle cx="28" cy="28" r="24" fill="transparent" stroke="currentColor" strokeWidth="4" strokeDasharray={151} strokeDashoffset={151 - (151 * matchScore) / 100} className="text-primary" strokeLinecap="round" />
+                                                        </svg>
+                                                        <span className="absolute text-[11px] font-black text-white">{matchScore}%</span>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4 py-6 border-y border-white/5 border-dashed">
+                                                    <div>
+                                                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1">Valor Est.</span>
+                                                        <span className="text-lg font-black text-white tracking-tight">
+                                                            {formatCurrency(lead.renta) || <span className="text-gray-800">—</span>}
+                                                        </span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1">Antigüedad</span>
+                                                        <span className="text-sm font-bold text-gray-400">
+                                                            {lead.antiguedad_laboral || <span className="text-gray-800">—</span>}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent className="p-8 pt-2">
+                                                <div className="p-5 bg-black/30 rounded-3xl border border-white/5 mb-8 group-hover:bg-black/50 transition-colors">
+                                                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block mb-2">Última Observación</span>
+                                                    <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic font-medium">
+                                                        {lead.observacion || "Sin actividad reciente registrada..."}
+                                                    </p>
+                                                </div>
+                                                <div className="flex gap-2 mb-8">
+                                                    {lead.es_caliente && <span className="bg-[#fb923c]/10 text-[#fb923c] border border-[#fb923c]/20 px-3 py-1 rounded-full text-[9px] font-black uppercase italic">Hot Lead</span>}
+                                                    {lead.es_ia && <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-[9px] font-black uppercase">Data IA</span>}
+                                                    <span className="bg-gray-500/10 text-gray-400 border border-white/5 px-3 py-1 rounded-full text-[9px] font-black uppercase">Nuevo</span>
+                                                </div>
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex gap-2">
+                                                        <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 transition-all">
+                                                            <Phone className="h-5 w-5" />
+                                                        </Button>
+                                                        <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 transition-all">
+                                                            <Mail className="h-5 w-5" />
+                                                        </Button>
+                                                        <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 transition-all">
+                                                            <MessageCircle className="h-5 w-5" />
+                                                        </Button>
+                                                    </div>
+                                                    <Button
+                                                        onClick={() => openManagement(lead)}
+                                                        className="h-12 px-8 rounded-2xl bg-white/5 hover:bg-primary hover:text-black font-black text-[10px] uppercase tracking-widest border border-white/10 hover:border-transparent transition-all shadow-lg hover:shadow-primary/20"
+                                                    >
+                                                        Ver Detalles
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
                         </div>
-                    </Card>
-                </div>
-            )}
+                    </>
+                )}
+            </main>
+
+            {/* History Modal */}
+            {
+                historyLead && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+                        <Card className="w-full max-w-2xl bg-[#18181b] border-white/10 shadow-2xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                            <CardHeader className="border-b border-white/5 pb-4 shrink-0">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
+                                            <History className="h-5 w-5 text-primary" /> Historial de {historyLead.nombre}
+                                        </CardTitle>
+                                        <CardDescription className="text-gray-400">Trazabilidad de gestiones y cambios de estado.</CardDescription>
+                                    </div>
+                                    <Button variant="ghost" size="icon" onClick={() => setHistoryLead(null)} className="h-8 w-8 text-gray-500 hover:text-white">
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="overflow-y-auto custom-scrollbar py-6">
+                                {loadingHistory ? (
+                                    <div className="text-center py-10 text-gray-500 italic">Cargando historial...</div>
+                                ) : leadHistoryData.length === 0 ? (
+                                    <div className="text-center py-10 text-gray-500 italic">No hay registros históricos para este lead.</div>
+                                ) : (
+                                    <div className="relative space-y-6 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-primary/50 before:via-white/5 before:to-transparent">
+                                        {leadHistoryData.map((entry, idx) => (
+                                            <div key={entry.id} className="relative flex items-start gap-6 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${idx * 50}ms` }}>
+                                                <div className="absolute left-0 mt-1.5 w-10 h-10 rounded-full bg-black border-2 border-primary/40 flex items-center justify-center z-10 shadow-[0_0_10px_rgba(163,230,53,0.2)]">
+                                                    <Calendar className="h-4 w-4 text-primary" />
+                                                </div>
+                                                <div className="ml-14 flex-1">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-[10px] font-mono text-gray-500 bg-white/5 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                                                                {new Date(entry.changed_at).toLocaleString('es-CL')}
+                                                            </span>
+                                                            <div className="flex items-center gap-2 text-[11px] font-bold text-white">
+                                                                <div className={`h-1.5 w-1.5 rounded-full ${getStatusColor(entry.new_status).includes('green') ? 'bg-primary' : 'bg-blue-400'}`} />
+                                                                {entry.new_status}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                                                            <UserIcon className="h-3 w-3 text-primary/40" />
+                                                            {entry.changed_by_name || 'Sistema'}
+                                                        </div>
+                                                    </div>
+                                                    {entry.notes && (
+                                                        <div className="p-4 bg-white/[0.03] border border-white/5 rounded-xl text-sm text-gray-300 leading-relaxed italic relative">
+                                                            <div className="absolute -left-1.5 top-3 w-3 h-3 bg-[#18181b] border-l border-t border-white/5 rotate-[-45deg]" />
+                                                            "{entry.notes}"
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </CardContent>
+                            <div className="p-4 border-t border-white/5 shrink-0 bg-white/[0.01]">
+                                <Button className="w-full h-11 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold border border-white/10" onClick={() => setHistoryLead(null)}>
+                                    Cerrar Historial
+                                </Button>
+                            </div>
+                        </Card>
+                    </div>
+                )
+            }
 
             {/* Reassignment Modal */}
-            {reassignLeadId && (
-                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
-                    <Card className="w-full max-w-sm bg-[#18181b] border-white/10 shadow-2xl rounded-2xl overflow-hidden">
-                        <CardHeader className="border-b border-white/5 pb-4">
-                            <CardTitle className="text-xl font-bold text-white">Reasignar Lead</CardTitle>
-                            <CardDescription className="text-gray-400">Selecciona el nuevo ejecutivo comercial.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-6 space-y-4">
-                            <div className="grid gap-2">
-                                {users.filter(u => u.role !== 'admin').map(u => (
-                                    <button
-                                        key={u.id}
-                                        onClick={() => handleReassign(reassignLeadId, u.id)}
-                                        disabled={isReassigning}
-                                        className="flex items-center justify-between p-4 bg-white/5 hover:bg-primary/20 border border-white/5 hover:border-primary/40 rounded-xl transition-all group"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                                                <UserIcon className="h-4 w-4 text-primary" />
+            {
+                reassignLeadId && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
+                        <Card className="w-full max-w-sm bg-[#18181b] border-white/10 shadow-2xl rounded-2xl overflow-hidden">
+                            <CardHeader className="border-b border-white/5 pb-4">
+                                <CardTitle className="text-xl font-bold text-white">Reasignar Lead</CardTitle>
+                                <CardDescription className="text-gray-400">Selecciona el nuevo ejecutivo comercial.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-6 space-y-4">
+                                <div className="grid gap-2">
+                                    {users.filter(u => u.role !== 'admin').map(u => (
+                                        <button
+                                            key={u.id}
+                                            onClick={() => handleReassign(reassignLeadId, u.id)}
+                                            disabled={isReassigning}
+                                            className="flex items-center justify-between p-4 bg-white/5 hover:bg-primary/20 border border-white/5 hover:border-primary/40 rounded-xl transition-all group"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
+                                                    <UserIcon className="h-4 w-4 text-primary" />
+                                                </div>
+                                                <span className="font-bold text-gray-200 group-hover:text-white">{u.nombre}</span>
                                             </div>
-                                            <span className="font-bold text-gray-200 group-hover:text-white">{u.nombre}</span>
-                                        </div>
-                                        <ChevronRight className="h-4 w-4 text-gray-600 group-hover:text-primary transition-colors" />
-                                    </button>
-                                ))}
+                                            <ChevronRight className="h-4 w-4 text-gray-600 group-hover:text-primary transition-colors" />
+                                        </button>
+                                    ))}
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    className="w-full text-gray-500 hover:text-white"
+                                    onClick={() => setReassignLeadId(null)}
+                                >
+                                    Cancelar
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+                )
+            }
+
+            {/* User Modal */}
+            {
+                showUserModal && (
+                    <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+                        <Card className="w-full max-w-md bg-[#121212] border-white/10 shadow-2xl rounded-3xl overflow-hidden border-2">
+                            <CardHeader className="bg-white/[0.02] p-8 border-b border-white/5 text-center">
+                                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/20">
+                                    <UserPlus className="h-8 w-8 text-primary" />
+                                </div>
+                                <CardTitle className="text-2xl font-black text-white">
+                                    {editingUser ? "Editar Usuario" : "Nuevo Usuario"}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-8 space-y-5">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Nombre Completo</label>
+                                    <Input
+                                        className="bg-white/5 border-white/10 h-12 rounded-xl text-white focus:ring-primary focus:border-primary"
+                                        placeholder="Ej: Juan Pérez"
+                                        value={userForm.nombre}
+                                        onChange={e => setUserForm({ ...userForm, nombre: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Correo Electrónico</label>
+                                    <Input
+                                        className="bg-white/5 border-white/10 h-12 rounded-xl text-white focus:ring-primary focus:border-primary"
+                                        placeholder="email@urbani.cl"
+                                        type="email"
+                                        value={userForm.email}
+                                        onChange={e => setUserForm({ ...userForm, email: e.target.value })}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Rol de Usuario</label>
+                                    <select
+                                        className="w-full bg-white/5 border border-white/10 h-12 rounded-xl text-white px-4 focus:ring-primary focus:border-primary outline-none"
+                                        value={userForm.role}
+                                        onChange={e => setUserForm({ ...userForm, role: e.target.value })}
+                                    >
+                                        <option value="ejecutivo" className="bg-[#121212]">Ejecutivo Comercial</option>
+                                        <option value="jefe" className="bg-[#121212]">Jefe de Equipo</option>
+                                        <option value="admin" className="bg-[#121212]">Administrador</option>
+                                    </select>
+                                </div>
+                            </CardContent>
+                            <div className="p-8 pt-0 flex gap-4">
+                                <Button variant="ghost" onClick={() => setShowUserModal(false)} className="flex-1 h-12 text-gray-400 hover:text-white rounded-xl">
+                                    Cancelar
+                                </Button>
+                                <Button onClick={handleSaveUser} className="flex-1 h-12 bg-primary hover:bg-[#a3e635] text-black font-black rounded-xl shadow-[0_0_20px_rgba(132,204,22,0.2)]">
+                                    {editingUser ? "Guardar Cambios" : "Crear Acceso"}
+                                </Button>
                             </div>
-                            <Button
-                                variant="ghost"
-                                className="w-full text-gray-500 hover:text-white"
-                                onClick={() => setReassignLeadId(null)}
-                            >
-                                Cancelar
-                            </Button>
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
-        </div>
-    )
-}
+                        </Card>
+                    </div>
+                )
+            }
+        </div >
+    );
+};

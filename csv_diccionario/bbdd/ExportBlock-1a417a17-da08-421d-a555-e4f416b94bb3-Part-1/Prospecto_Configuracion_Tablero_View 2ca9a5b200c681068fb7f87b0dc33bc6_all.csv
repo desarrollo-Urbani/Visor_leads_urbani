@@ -1,7 +1,0 @@
-﻿Nombre,Descripción,Tipo de Dato
-COLUMNA_ATRIBUTO,"Indica el estado del evento en el módulo de prospectos (prospect, success, lost)",Varchar
-ID_EMPRESA_TABLERO,Identificador único de empresa_tablero,Integer
-TABLERO_VALOR,Indica el nombre estándar del tablero (Prospectos),Varchar
-COLUMNA_TITULO,Indica el nombre particular de la columna en el módulo de prospectos.,Varchar
-COLUMNA_VALOR,Indica el nombre estándar de las columnas (como en eventos_view),Varchar
-TABLERO_NOMBRE,Indica el nombre particular del tablero (Tablero de prospectos),Varchar

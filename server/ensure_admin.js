@@ -4,7 +4,7 @@ const crypto = require('crypto');
 async function ensureAdmin() {
     console.log("Checking Admin User...");
     const email = 'admin@urbani.com';
-    const password = 'password_123';
+    const password = '123';
     const hash = 'hashed_' + password;
 
     try {

@@ -20,6 +20,7 @@ export interface LeadStatusHistory {
 export interface Lead {
     id: string; // UUID in Supabase
     nombre: string;
+    apellido?: string;
     email: string;
     renta: string; // kept as string initially, can be parsed
     fecha_registro: string; // ISO date string
@@ -33,6 +34,11 @@ export interface Lead {
     asignado_a?: string; // UUID of executive
     nombre_ejecutivo?: string; // Name of assigned executive
     contact_event_id?: string; // Linked to mass upload event
+    antiguedad_laboral?: string;
+    es_caliente?: boolean;
+    es_ia?: boolean;
+    rut?: string;
+    observacion?: string;
 }
 
 export interface User {
@@ -40,4 +46,8 @@ export interface User {
     nombre: string;
     email: string;
     role: string;
+    activo?: boolean;
+    created_at?: string;
+    jefe_id?: string;
+    company_id?: string;
 }

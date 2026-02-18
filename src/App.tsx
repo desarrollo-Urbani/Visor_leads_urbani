@@ -3,8 +3,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
-  // Mock auth state for demo
-  const isAuthenticated = true;
+  const isAuthenticated = !!localStorage.getItem('visor_user');
 
   return (
     <BrowserRouter>

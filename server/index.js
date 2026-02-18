@@ -40,29 +40,52 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Get all leads (with assigned user info)
+// --- READ LEADS (Dashboard) with Hierarchy and Filters ---
 app.get('/api/leads', async (req, res) => {
-    const { userId, role } = req.query;
+    const { userId, role, ejecutivo_id, proyecto, estado, jefe_id } = req.query;
     try {
         let query = `
-            SELECT l.*, u.nombre as nombre_ejecutivo 
-            FROM leads l 
-            LEFT JOIN usuarios_sistema u ON l.asignado_a = u.id 
+            SELECT l.*, u.nombre as nombre_ejecutivo
+            FROM leads l
+            LEFT JOIN usuarios_sistema u ON l.asignado_a = u.id
+            WHERE 1=1
         `;
-
         const params = [];
-        if (role === 'ejecutivo' && userId) {
-            query += ' WHERE l.asignado_a = $1';
+
+        // Hierarchy Filtering
+        if (role === 'ejecutivo') {
             params.push(userId);
+            query += ` AND l.asignado_a = $${params.length}`;
+        } else if (role === 'jefe') {
+            params.push(userId);
+            query += ` AND (l.asignado_a = $${params.length} OR l.asignado_a IN (SELECT id FROM usuarios_sistema WHERE jefe_id = $${params.length}))`;
+        }
+        // Admin sees all by default
+
+        // Dynamic Filters
+        if (ejecutivo_id) {
+            params.push(ejecutivo_id);
+            query += ` AND l.asignado_a = $${params.length}`;
+        }
+        if (proyecto) {
+            params.push(proyecto);
+            query += ` AND l.proyecto = $${params.length}`;
+        }
+        if (estado) {
+            params.push(estado);
+            query += ` AND l.estado_gestion = $${params.length}`;
+        }
+        if (jefe_id && role === 'admin') {
+            params.push(jefe_id);
+            query += ` AND l.asignado_a IN (SELECT id FROM usuarios_sistema WHERE jefe_id = $${params.length})`;
         }
 
-        query += ' ORDER BY l.created_at DESC';
-
+        query += ` ORDER BY l.fecha_registro DESC LIMIT 200`;
         const result = await db.query(query, params);
         res.json(result.rows);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: "Internal error" });
     }
 });
 
@@ -246,8 +269,15 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
         const results = await parseCsv();
         console.log(`[UPLOAD] Parsed ${results.length} rows`);
 
+        // 3. Save binary file to archival table
+        const fileBuffer = fs.readFileSync(req.file.path);
+        await db.query(
+            "INSERT INTO archivos_csv (nombre_archivo, contenido_binario, contact_event_id) VALUES ($1, $2, $3)",
+            [req.file.originalname, fileBuffer, eventId]
+        );
+
         if (results.length > 0) {
-            // 3. Insert Leads with Weighted Distribution (Batched)
+            // 4. Insert Leads with Weighted Distribution (Batched)
             const userAssignments = {};
             targetUserIds.forEach(id => userAssignments[id] = 0);
 
@@ -335,6 +365,103 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 });
 
 // Dashboard Summary Endpoint
+// Get Contact Events (Campaigns) with Metrics
+app.get('/api/contact-events', async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                ce.id,
+                ce.description,
+                ce.created_at,
+                COUNT(l.id) as total_leads,
+                COUNT(CASE WHEN l.estado_gestion != 'No Gestionado' AND l.estado_gestion IS NOT NULL THEN 1 END) as processed_leads,
+                COUNT(CASE WHEN l.estado_gestion = 'Venta Cerrada' THEN 1 END) as sales,
+                EXISTS(SELECT 1 FROM archivos_csv ac WHERE ac.contact_event_id = ce.id) as has_file
+            FROM contact_events ce
+            LEFT JOIN leads l ON ce.id = l.contact_event_id
+            GROUP BY ce.id
+            ORDER BY ce.created_at DESC
+        `;
+        const result = await db.query(query);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal error" });
+    }
+});
+
+// Download CSV from archival table
+app.get('/api/download-csv/:eventId', async (req, res) => {
+    const { eventId } = req.params;
+    try {
+        const result = await db.query(
+            "SELECT nombre_archivo, contenido_binario FROM archivos_csv WHERE contact_event_id = $1",
+            [eventId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "File not found" });
+        }
+
+        const file = result.rows[0];
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${file.nombre_archivo}"`);
+        res.send(file.contenido_binario);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal error" });
+    }
+});
+
+// Deletion of Campaign and all associated data
+app.delete('/api/contact-events/:eventId', async (req, res) => {
+    const { eventId } = req.params;
+    console.log(`[DELETE CAMPAIGN] ID: ${eventId}`);
+
+    try {
+        await db.query('BEGIN');
+
+        // 1. Delete associated leads
+        await db.query('DELETE FROM leads WHERE contact_event_id = $1', [eventId]);
+
+        // 2. Delete archived CSV file
+        await db.query('DELETE FROM archivos_csv WHERE contact_event_id = $1', [eventId]);
+
+        // 3. Delete the campaign event itself
+        await db.query('DELETE FROM contact_events WHERE id = $1', [eventId]);
+
+        await db.query('COMMIT');
+
+        console.log(`[DELETE SUCCESS] Campaign ${eventId} and all related data removed.`);
+        res.json({ success: true, message: "Campaña y datos asociados eliminados correctamente." });
+    } catch (err) {
+        await db.query('ROLLBACK');
+        console.error("[DELETE ERROR]", err);
+        res.status(500).json({ error: "Error al eliminar la campaña: " + err.message });
+    }
+});
+
+// Purge all leads and associated data (Dev only)
+app.delete('/api/leads/purge', async (req, res) => {
+    console.log("------------------------------------------------");
+    console.log("[PURGE] Global data removal initiated");
+    try {
+        await db.query('BEGIN');
+        console.log("[PURGE] Truncating tables...");
+        await db.query('TRUNCATE TABLE lead_status_history CASCADE');
+        await db.query('TRUNCATE TABLE leads CASCADE');
+        await db.query('TRUNCATE TABLE archivos_csv CASCADE');
+        await db.query('TRUNCATE TABLE contact_events CASCADE');
+        await db.query('COMMIT');
+        console.log("[PURGE SUCCESS] All data cleared.");
+        res.json({ success: true, message: "Todos los datos han sido borrados correctamente." });
+    } catch (err) {
+        await db.query('ROLLBACK');
+        console.error("[PURGE ERROR] Full detail:", err);
+        res.status(500).json({ error: "Error al purgar los datos: " + err.message });
+    }
+});
+
 app.get('/api/dashboard/summary', async (req, res) => {
     try {
         const query = `
@@ -342,12 +469,12 @@ app.get('/api/dashboard/summary', async (req, res) => {
                 u.id, 
                 u.nombre, 
                 COUNT(l.id) as total_assigned,
-                COUNT(CASE WHEN l.estado_gestion = 'No Gestionado' OR l.estado_gestion IS NULL OR l.estado_gestion = 'null' THEN 1 END)::int as no_gestionado,
-                COUNT(CASE WHEN l.estado_gestion = 'Por Contactar' THEN 1 END)::int as por_contactar,
-                COUNT(CASE WHEN l.estado_gestion = 'En Proceso' THEN 1 END)::int as en_proceso,
-                COUNT(CASE WHEN l.estado_gestion = 'Visita' THEN 1 END)::int as visita,
-                COUNT(CASE WHEN l.estado_gestion = 'Venta Cerrada' THEN 1 END)::int as venta_cerrada,
-                COUNT(CASE WHEN l.estado_gestion = 'No Efectivo' THEN 1 END)::int as no_efectivo
+                COUNT(CASE WHEN l.id IS NOT NULL AND (l.estado_gestion = 'No Gestionado' OR l.estado_gestion IS NULL OR l.estado_gestion = 'null') THEN 1 END)::int as no_gestionado,
+                COUNT(CASE WHEN l.id IS NOT NULL AND l.estado_gestion = 'Por Contactar' THEN 1 END)::int as por_contactar,
+                COUNT(CASE WHEN l.id IS NOT NULL AND l.estado_gestion = 'En Proceso' THEN 1 END)::int as en_proceso,
+                COUNT(CASE WHEN l.id IS NOT NULL AND l.estado_gestion = 'Visita' THEN 1 END)::int as visita,
+                COUNT(CASE WHEN l.id IS NOT NULL AND l.estado_gestion = 'Venta Cerrada' THEN 1 END)::int as venta_cerrada,
+                COUNT(CASE WHEN l.id IS NOT NULL AND l.estado_gestion = 'No Efectivo' THEN 1 END)::int as no_efectivo
             FROM usuarios_sistema u
             LEFT JOIN leads l ON u.id = l.asignado_a
             WHERE u.role != 'admin'
@@ -359,6 +486,87 @@ app.get('/api/dashboard/summary', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Internal error" });
+    }
+});
+
+// --- ADMIN USER MANAGEMENT (Hierarchical) ---
+
+// List all users for administration
+app.get('/api/admin/users', async (req, res) => {
+    const { userId, role } = req.query;
+    try {
+        let query = 'SELECT id, nombre, email, role, activo, created_at, jefe_id, company_id FROM usuarios_sistema';
+        const params = [];
+
+        if (role === 'jefe') {
+            params.push(userId);
+            query += ' WHERE jefe_id = $1 OR id = $1';
+        } else if (role === 'ejecutivo') {
+            params.push(userId);
+            query += ' WHERE id = $1';
+        }
+
+        query += ' ORDER BY created_at DESC';
+        const result = await db.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Internal error" });
+    }
+});
+
+// Create new user
+app.post('/api/admin/users', async (req, res) => {
+    const { nombre, email, password, role, jefe_id, company_id } = req.body;
+    const finalJefeId = jefe_id === "" ? null : jefe_id;
+    try {
+        const query = `
+            INSERT INTO usuarios_sistema (nombre, email, password_hash, role, activo, jefe_id, company_id)
+            VALUES ($1, $2, $3, $4, true, $5, $6)
+            RETURNING id, nombre, email, role, activo, jefe_id, company_id
+        `;
+        const result = await db.query(query, [nombre, email, password, role || 'ejecutivo', finalJefeId, company_id || 'Urbani']);
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error al crear usuario: " + err.message });
+    }
+});
+
+// Update user details
+app.patch('/api/admin/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { nombre, email, role, activo, jefe_id } = req.body;
+    const finalJefeId = jefe_id === "" ? null : jefe_id;
+    try {
+        const query = `
+            UPDATE usuarios_sistema 
+            SET nombre = COALESCE($1, nombre),
+                email = COALESCE($2, email),
+                role = COALESCE($3, role),
+                activo = COALESCE($4, activo),
+                jefe_id = $5
+            WHERE id = $6
+            RETURNING id, nombre, email, role, activo, jefe_id
+        `;
+        const result = await db.query(query, [nombre, email, role, activo, finalJefeId, id]);
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error al actualizar usuario: " + err.message });
+    }
+});
+
+// Reset user password
+app.post('/api/admin/users/:id/reset-password', async (req, res) => {
+    const { id } = req.params;
+    const { password } = req.body;
+    try {
+        await db.query('UPDATE usuarios_sistema SET password_hash = $1 WHERE id = $2', [password, id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error al resetear password" });
     }
 });
 

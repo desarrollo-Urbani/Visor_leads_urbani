@@ -1,8 +1,0 @@
-﻿Nombre,Descripción,Tipo de dato
-IS_PRIMARY,responde a la pregunta si es un bien principal o secundario.,Boolean
-ENUM_VALUE,"Identificar si corresponde a que tipo de bien ( estacionamiento,bodega, departamento)",varchar
-ID_EMPRESA,identificador único de empresa,integer
-ORDEN,orden establecido del tipo de bien,integer
-NAME,"Identificar si corresponde a que tipo de bien ( estacionamiento,bodega, departamento)",varchar
-ID_TIPO_BIEN,Identificador único de tipo de bien,integer
-ACTIVE,corresponde si el tipo de bien esta activo o inactivo,Boolean

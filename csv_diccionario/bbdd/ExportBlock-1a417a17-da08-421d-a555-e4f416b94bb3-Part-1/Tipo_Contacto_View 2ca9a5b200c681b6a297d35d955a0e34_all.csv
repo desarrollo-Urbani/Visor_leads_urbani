@@ -1,6 +1,0 @@
-﻿Nombre,Descripción,Tipo de Dato
-ID_TIPO_CONTACTO,Identificador único del tipo de contacto.,Integer
-ACTIVO,Indica si dicho Tipo de Contacto se encuentra activo o no.,Boolean
-ID_EMPRESA,Identificador único de empresa,Integer
-DESCRIPCION_TIPO_CONTACTO,Indica la descripción del tipo de contacto.,Varchar
-NOMBRE_TIP_CONTACTO,Indica el nombre asigando al tipo de contacto.,Varchar

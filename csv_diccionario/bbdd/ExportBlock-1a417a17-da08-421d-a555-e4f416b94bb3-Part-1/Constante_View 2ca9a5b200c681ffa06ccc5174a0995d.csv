@@ -1,5 +1,0 @@
-﻿Nombre,Tipo de Dato,Descripción
-FECHA,Date Time,Fecha en la que aplica la constante.
-VALOR,Double,Valor de la constante.
-VALOR_PROYECTADO,Double,Valor estimado de la constante en la fecha indicada.
-ID_EMPRESA,Integer,Identificador de la empresa

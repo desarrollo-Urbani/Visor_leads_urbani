@@ -2,10 +2,15 @@ import type { Lead, User } from "@/types";
 
 const API_URL = "http://localhost:3000/api";
 
-export async function getLeads(userId?: string, role?: string): Promise<Lead[]> {
+export async function getLeads(userId?: string, role?: string, filters: any = {}): Promise<Lead[]> {
     const params = new URLSearchParams();
     if (userId) params.append('userId', userId);
     if (role) params.append('role', role);
+
+    if (filters.ejecutivo_id) params.append('ejecutivo_id', filters.ejecutivo_id);
+    if (filters.proyecto) params.append('proyecto', filters.proyecto);
+    if (filters.estado) params.append('estado', filters.estado);
+    if (filters.jefe_id) params.append('jefe_id', filters.jefe_id);
 
     const response = await fetch(`${API_URL}/leads?${params.toString()}`);
     if (!response.ok) {
@@ -110,5 +115,114 @@ export async function getLeadHistory(leadId: string): Promise<any[]> {
     } catch (e) {
         console.error(e);
         return [];
+    }
+}
+export async function getContactEvents(): Promise<any[]> {
+    try {
+        const response = await fetch(`${API_URL}/contact-events`);
+        if (!response.ok) throw new Error("Failed to fetch contact events");
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+        return [];
+    }
+}
+
+export async function downloadCsv(eventId: string, fileName: string) {
+    try {
+        const response = await fetch(`${API_URL}/download-csv/${eventId}`);
+        if (!response.ok) throw new Error("Download failed");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+    } catch (e) {
+        console.error(e);
+        alert("Error al descargar el archivo");
+    }
+}
+export async function deleteContactEvent(eventId: string): Promise<boolean> {
+    try {
+        const response = await fetch(`${API_URL}/contact-events/${eventId}`, {
+            method: 'DELETE'
+        });
+        return response.ok;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+}
+
+export async function getAdminUsers(userId?: string, role?: string): Promise<User[]> {
+    try {
+        const queryParams = new URLSearchParams();
+        if (userId) queryParams.append('userId', userId);
+        if (role) queryParams.append('role', role);
+
+        const response = await fetch(`${API_URL}/admin/users?${queryParams.toString()}`);
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+        return [];
+    }
+}
+
+export async function createAdminUser(userData: any): Promise<any> {
+    try {
+        const response = await fetch(`${API_URL}/admin/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+        return { error: 'Error de red' };
+    }
+}
+
+export async function updateAdminUser(userId: string, userData: any): Promise<any> {
+    try {
+        const response = await fetch(`${API_URL}/admin/users/${userId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+        return await response.json();
+    } catch (e) {
+        console.error(e);
+        return { error: 'Error de red' };
+    }
+}
+
+export async function resetAdminUserPassword(userId: string, newPassword: string): Promise<boolean> {
+    try {
+        const response = await fetch(`${API_URL}/admin/users/${userId}/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newPassword })
+        });
+        return response.ok;
+    } catch (e) {
+        console.error(e);
+        return false;
+    }
+}
+
+export async function purgeLeads(): Promise<boolean> {
+    try {
+        const response = await fetch(`${API_URL}/leads/purge`, {
+            method: 'DELETE'
+        });
+        return response.ok;
+    } catch (e) {
+        console.error(e);
+        return false;
     }
 }

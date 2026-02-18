@@ -1,7 +1,0 @@
-﻿Nombre,Tipo de Dato,Descripción
-ID_ENCUESTA_RESPUESTA,Integer,Identificador único del evento de la respuesta
-ID_ENCUESTA_EVENTO,Integer,Indica cual es el evento de encuesta asociado
-PREGUNTA,Varchar,pregunta
-PREGUNTA_REQUERIDA,Boolean,Indica si es obligatoria la pregunta
-FECHA_RESPUESTA,Date Time,Fecha de respuesta de la pregunta
-VALOR_RESPUESTA,Text,Valor de la respuesta

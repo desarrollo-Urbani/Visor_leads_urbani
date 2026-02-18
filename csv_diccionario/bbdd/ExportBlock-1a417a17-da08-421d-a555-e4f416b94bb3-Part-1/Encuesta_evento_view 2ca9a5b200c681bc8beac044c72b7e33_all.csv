@@ -1,9 +1,0 @@
-﻿Nombre,Descripción,Tipo de Dato
-ID_CLIENTE,Indica el cliente asociado,Integer
-ID_EVENTO,Indica el evento asociado,Integer
-ID_ENCUESTA_EVENTO,Identificador único del evento de encuesta,Integer
-TIPO_EVENTO,Tipo de evento del sistema que dispara dicha encuesta,Varchar
-ID_PROYECTO,Indica el proyecto asociado,Integer
-ID_COTIZACION,Indica la cotización asociada,Integer
-ID_ENCUESTA,Indica cual es la encuesta asociada a dicho evento de encuesta,Varchar
-FECHA_CREACION,Fecha de creación del evento de encuesta,Date Time
