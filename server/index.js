@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const multer = require('multer');
+const csv = require('csv-parser');
+const fs = require('fs');
 const db = require('./db');
 
 const app = express();
@@ -213,10 +216,6 @@ app.get('/api/leads/:id/history', async (req, res) => {
     }
 });
 
-const multer = require('multer');
-const csv = require('csv-parser');
-const fs = require('fs');
-const path = require('path');
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
