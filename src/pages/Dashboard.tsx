@@ -54,12 +54,12 @@ export default function Dashboard() {
     const [isReassigning, setIsReassigning] = useState(false);
 
     // Campaigns View State
-    const [showCampaigns] = useState(false);
+    const [showCampaigns, setShowCampaigns] = useState(false);
     const [campaignsData, setCampaignsData] = useState<any[]>([]);
     const [loadingCampaigns, setLoadingCampaigns] = useState(false);
 
     // User Management State
-    const [showUsersAdmin] = useState(false);
+    const [showUsersAdmin, setShowUsersAdmin] = useState(false);
     const [adminUsersList, setAdminUsersList] = useState<User[]>([]);
     const [loadingAdminUsers, setLoadingAdminUsers] = useState(false);
     const [showUserModal, setShowUserModal] = useState(false);
@@ -338,6 +338,13 @@ export default function Dashboard() {
         }
     };
 
+    const goBack = () => {
+        setShowUpload(false);
+        setShowAudit(false);
+        setShowCampaigns(false);
+        setShowUsersAdmin(false);
+    };
+
 
 
 
@@ -392,8 +399,8 @@ export default function Dashboard() {
         <div className="flex min-h-screen bg-[#0d0d0f] text-white font-sans selection:bg-primary/30">
             {/* Sidebar Lateral */}
             <aside className="w-72 bg-[#09090b] border-r border-white/5 flex flex-col fixed inset-y-0 z-40 p-8">
-                <div className="flex items-center gap-3 mb-12">
-                    <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
+                <div className="flex items-center gap-3 mb-12 cursor-pointer group" onClick={goBack}>
+                    <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30 group-hover:bg-primary/30 transition-all">
                         <LayoutList className="h-6 w-6 text-primary" />
                     </div>
                     <div>
@@ -403,16 +410,39 @@ export default function Dashboard() {
                 </div>
 
                 <nav className="flex-1 space-y-2">
-                    <Button variant="ghost" className="w-full justify-start h-12 rounded-2xl bg-primary/10 text-primary border border-primary/10 hover:bg-primary/20 font-black">
+                    <Button
+                        variant="ghost"
+                        onClick={goBack}
+                        className={`w-full justify-start h-12 rounded-2xl font-black ${(!showAudit && !showCampaigns && !showUsersAdmin) ? 'bg-primary/10 text-primary border border-primary/10 hover:bg-primary/20' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                    >
                         <LayoutList className="mr-3 h-5 w-5" /> Dashboard
                     </Button>
                     <Button
                         variant="ghost"
-                        onClick={() => setShowAudit(true)}
-                        className="w-full justify-start h-12 rounded-2xl text-gray-500 hover:text-white hover:bg-white/5 font-bold"
+                        onClick={() => { goBack(); setShowAudit(true); }}
+                        className={`w-full justify-start h-12 rounded-2xl font-bold ${showAudit ? 'bg-primary/10 text-primary border border-primary/10' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                     >
                         <History className="mr-3 h-5 w-5" /> Gestionar
                     </Button>
+
+                    {isAdmin && (
+                        <>
+                            <Button
+                                variant="ghost"
+                                onClick={() => { goBack(); setShowCampaigns(true); loadCampaigns(); }}
+                                className={`w-full justify-start h-12 rounded-2xl font-bold ${showCampaigns ? 'bg-primary/10 text-primary border border-primary/10' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                            >
+                                <BarChart2 className="mr-3 h-5 w-5" /> Historial Cargas
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => { goBack(); setShowUsersAdmin(true); loadAdminUsers(); }}
+                                className={`w-full justify-start h-12 rounded-2xl font-bold ${showUsersAdmin ? 'bg-primary/10 text-primary border border-primary/10' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                            >
+                                <UserIcon className="mr-3 h-5 w-5" /> Usuarios
+                            </Button>
+                        </>
+                    )}
                 </nav>
 
                 <div className="pt-8 border-t border-white/5 space-y-4">
@@ -1469,6 +1499,19 @@ export default function Dashboard() {
                                         <option value="admin" className="bg-[#121212]">Administrador</option>
                                     </select>
                                 </div>
+                                {!editingUser && (
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Contraseña Inicial</label>
+                                        <Input
+                                            className="bg-white/5 border-white/10 h-12 rounded-xl text-white focus:ring-primary focus:border-primary"
+                                            placeholder="••••••••"
+                                            type="password"
+                                            value={userForm.password}
+                                            onChange={e => setUserForm({ ...userForm, password: e.target.value })}
+                                        />
+                                        <p className="text-[10px] text-gray-600 italic ml-1">El usuario podrá cambiarla después.</p>
+                                    </div>
+                                )}
                             </CardContent>
                             <div className="p-8 pt-0 flex gap-4">
                                 <Button variant="ghost" onClick={() => setShowUserModal(false)} className="flex-1 h-12 text-gray-400 hover:text-white rounded-xl">
