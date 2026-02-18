@@ -54,12 +54,12 @@ export default function Dashboard() {
     const [isReassigning, setIsReassigning] = useState(false);
 
     // Campaigns View State
-    const [showCampaigns, setShowCampaigns] = useState(false);
+    const [showCampaigns] = useState(false);
     const [campaignsData, setCampaignsData] = useState<any[]>([]);
     const [loadingCampaigns, setLoadingCampaigns] = useState(false);
 
     // User Management State
-    const [showUsersAdmin, setShowUsersAdmin] = useState(false);
+    const [showUsersAdmin] = useState(false);
     const [adminUsersList, setAdminUsersList] = useState<User[]>([]);
     const [loadingAdminUsers, setLoadingAdminUsers] = useState(false);
     const [showUserModal, setShowUserModal] = useState(false);
