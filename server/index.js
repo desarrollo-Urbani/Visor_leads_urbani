@@ -8,6 +8,10 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from the React app
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../dist')));
+
 // Login Endpoint
 app.post('/api/login', async (req, res) => {
     const { email, password } = req.body;
@@ -572,4 +576,9 @@ app.post('/api/admin/users/:id/reset-password', async (req, res) => {
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
+});
+
+// SPA Fallback: redirigir todas las demás rutas al index.html del frontend
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
