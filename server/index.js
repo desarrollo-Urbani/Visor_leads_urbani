@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const db = require('./db');
 
 const app = express();
@@ -9,7 +10,6 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files from the React app
-const path = require('path');
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // Login Endpoint
