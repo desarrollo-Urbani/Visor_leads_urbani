@@ -1,4 +1,12 @@
-export type LeadStatus = "No Gestionado" | "En Proceso" | "Contactado" | "Interesado" | "Cerrado" | "Rechazado" | "Visita" | "No Efectivo" | "Por Contactar";
+// Statuses synchronized between UI modal options and this type definition
+export type LeadStatus =
+    | "No Gestionado"
+    | "Por Contactar"
+    | "En Proceso"
+    | "Visita"
+    | "Contactado"
+    | "No Efectivo"
+    | "Venta Cerrada";
 
 export interface ContactEvent {
     id: string;
@@ -10,35 +18,38 @@ export interface ContactEvent {
 export interface LeadStatusHistory {
     id: string;
     lead_id: string;
-    old_status: string;
-    new_status: string;
-    changed_by: string;
-    changed_at: string;
-    notes?: string;
+    estado_anterior: string;
+    estado_nuevo: string;
+    usuario_id: string;
+    changed_by_name?: string;
+    created_at: string;
+    comentario?: string;
 }
 
 export interface Lead {
-    id: string; // UUID in Supabase
+    id: string;
     nombre: string;
     apellido?: string;
     email: string;
-    renta: string; // kept as string initially, can be parsed
-    fecha_registro: string; // ISO date string
-    cantidad_negocios: number;
+    renta: string;
+    fecha_registro?: string;
+    cantidad_negocios?: number;
     proyecto: string;
     telefono?: string;
     estado_gestion: LeadStatus;
-    ultima_gestion?: string; // ISO date string
-    fecha_proximo_contacto?: string; // ISO date string
+    ultima_gestion?: string;
+    fecha_proximo_contacto?: string;
     notas?: string;
-    asignado_a?: string; // UUID of executive
-    nombre_ejecutivo?: string; // Name of assigned executive
-    contact_event_id?: string; // Linked to mass upload event
+    notas_ejecutivo?: string;
+    asignado_a?: string;
+    nombre_ejecutivo?: string;
+    contact_event_id?: string;
     antiguedad_laboral?: string;
     es_caliente?: boolean;
     es_ia?: boolean;
     rut?: string;
     observacion?: string;
+    created_at?: string;
 }
 
 export interface User {
@@ -50,4 +61,5 @@ export interface User {
     created_at?: string;
     jefe_id?: string;
     company_id?: string;
+    must_reset_password?: boolean;
 }

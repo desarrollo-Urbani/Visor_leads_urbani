@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { getLeads, getUsers, uploadLeads, getDashboardSummary, updateLeadStatus, getLeadHistory, assignLead, getContactEvents, downloadCsv, deleteContactEvent, getAdminUsers, createAdminUser, updateAdminUser, resetAdminUserPassword, purgeLeads } from "@/lib/api";
+import { getUsers, uploadLeads, getDashboardSummary, updateLeadStatus, getLeadHistory, assignLead, getContactEvents, downloadCsv, deleteContactEvent, getAdminUsers, createAdminUser, updateAdminUser, resetAdminUserPassword, purgeLeads, logout } from "@/lib/api";
 import type { Lead, User } from "@/types";
-import { Phone, MessageCircle, Mail, User as UserIcon, LayoutList, Upload, CheckSquare, Square, Search, History, Calendar, ChevronRight, Download, BarChart2, Trash2, UserPlus, Key, UserCheck, UserX, X } from "lucide-react";
+import { Phone, MessageCircle, Mail, User as UserIcon, LayoutList, Upload, CheckSquare, Square, Search, History, Calendar, ChevronRight, Download, BarChart2, Trash2, UserPlus, X, RefreshCw, Edit, Power } from "lucide-react";
 import MetricsDashboard from "@/components/MetricsDashboard";
 import { Input } from "@/components/ui/input";
+import { InlineStatusDropdown } from "@/components/InlineStatusDropdown";
+import DayAlertsPanel from "@/components/DayAlertsPanel";
+import MiniKPIs from "@/components/MiniKPIs";
+import BulkActionsBar from "@/components/BulkActionsBar";
 
 export default function Dashboard() {
     const [leads, setLeads] = useState<Lead[]>([]);
@@ -43,11 +47,19 @@ export default function Dashboard() {
     const [filterProyecto, setFilterProyecto] = useState("");
     const [filterEstado, setFilterEstado] = useState("");
     const [filterJefe, setFilterJefe] = useState("");
+    const [filterFechaDesde, setFilterFechaDesde] = useState("");
+    const [filterFechaHasta, setFilterFechaHasta] = useState("");
 
-    // Main Lead Filters
-    const [filterProyectoLead, setFilterProyectoLead] = useState("");
-    const [filterStatusLead, setFilterStatusLead] = useState("");
-    const [filterQualityLead, setFilterQualityLead] = useState("");
+    // Main Lead Filters  (initialized from localStorage for persistence)
+    const [filterProyectoLead, setFilterProyectoLead] = useState<string>(() => {
+        try { return JSON.parse(localStorage.getItem('visor_filters') || '{}').proyecto ?? ''; } catch { return ''; }
+    });
+    const [filterStatusLead, setFilterStatusLead] = useState<string>(() => {
+        try { return JSON.parse(localStorage.getItem('visor_filters') || '{}').status ?? ''; } catch { return ''; }
+    });
+    const [filterQualityLead, setFilterQualityLead] = useState<string>(() => {
+        try { return JSON.parse(localStorage.getItem('visor_filters') || '{}').quality ?? ''; } catch { return ''; }
+    });
 
     // Reassignment State
     const [reassignLeadId, setReassignLeadId] = useState<string | null>(null);
@@ -65,6 +77,19 @@ export default function Dashboard() {
     const [showUserModal, setShowUserModal] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [userForm, setUserForm] = useState({ nombre: '', email: '', role: 'ejecutivo', password: '', jefe_id: '', company_id: 'Urbani' });
+    const [bulkUserFile, setBulkUserFile] = useState<File | null>(null);
+    const [uploadingUsers, setUploadingUsers] = useState(false);
+
+    // === NEW UX: Bulk selection ===
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const toggleSelect = useCallback((id: string) => {
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) next.delete(id); else next.add(id);
+            return next;
+        });
+    }, []);
+
 
     const loadSummary = async () => {
         setLoadingSummary(true);
@@ -94,7 +119,7 @@ export default function Dashboard() {
     const loadAdminUsers = async () => {
         setLoadingAdminUsers(true);
         try {
-            const data = await getAdminUsers(currentUser?.id, currentUser?.role);
+            const data = await getAdminUsers();
             setAdminUsersList(data);
         } catch (err) {
             console.error("Error loading admin users:", err);
@@ -104,8 +129,8 @@ export default function Dashboard() {
     };
 
     const handleToggleUserStatus = async (user: User) => {
-        const success = await updateAdminUser(user.id, { activo: !user.activo });
-        if (success) loadAdminUsers();
+        const res = await updateAdminUser(user.id, { activo: !user.activo });
+        if (res && !('error' in res)) loadAdminUsers();
         else alert("Error al cambiar estado de usuario");
     };
 
@@ -120,13 +145,13 @@ export default function Dashboard() {
             res = await createAdminUser(userForm);
         }
 
-        if (res && !res.error) {
+        if (res && !('error' in res)) {
             setShowUserModal(false);
             setEditingUser(null);
             setUserForm({ nombre: '', email: '', role: 'ejecutivo', password: '', jefe_id: '', company_id: 'Urbani' });
             loadAdminUsers();
         } else {
-            alert("Error: " + (res?.error || "Operación fallida"));
+            alert("Error: " + ('error' in res ? res.error : "Operación fallida"));
         }
     };
 
@@ -139,12 +164,39 @@ export default function Dashboard() {
         }
     };
 
+    const handleBulkUserUpload = async () => {
+        if (!bulkUserFile) return alert("Selecciona un archivo CSV de usuarios");
+        setUploadingUsers(true);
+        const formData = new FormData();
+        formData.append('file', bulkUserFile);
+        try {
+            const response = await fetch('/api/admin/users/bulk-upload', {
+                method: 'POST',
+                body: formData
+            });
+            const res = await response.json();
+            if (res.success) {
+                alert(`¡Éxito! Se han importado ${res.count} usuarios.`);
+                setBulkUserFile(null);
+                loadAdminUsers();
+            } else {
+                alert("Error: " + res.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error de conexión");
+        } finally {
+            setUploadingUsers(false);
+        }
+    };
+
 
     useEffect(() => {
-        if (currentUser?.role === 'admin') { // Check currentUser here as isAdmin might not be defined yet
+        if (currentUser?.role === 'admin') {
             loadSummary();
+            loadAdminUsers(); // Ensure admin users list is also loaded
         }
-    }, [currentUser]); // Depend on currentUser to ensure it's set
+    }, [currentUser]);
 
     const refreshData = (user: User | null) => {
         setLoading(true);
@@ -155,15 +207,26 @@ export default function Dashboard() {
             ejecutivo_id: filterEjecutivo,
             proyecto: filterProyecto,
             estado: filterEstado,
-            jefe_id: filterJefe
+            jefe_id: filterJefe,
+            fecha_desde: filterFechaDesde,
+            fecha_hasta: filterFechaHasta
         };
 
+        const params = new URLSearchParams();
+        if (userId) params.append('userId', userId);
+        if (role) params.append('role', role);
+        Object.entries(filters).forEach(([k, v]) => { if (v) params.append(k, v); });
+
         Promise.all([
-            getLeads(userId, role, filters),
+            fetch(`/api/leads?${params.toString()}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('visor_token') || ''}` }
+            }).then(r => r.json()),
             getUsers()
         ])
-            .then(([leadsData, usersData]) => {
-                const normalizedLeads = (Array.isArray(leadsData) ? leadsData : []).map(l => ({
+            .then(([leadsResponse, usersData]) => {
+                // Handle both paginated {data, total} and legacy array response
+                const rawLeads = Array.isArray(leadsResponse) ? leadsResponse : (leadsResponse?.data || []);
+                const normalizedLeads = rawLeads.map((l: any) => ({
                     ...l,
                     estado_gestion: l.estado_gestion || 'No Gestionado'
                 }));
@@ -196,11 +259,36 @@ export default function Dashboard() {
         }
     }, []);
 
+    // Persist lead filters whenever they change
+    useEffect(() => {
+        localStorage.setItem('visor_filters', JSON.stringify({
+            proyecto: filterProyectoLead,
+            status: filterStatusLead,
+            quality: filterQualityLead,
+        }));
+    }, [filterProyectoLead, filterStatusLead, filterQualityLead]);
+
+    // Keyboard shortcuts
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setSelectedLead(null);
+                setHistoryLead(null);
+                setReassignLeadId(null);
+                setShowUpload(false);
+                setShowUserModal(false);
+                setSelectedIds(new Set());
+            }
+        };
+        document.addEventListener('keydown', handler);
+        return () => document.removeEventListener('keydown', handler);
+    }, []);
+
     /* handleAssign removed */
 
     const handleUpload = async () => {
         if (!uploadFile) return alert("Selecciona un archivo CSV");
-        const total = Object.values(allocations).reduce((a: number, b: number) => a + b, 0);
+        const total = Object.values(allocations).reduce((a: number, b: number) => a + b, 0) as number;
         if (total !== 100) return alert(`La suma de porcentajes debe ser exactamente 100% (Actual: ${total}%)`);
 
         setUploading(true);
@@ -220,11 +308,8 @@ export default function Dashboard() {
             setUploadProgress(100);
 
             if (res.success) {
-                // Extract count from message like "Imported 3299 leads successfully"
-                const countMatch = res.message.match(/\d+/);
-                const count = countMatch ? parseInt(countMatch[0]) : 0;
-
-                setUploadSuccess({ count, eventId: res.eventId });
+                const count = res.count || 0;
+                setUploadSuccess({ count, eventId: res.eventId || '' });
                 setUploadFile(null);
                 setAllocations({});
                 refreshData(currentUser);
@@ -288,7 +373,7 @@ export default function Dashboard() {
     };
 
     const selectedExecs = Object.keys(allocations);
-    const totalAllocated = Object.values(allocations).reduce((a: number, b: number) => a + b, 0);
+    const totalAllocated = Object.values(allocations).reduce((a: number, b: number) => a + b, 0) as number;
 
     const isAdmin = currentUser?.role === 'admin';
 
@@ -333,7 +418,7 @@ export default function Dashboard() {
     const handleLogout = () => {
         const confirmLogout = window.confirm("¿Estás seguro de que deseas salir del sistema? Tendrás que volver a iniciar sesión para ingresar.");
         if (confirmLogout) {
-            localStorage.removeItem('visor_user');
+            logout(); // Clears both visor_token and visor_user from localStorage
             window.location.href = '/login';
         }
     };
@@ -432,14 +517,14 @@ export default function Dashboard() {
                                 onClick={() => { goBack(); setShowCampaigns(true); loadCampaigns(); }}
                                 className={`w-full justify-start h-12 rounded-2xl font-bold ${showCampaigns ? 'bg-primary/10 text-primary border border-primary/10' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                             >
-                                <BarChart2 className="mr-3 h-5 w-5" /> Historial Cargas
+                                <BarChart2 className="mr-3 h-5 w-5" /> Campañas/Cargas
                             </Button>
                             <Button
                                 variant="ghost"
                                 onClick={() => { goBack(); setShowUsersAdmin(true); loadAdminUsers(); }}
                                 className={`w-full justify-start h-12 rounded-2xl font-bold ${showUsersAdmin ? 'bg-primary/10 text-primary border border-primary/10' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                             >
-                                <UserIcon className="mr-3 h-5 w-5" /> Usuarios
+                                <UserIcon className="mr-3 h-5 w-5" /> Configuración Usuarios
                             </Button>
                         </>
                     )}
@@ -605,7 +690,7 @@ export default function Dashboard() {
                                             onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
                                         />
                                         <Upload className="h-8 w-8 text-primary/40 mb-2 group-hover:text-primary transition-colors pointer-events-none relative z-10" />
-                                        <span className="text-sm font-medium text-gray-400 group-hover:text-gray-200 transition-colors pointer-events-none relative z-10">
+                                        <span className="text-[11px] font-bold text-gray-400 group-hover:text-primary transition-colors pointer-events-none relative z-10 truncate w-[240px] px-2 text-center overflow-hidden text-ellipsis">
                                             {uploadFile ? uploadFile.name : "Soltar CSV aquí o hacer clic"}
                                         </span>
                                     </div>
@@ -640,8 +725,8 @@ export default function Dashboard() {
                                             }
                                         </div>
                                     )}
-                                    <div className="space-y-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                                        {users.filter(u => u.role !== 'admin').map(u => {
+                                    <div className="space-y-2 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                                        {adminUsersList.filter(u => u.role !== 'admin' && u.activo).map(u => {
                                             const isSelected = allocations[u.id] !== undefined;
                                             return (
                                                 <div key={u.id} className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${isSelected ? 'bg-primary/5 border-primary/30 shadow-[0_4px_12px_rgba(0,0,0,0.1)]' : 'bg-black/20 border-white/5 opacity-60'}`}>
@@ -772,7 +857,7 @@ export default function Dashboard() {
                                                         <div className="flex items-center gap-3 text-[11px] text-gray-500 font-bold uppercase tracking-tighter">
                                                             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {new Date(campaign.created_at).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                                                             <span className="w-1 h-1 rounded-full bg-gray-700" />
-                                                            <span className="text-gray-400">ID: {campaign.id.substring(0, 8)}...</span>
+                                                            <span className="text-gray-400">ID: {String(campaign.id)}</span>
                                                         </div>
                                                     </div>
 
@@ -801,7 +886,7 @@ export default function Dashboard() {
                                                     <div className="flex gap-2 w-full lg:w-auto">
                                                         <Button
                                                             variant="ghost"
-                                                            onClick={() => downloadCsv(campaign.id, `Carga_${campaign.id.substring(0, 8)}.csv`)}
+                                                            onClick={() => downloadCsv(String(campaign.id), `Carga_${String(campaign.id)}.csv`)}
                                                             disabled={!campaign.has_file}
                                                             className="flex-1 lg:flex-none h-11 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold border border-white/10 group/btn"
                                                         >
@@ -810,7 +895,7 @@ export default function Dashboard() {
                                                         </Button>
                                                         <Button
                                                             variant="ghost"
-                                                            onClick={() => handleDeleteCampaign(campaign.id)}
+                                                            onClick={() => handleDeleteCampaign(String(campaign.id))}
                                                             className="flex-none h-11 w-11 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl border border-red-500/20 transition-all"
                                                             title="Eliminar Carga"
                                                         >
@@ -824,121 +909,105 @@ export default function Dashboard() {
                                 </CardContent>
                             </Card>
                         ) : showUsersAdmin ? (
-                            <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                <CardHeader className="bg-white/[0.02] py-6 px-8 border-b border-white/5">
-                                    <div className="flex justify-between items-center">
-                                        <div>
-                                            <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 font-black">
-                                                Gestión de Usuarios del Sistema
-                                            </CardTitle>
-                                            <CardDescription className="text-gray-500 font-medium">Administra personal, roles y permisos de acceso.</CardDescription>
+                            <div className="space-y-8 relative z-10">
+                                <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <CardHeader className="bg-white/[0.02] py-6 px-8 border-b border-white/5">
+                                        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                                            <div>
+                                                <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                                                    Gestión de Accesos y Usuarios
+                                                </CardTitle>
+                                                <CardDescription className="text-gray-500">Control de permisos jerárquicos y carga masiva.</CardDescription>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex bg-black/20 p-1.5 rounded-xl border border-white/5">
+                                                    <Input
+                                                        type="file"
+                                                        accept=".csv"
+                                                        onChange={(e) => setBulkUserFile(e.target.files?.[0] || null)}
+                                                        className="w-48 bg-transparent border-none text-[10px] h-8"
+                                                    />
+                                                    <Button
+                                                        onClick={handleBulkUserUpload}
+                                                        disabled={uploadingUsers || !bulkUserFile}
+                                                        className="h-8 px-4 bg-primary/20 text-primary hover:bg-primary/30 border border-primary/20 text-[10px] font-black uppercase rounded-lg"
+                                                    >
+                                                        {uploadingUsers ? "Sincronizando..." : "Carga Masiva de Usuarios"}
+                                                    </Button>
+                                                </div>
+                                                <Button
+                                                    onClick={() => { setEditingUser(null); setUserForm({ nombre: '', email: '', role: 'ejecutivo', password: '', jefe_id: '', company_id: 'Urbani' }); setShowUserModal(true); }}
+                                                    className="bg-primary hover:bg-[#a3e635] text-black font-black h-11 px-6 rounded-xl shadow-[0_0_20px_rgba(132,204,22,0.2)]"
+                                                >
+                                                    <UserPlus className="mr-2 h-4 w-4" /> Nuevo Usuario
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <Button
-                                            onClick={() => {
-                                                setEditingUser(null);
-                                                setUserForm({ nombre: '', email: '', role: 'ejecutivo', password: '', jefe_id: '', company_id: 'Urbani' });
-                                                setShowUserModal(true);
-                                            }}
-                                            className="bg-primary hover:bg-[#a3e635] text-black font-bold rounded-xl h-11 px-6 shadow-[0_0_20px_rgba(132,204,22,0.2)]"
-                                        >
-                                            <UserPlus className="mr-2 h-4 w-4" /> Nuevo Usuario
-                                        </Button>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="p-0">
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-sm text-left">
-                                            <thead className="bg-white/[0.03] text-gray-500 uppercase text-[10px] font-bold tracking-widest border-b border-white/5">
-                                                <tr>
-                                                    <th className="px-8 py-5">Nombre y Contacto</th>
-                                                    <th className="px-8 py-5 text-center">Rol</th>
-                                                    <th className="px-8 py-5 text-center">Estado</th>
-                                                    <th className="px-8 py-5 text-center">Creado en</th>
-                                                    <th className="px-8 py-5 text-right">Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-white/5">
-                                                {loadingAdminUsers ? (
-                                                    <tr><td colSpan={5} className="p-20 text-center text-gray-500 italic">Cargando usuarios...</td></tr>
-                                                ) : adminUsersList.map((user) => (
-                                                    <tr key={user.id} className="hover:bg-white/[0.02] transition-colors group">
-                                                        <td className="px-8 py-5">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20">
-                                                                    <UserIcon className="h-5 w-5 text-primary" />
-                                                                </div>
-                                                                <div>
-                                                                    <div className="font-bold text-white group-hover:text-primary transition-colors">{user.nombre}</div>
-                                                                    <div className="text-xs text-gray-500">{user.email}</div>
-                                                                </div>
-                                                            </div>
-                                                        </td>
-                                                        <td className="px-8 py-5 text-center">
-                                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' :
-                                                                user.role === 'jefe' ? 'bg-orange-500/10 text-orange-400 border border-orange-500/20' :
-                                                                    'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                                                                }`}>
-                                                                {user.role}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-8 py-5 text-center">
-                                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${user.activo ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
-                                                                <div className={`h-1.5 w-1.5 rounded-full ${user.activo ? 'bg-green-400' : 'bg-red-400'}`} />
-                                                                {user.activo ? 'ACTIVO' : 'INACTIVO'}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-8 py-5 text-center text-gray-500 font-medium">
-                                                            {user.created_at ? new Date(user.created_at).toLocaleDateString('es-CL') : 'N/A'}
-                                                        </td>
-                                                        <td className="px-8 py-5 text-right">
-                                                            <div className="flex justify-end gap-2">
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() => {
-                                                                        setEditingUser(user);
-                                                                        setUserForm({
-                                                                            nombre: user.nombre,
-                                                                            email: user.email,
-                                                                            role: user.role,
-                                                                            password: '',
-                                                                            jefe_id: user.jefe_id || '',
-                                                                            company_id: user.company_id || 'Urbani'
-                                                                        });
-                                                                        setShowUserModal(true);
-                                                                    }}
-                                                                    className="h-9 w-9 p-0 bg-white/5 hover:bg-white/10 text-white rounded-lg border border-white/10"
-                                                                    title="Editar Usuario"
-                                                                >
-                                                                    <ChevronRight className="h-4 w-4" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() => handleResetPassword(user.id)}
-                                                                    className="h-9 w-9 p-0 bg-white/5 hover:bg-white/10 text-primary rounded-lg border border-white/10"
-                                                                    title="Cambiar Password"
-                                                                >
-                                                                    <Key className="h-4 w-4" />
-                                                                </Button>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    onClick={() => handleToggleUserStatus(user)}
-                                                                    className={`h-9 w-9 p-0 rounded-lg border flex items-center justify-center transition-all ${user.activo ? 'bg-red-500/10 hover:bg-red-500/20 text-red-500 border-red-500/20' : 'bg-green-500/10 hover:bg-green-500/20 text-green-500 border-green-500/20'}`}
-                                                                    title={user.activo ? "Desactivar" : "Activar"}
-                                                                >
-                                                                    {user.activo ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
-                                                                </Button>
-                                                            </div>
-                                                        </td>
+                                    </CardHeader>
+                                    <CardContent className="p-0">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm text-left">
+                                                <thead className="bg-white/[0.03] text-gray-500 uppercase text-[9px] font-black tracking-widest border-b border-white/5">
+                                                    <tr>
+                                                        <th className="px-8 py-5">Nombre / Email</th>
+                                                        <th className="px-8 py-5">Rol / Nivel</th>
+                                                        <th className="px-8 py-5">Reporta A</th>
+                                                        <th className="px-8 py-5">Password Reset</th>
+                                                        <th className="px-8 py-5">Estado</th>
+                                                        <th className="px-8 py-5 text-right">Acciones</th>
                                                     </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                                </thead>
+                                                <tbody className="divide-y divide-white/5">
+                                                    {loadingAdminUsers ? (
+                                                        <tr><td colSpan={6} className="p-20 text-center text-gray-500 italic">Cargando usuarios...</td></tr>
+                                                    ) : adminUsersList.map(u => (
+                                                        <tr key={u.id} className="hover:bg-white/[0.01] transition-colors">
+                                                            <td className="px-8 py-4">
+                                                                <div className="font-bold text-white">{u.nombre}</div>
+                                                                <div className="text-[10px] text-gray-500 font-mono">{u.email}</div>
+                                                            </td>
+                                                            <td className="px-8 py-4">
+                                                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${u.role === 'admin' ? 'bg-primary/20 text-primary' : 'bg-gray-800 text-gray-400'}`}>
+                                                                    {u.role}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-8 py-4 text-xs text-gray-400 font-medium">
+                                                                {adminUsersList.find(boss => boss.id === u.jefe_id)?.nombre || "—"}
+                                                            </td>
+                                                            <td className="px-8 py-4 text-xs">
+                                                                {(u as any).must_reset_password ? (
+                                                                    <span className="text-orange-500 font-bold flex items-center gap-1">
+                                                                        <RefreshCw className="h-3 w-3" /> Pendiente
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-gray-600">Al día</span>
+                                                                )}
+                                                            </td>
+                                                            <td className="px-8 py-4">
+                                                                <div className={`flex items-center gap-1.5 ${u.activo ? 'text-green-500' : 'text-gray-600'}`}>
+                                                                    <div className={`w-1.5 h-1.5 rounded-full ${u.activo ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]' : 'bg-gray-600'}`} />
+                                                                    <span className="text-[10px] font-black uppercase">{u.activo ? 'Activo' : 'Baja'}</span>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-8 py-4 text-right space-x-2">
+                                                                <Button variant="ghost" size="sm" onClick={() => handleResetPassword(u.id)} className="h-8 w-8 p-0 hover:bg-orange-500/10 hover:text-orange-500">
+                                                                    <RefreshCw className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button variant="ghost" size="sm" onClick={() => { setEditingUser(u); setUserForm({ id: u.id, nombre: u.nombre, email: u.email, role: u.role, password: '', jefe_id: u.jefe_id || '', company_id: 'Urbani' } as any); setShowUserModal(true); }} className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary">
+                                                                    <Edit className="h-4 w-4" />
+                                                                </Button>
+                                                                <Button variant="ghost" size="sm" onClick={() => handleToggleUserStatus(u)} className={`h-8 w-8 p-0 ${u.activo ? 'hover:bg-red-500/10 hover:text-red-500' : 'hover:bg-green-500/10 hover:text-green-500'}`}>
+                                                                    <Power className="h-4 w-4" />
+                                                                </Button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
                         ) : !showAudit ? (
                             <>
                                 <MetricsDashboard leads={leads} />
@@ -1035,13 +1104,13 @@ export default function Dashboard() {
                                                     onChange={(e) => { setFilterJefe(e.target.value); refreshData(currentUser); }}
                                                 >
                                                     <option value="">Todos los Jefes</option>
-                                                    {users.filter(u => u.role === 'jefe').map(u => (
-                                                        <option key={u.id} value={u.id}>{u.nombre}</option>
+                                                    {users.filter(u => u.role === 'gerente' || u.role === 'subgerente').map(u => (
+                                                        <option key={u.id} value={u.id}>{u.nombre} ({u.role})</option>
                                                     ))}
                                                 </select>
                                             </div>
                                         )}
-                                        {(currentUser?.role === 'admin' || currentUser?.role === 'jefe') && (
+                                        {(currentUser?.role === 'admin' || currentUser?.role === 'gerente' || currentUser?.role === 'subgerente') && (
                                             <div className="space-y-1">
                                                 <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Filtrar por Ejecutivo</label>
                                                 <select
@@ -1056,6 +1125,24 @@ export default function Dashboard() {
                                                 </select>
                                             </div>
                                         )}
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Desde Fecha</label>
+                                            <input
+                                                type="date"
+                                                className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
+                                                value={filterFechaDesde}
+                                                onChange={(e) => { setFilterFechaDesde(e.target.value); refreshData(currentUser); }}
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Hasta Fecha</label>
+                                            <input
+                                                type="date"
+                                                className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
+                                                value={filterFechaHasta}
+                                                onChange={(e) => { setFilterFechaHasta(e.target.value); refreshData(currentUser); }}
+                                            />
+                                        </div>
                                         <div className="space-y-1">
                                             <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Proyecto</label>
                                             <select
@@ -1163,6 +1250,12 @@ export default function Dashboard() {
                                 </div>
                             </div>
 
+                            {/* Mini KPIs personales */}
+                            <MiniKPIs leads={leads} userName={currentUser?.nombre} />
+
+                            {/* Agenda del día */}
+                            <DayAlertsPanel leads={leads} onOpenLead={(lead) => openManagement(lead)} />
+
                             {/* Dedicated Filter Bar */}
                             <div className="flex flex-wrap items-center gap-6 p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] backdrop-blur-sm">
                                 <div className="space-y-2">
@@ -1255,8 +1348,14 @@ export default function Dashboard() {
                                     return matchesSearch && matchesProyecto && matchesStatus && matchesQuality;
                                 })
                                 .map((lead) => {
-                                    const initials = (lead.nombre || 'U').split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+                                    const initials = (lead.nombre || 'U').split(' ').map((n: string) => n[0]).join('').toUpperCase().substring(0, 2);
                                     const matchScore = lead.es_caliente ? Math.floor(Math.random() * 10 + 85) : Math.floor(Math.random() * 30 + 40);
+
+                                    // Priority classification
+                                    const now = new Date();
+                                    const isOverdue = lead.estado_gestion === 'Por Contactar' && lead.fecha_proximo_contacto && new Date(lead.fecha_proximo_contacto) < now;
+                                    const isNew = lead.created_at && (Date.now() - new Date(lead.created_at).getTime()) < 24 * 60 * 60 * 1000;
+                                    const isSelected = selectedIds.has(lead.id);
 
                                     const formatCurrency = (val: string | undefined) => {
                                         if (!val) return null;
@@ -1265,9 +1364,30 @@ export default function Dashboard() {
                                         return isNaN(n) ? null : new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
                                     };
 
+                                    const phoneNum = (lead.telefono || '').replace(/\D/g, '');
+                                    const waNum = phoneNum.startsWith('56') ? phoneNum : `56${phoneNum}`;
+
                                     return (
-                                        <Card key={lead.id} className="group transition-all duration-500 bg-[#1a1d23]/80 backdrop-blur-md border-white/5 hover:border-primary/40 hover:-translate-y-3 shadow-2xl rounded-[2.5rem] overflow-hidden">
-                                            <CardHeader className="p-8 pb-4">
+                                        <Card key={lead.id} className={`group transition-all duration-500 bg-[#1a1d23]/80 backdrop-blur-md border-white/5 hover:border-primary/40 hover:-translate-y-2 shadow-2xl rounded-[2.5rem] overflow-hidden relative ${isSelected ? 'ring-2 ring-primary border-primary/50' : ''} ${isOverdue ? 'ring-1 ring-red-500/30' : ''}`}>
+
+                                            {/* Bulk select checkbox */}
+                                            <button
+                                                onClick={(e) => { e.stopPropagation(); toggleSelect(lead.id); }}
+                                                className={`absolute top-4 left-4 z-10 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary text-black' : 'border-white/20 bg-black/40 text-transparent hover:border-primary/60'}`}
+                                                title="Seleccionar para acción masiva"
+                                            >
+                                                <CheckSquare className="h-3 w-3" />
+                                            </button>
+
+                                            {/* Priority badges */}
+                                            {(isOverdue || isNew) && (
+                                                <div className="absolute top-4 right-4 z-10 flex gap-1">
+                                                    {isOverdue && <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full text-[8px] font-black uppercase animate-pulse">⏰ Vencido</span>}
+                                                    {isNew && <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[8px] font-black uppercase">🆕 Nuevo</span>}
+                                                </div>
+                                            )}
+
+                                            <CardHeader className="p-8 pb-4 pt-10">
                                                 <div className="flex justify-between items-start mb-6">
                                                     <div className="flex items-center gap-4">
                                                         <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center border border-white/10 shadow-inner group-hover:scale-110 transition-transform duration-500">
@@ -1306,34 +1426,62 @@ export default function Dashboard() {
                                                 </div>
                                             </CardHeader>
                                             <CardContent className="p-8 pt-2">
-                                                <div className="p-5 bg-black/30 rounded-3xl border border-white/5 mb-8 group-hover:bg-black/50 transition-colors">
+                                                <div className="p-5 bg-black/30 rounded-3xl border border-white/5 mb-6 group-hover:bg-black/50 transition-colors">
                                                     <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block mb-2">Última Observación</span>
                                                     <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic font-medium">
                                                         {lead.observacion || "Sin actividad reciente registrada..."}
                                                     </p>
                                                 </div>
-                                                <div className="flex gap-2 mb-8">
-                                                    {lead.es_caliente && <span className="bg-[#fb923c]/10 text-[#fb923c] border border-[#fb923c]/20 px-3 py-1 rounded-full text-[9px] font-black uppercase italic">Hot Lead</span>}
-                                                    {lead.es_ia && <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-[9px] font-black uppercase">Data IA</span>}
-                                                    <span className="bg-gray-500/10 text-gray-400 border border-white/5 px-3 py-1 rounded-full text-[9px] font-black uppercase">Nuevo</span>
+
+                                                {/* Status + quality badges */}
+                                                <div className="flex items-center gap-2 mb-6 flex-wrap">
+                                                    <InlineStatusDropdown
+                                                        lead={lead}
+                                                        userId={currentUser?.id || ''}
+                                                        onUpdated={() => refreshData(currentUser)}
+                                                    />
+                                                    {lead.es_caliente && <span className="bg-[#fb923c]/10 text-[#fb923c] border border-[#fb923c]/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase italic">🔥 Hot</span>}
+                                                    {lead.es_ia && <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase">🤖 IA</span>}
                                                 </div>
+
                                                 <div className="flex items-center justify-between">
+                                                    {/* Quick action buttons — functional links */}
                                                     <div className="flex gap-2">
-                                                        <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 transition-all">
-                                                            <Phone className="h-5 w-5" />
-                                                        </Button>
-                                                        <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 transition-all">
-                                                            <Mail className="h-5 w-5" />
-                                                        </Button>
-                                                        <Button size="icon" variant="ghost" className="h-12 w-12 rounded-2xl bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white border border-white/5 transition-all">
-                                                            <MessageCircle className="h-5 w-5" />
-                                                        </Button>
+                                                        <a
+                                                            href={phoneNum ? `tel:+${waNum}` : undefined}
+                                                            onClick={!phoneNum ? (e) => e.preventDefault() : undefined}
+                                                            title={phoneNum ? `Llamar a ${lead.nombre}` : 'Sin teléfono'}
+                                                        >
+                                                            <Button size="icon" variant="ghost" disabled={!phoneNum} className={`h-11 w-11 rounded-2xl border border-white/5 transition-all ${phoneNum ? 'bg-white/5 hover:bg-green-500/20 hover:text-green-400 hover:border-green-500/30 text-gray-400' : 'bg-white/[0.02] text-gray-700 cursor-not-allowed'}`}>
+                                                                <Phone className="h-4 w-4" />
+                                                            </Button>
+                                                        </a>
+                                                        <a
+                                                            href={lead.email ? `mailto:${lead.email}` : undefined}
+                                                            onClick={!lead.email ? (e) => e.preventDefault() : undefined}
+                                                            title={lead.email ? `Email a ${lead.nombre}` : 'Sin email'}
+                                                        >
+                                                            <Button size="icon" variant="ghost" disabled={!lead.email} className={`h-11 w-11 rounded-2xl border border-white/5 transition-all ${lead.email ? 'bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-400' : 'bg-white/[0.02] text-gray-700 cursor-not-allowed'}`}>
+                                                                <Mail className="h-4 w-4" />
+                                                            </Button>
+                                                        </a>
+                                                        <a
+                                                            href={phoneNum ? `https://wa.me/${waNum}?text=Hola%20${encodeURIComponent(lead.nombre)}%2C%20te%20contactamos%20desde%20Urbani.` : undefined}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            onClick={!phoneNum ? (e) => e.preventDefault() : undefined}
+                                                            title={phoneNum ? `WhatsApp a ${lead.nombre}` : 'Sin teléfono'}
+                                                        >
+                                                            <Button size="icon" variant="ghost" disabled={!phoneNum} className={`h-11 w-11 rounded-2xl border border-white/5 transition-all ${phoneNum ? 'bg-white/5 hover:bg-[#25D366]/20 hover:text-[#25D366] hover:border-[#25D366]/30 text-gray-400' : 'bg-white/[0.02] text-gray-700 cursor-not-allowed'}`}>
+                                                                <MessageCircle className="h-4 w-4" />
+                                                            </Button>
+                                                        </a>
                                                     </div>
                                                     <Button
                                                         onClick={() => openManagement(lead)}
-                                                        className="h-12 px-8 rounded-2xl bg-white/5 hover:bg-primary hover:text-black font-black text-[10px] uppercase tracking-widest border border-white/10 hover:border-transparent transition-all shadow-lg hover:shadow-primary/20"
+                                                        className="h-11 px-6 rounded-2xl bg-white/5 hover:bg-primary hover:text-black font-black text-[10px] uppercase tracking-widest border border-white/10 hover:border-transparent transition-all shadow-lg hover:shadow-primary/20"
                                                     >
-                                                        Ver Detalles
+                                                        Gestionar
                                                     </Button>
                                                 </div>
                                             </CardContent>
@@ -1341,6 +1489,15 @@ export default function Dashboard() {
                                     )
                                 })}
                         </div>
+
+                        {/* Bulk Actions Floating Bar */}
+                        <BulkActionsBar
+                            selectedIds={selectedIds}
+                            users={users}
+                            currentUserId={currentUser?.id || ''}
+                            onClear={() => setSelectedIds(new Set())}
+                            onDone={() => refreshData(currentUser)}
+                        />
                     </>
                 )}
             </main>
@@ -1379,11 +1536,11 @@ export default function Dashboard() {
                                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                                                         <div className="flex items-center gap-3">
                                                             <span className="text-[10px] font-mono text-gray-500 bg-white/5 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                                                                {new Date(entry.changed_at).toLocaleString('es-CL')}
+                                                                {new Date(entry.created_at || entry.changed_at).toLocaleString('es-CL')}
                                                             </span>
                                                             <div className="flex items-center gap-2 text-[11px] font-bold text-white">
-                                                                <div className={`h-1.5 w-1.5 rounded-full ${getStatusColor(entry.new_status).includes('green') ? 'bg-primary' : 'bg-blue-400'}`} />
-                                                                {entry.new_status}
+                                                                <div className={`h-1.5 w-1.5 rounded-full ${getStatusColor(entry.estado_nuevo || entry.new_status).includes('green') ? 'bg-primary' : 'bg-blue-400'}`} />
+                                                                {entry.estado_nuevo || entry.new_status}
                                                             </div>
                                                         </div>
                                                         <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
@@ -1391,10 +1548,10 @@ export default function Dashboard() {
                                                             {entry.changed_by_name || 'Sistema'}
                                                         </div>
                                                     </div>
-                                                    {entry.notes && (
+                                                    {(entry.comentario || entry.notes) && (
                                                         <div className="p-4 bg-white/[0.03] border border-white/5 rounded-xl text-sm text-gray-300 leading-relaxed italic relative">
                                                             <div className="absolute -left-1.5 top-3 w-3 h-3 bg-[#18181b] border-l border-t border-white/5 rotate-[-45deg]" />
-                                                            "{entry.notes}"
+                                                            "{entry.comentario || entry.notes}"
                                                         </div>
                                                     )}
                                                 </div>
@@ -1494,9 +1651,23 @@ export default function Dashboard() {
                                         value={userForm.role}
                                         onChange={e => setUserForm({ ...userForm, role: e.target.value })}
                                     >
-                                        <option value="ejecutivo" className="bg-[#121212]">Ejecutivo Comercial</option>
-                                        <option value="jefe" className="bg-[#121212]">Jefe de Equipo</option>
-                                        <option value="admin" className="bg-[#121212]">Administrador</option>
+                                        <option value="ejecutivo" className="bg-[#121212]">Ejecutivo Comercial (Lvl 4)</option>
+                                        <option value="subgerente" className="bg-[#121212]">Subgerente Supervisión (Lvl 3)</option>
+                                        <option value="gerente" className="bg-[#121212]">Gerente de Ventas (Lvl 2)</option>
+                                        <option value="admin" className="bg-[#121212]">Administrador Global (Lvl 1)</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-1">Reporta a (Superior)</label>
+                                    <select
+                                        className="w-full bg-white/5 border border-white/10 h-12 rounded-xl text-white px-4 focus:ring-primary focus:border-primary outline-none"
+                                        value={userForm.jefe_id}
+                                        onChange={e => setUserForm({ ...userForm, jefe_id: e.target.value })}
+                                    >
+                                        <option value="" className="bg-[#121212]">Sin Superior (Independiente)</option>
+                                        {adminUsersList.filter(u => u.id !== editingUser?.id).map(u => (
+                                            <option key={u.id} value={u.id} className="bg-[#121212]">{u.nombre} ({u.role})</option>
+                                        ))}
                                     </select>
                                 </div>
                                 {!editingUser && (
@@ -1525,6 +1696,6 @@ export default function Dashboard() {
                     </div>
                 )
             }
-        </div >
+        </div>
     );
-};
+}

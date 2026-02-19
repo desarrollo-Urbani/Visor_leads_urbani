@@ -12,25 +12,27 @@ export default function Login() {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        const stored = localStorage.getItem('visor_user');
-        if (stored) {
+        const token = localStorage.getItem('visor_token');
+        if (token) {
             window.location.href = "/";
         }
     }, []);
 
 
 
+    const [error, setError] = useState("")
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault()
         setLoading(true)
+        setError("")
 
-        const success = await login(email, password);
+        const result = await login(email, password);
 
-        if (success) {
-            // Force reload or redirect to update auth state (simplified for demo)
+        if (result.success) {
             window.location.href = "/";
         } else {
-            alert("Error de credenciales");
+            setError(result.error || "Error de credenciales");
         }
         setLoading(false)
     }
@@ -91,6 +93,11 @@ export default function Login() {
                                 />
                             </div>
                         </div>
+                        {error && (
+                            <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium text-center">
+                                {error}
+                            </div>
+                        )}
                         <Button
                             className="w-full h-12 bg-primary hover:bg-[#a3e635] text-black font-bold text-lg rounded-xl transition-all shadow-[0_0_15px_rgba(132,204,22,0.3)] hover:shadow-[0_0_25px_rgba(132,204,22,0.5)] active:scale-[0.98]"
                             type="submit"

@@ -8,8 +8,10 @@ CREATE TABLE IF NOT EXISTS public.usuarios_sistema (
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT, 
     nombre TEXT,
-    role TEXT DEFAULT 'ejecutivo',
-    activo BOOLEAN DEFAULT true
+    role TEXT DEFAULT 'ejecutivo', -- ejecutivo, subgerente, gerente, admin
+    activo BOOLEAN DEFAULT true,
+    jefe_id UUID REFERENCES public.usuarios_sistema(id),
+    must_reset_password BOOLEAN DEFAULT true
 );
 
 -- 2. Eventos de Contacto (Campañas)
