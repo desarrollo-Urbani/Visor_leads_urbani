@@ -34,7 +34,7 @@ export const MOCK_LEADS: Lead[] = [
         fecha_registro: "2024-02-10T11:20:00Z",
         cantidad_negocios: 0,
         proyecto: "Pinamar",
-        estado_gestion: "Rechazado",
+        estado_gestion: "No Efectivo",
         ultima_gestion: "2024-02-11T10:00:00Z",
         notas: "Renta insuficiente para crédito.",
     }
