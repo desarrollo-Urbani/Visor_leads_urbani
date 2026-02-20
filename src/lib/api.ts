@@ -129,11 +129,11 @@ export async function uploadLeads(file: File, allocations: Record<string, number
     }
 }
 
-export async function updateLeadStatus(id: string, status: string, userId: string, notes = '', scheduledDate?: string): Promise<boolean> {
+export async function updateLeadStatus(id: string, status: string, userId: string, notes = '', scheduledDate?: string, renta?: string): Promise<boolean> {
     try {
         const response = await apiFetch(`/leads/${id}`, {
             method: 'PATCH',
-            body: JSON.stringify({ status, userId, notes, scheduledDate }),
+            body: JSON.stringify({ status, userId, notes, scheduledDate, renta }),
             headers: {},
         });
         return response.ok;

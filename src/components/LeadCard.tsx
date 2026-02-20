@@ -22,6 +22,7 @@ export default function LeadCard({
     openHistory,
     refreshData
 }: LeadCardProps) {
+    const [rentaValue, setRentaValue] = useState(lead.renta || "");
     const [status, setStatus] = useState(lead.estado_gestion || "No Gestionado");
     const [note, setNote] = useState("");
     const [saving, setSaving] = useState(false);
@@ -49,7 +50,7 @@ export default function LeadCard({
     const handleSave = async () => {
         setSaving(true);
         try {
-            const success = await updateLeadStatus(lead.id, status, currentUser?.id || "", note);
+            const success = await updateLeadStatus(lead.id, status, currentUser?.id || "", note, undefined, rentaValue);
             if (success) {
                 setNote("");
                 refreshData();
@@ -107,9 +108,15 @@ export default function LeadCard({
                 <div className="grid grid-cols-2 gap-4 py-4 border-b border-white/5 mb-4">
                     <div className="space-y-1">
                         <span className="text-[9px] text-gray-500 uppercase font-black tracking-widest block">Renta</span>
-                        <div className="flex items-center gap-2">
-                            <Banknote className="w-3.5 h-3.5 text-emerald-500/50" />
-                            <span className="text-sm font-bold text-white">{formatCurrency(lead.renta)}</span>
+                        <div className="flex items-center gap-2 relative">
+                            <Banknote className="absolute left-0 w-3.5 h-3.5 text-emerald-500/50" />
+                            <input
+                                type="text"
+                                value={rentaValue}
+                                onChange={(e) => setRentaValue(e.target.value)}
+                                className="pl-6 bg-transparent border-none text-white font-bold text-sm w-full outline-none focus:ring-0 placeholder:text-gray-700"
+                                placeholder="Escribir renta..."
+                            />
                         </div>
                     </div>
                     <div className="text-right space-y-1">

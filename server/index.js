@@ -142,15 +142,15 @@ app.get('/api/leads', verifyToken, async (req, res) => {
 
 app.patch('/api/leads/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
-    const { status, userId, notes, scheduledDate } = req.body;
+    const { status, userId, notes, scheduledDate, renta } = req.body;
     try {
         await db.query('BEGIN');
         const oldRes = await db.query('SELECT estado_gestion FROM leads WHERE id = $1', [id]);
         const oldStatus = oldRes.rows[0]?.estado_gestion || 'No Gestionado';
 
         await db.query(
-            'UPDATE leads SET estado_gestion = $1, notas_ejecutivo = $2, fecha_proximo_contacto = $3 WHERE id = $4',
-            [status, notes || '', scheduledDate || null, id]
+            'UPDATE leads SET estado_gestion = $1, notas_ejecutivo = $2, fecha_proximo_contacto = $3, renta = $4 WHERE id = $5',
+            [status, notes || '', scheduledDate || null, renta !== undefined ? renta : null, id]
         );
 
         await db.query(
