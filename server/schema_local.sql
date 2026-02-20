@@ -46,7 +46,8 @@ CREATE TABLE IF NOT EXISTS public.leads (
     notas_ejecutivo TEXT,
     rut TEXT,
     es_ia BOOLEAN DEFAULT false,
-    es_caliente BOOLEAN DEFAULT false
+    es_caliente BOOLEAN DEFAULT false,
+    fecha_proximo_contacto TEXT
 );
 
 -- Restricción de unicidad para prevención de duplicados inteligentes

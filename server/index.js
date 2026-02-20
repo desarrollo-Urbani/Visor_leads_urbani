@@ -12,7 +12,7 @@ const { verifyToken, requireAdmin } = require('./middleware/auth');
 
 const app = express();
 const port = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'urbani-secret-key-2024';
 
 // --- MIDDLEWARE ---
 app.use(cors({
@@ -72,7 +72,7 @@ app.post('/api/login', loginLimiter, async (req, res) => {
                 email: user.email,
                 nombre: user.nombre,
                 role: user.role,
-                must_reset_password: user.must_reset_password
+                must_reset_password: user.must_reset_password || false
             }
         });
     } catch (err) {
@@ -123,8 +123,8 @@ app.get('/api/leads', verifyToken, async (req, res) => {
         if (fecha_hasta) { params.push(fecha_hasta); query += ` AND l.created_at <= $${params.length}`; }
 
         // Count total for pagination metadata
-        const countQuery = query.replace('SELECT l.*, u.nombre as nombre_ejecutivo', 'SELECT COUNT(*) as total');
-        const countResult = await db.query(countQuery, params);
+        const countQuerySnapshot = query.replace('SELECT l.*, u.nombre as nombre_ejecutivo', 'SELECT COUNT(*) as total');
+        const countResult = await db.query(countQuerySnapshot, params);
         const total = parseInt(countResult.rows[0]?.total || '0', 10);
 
         // Add ORDER + PAGINATION
@@ -146,15 +146,18 @@ app.patch('/api/leads/:id', verifyToken, async (req, res) => {
     try {
         await db.query('BEGIN');
         const oldRes = await db.query('SELECT estado_gestion FROM leads WHERE id = $1', [id]);
-        const oldStatus = oldRes.rows[0]?.estado_gestion;
+        const oldStatus = oldRes.rows[0]?.estado_gestion || 'No Gestionado';
+
         await db.query(
-            'UPDATE leads SET estado_gestion = $1, notas_ejecutivo = $2, created_at = COALESCE($3, created_at) WHERE id = $4',
-            [status, notes, scheduledDate || null, id]
+            'UPDATE leads SET estado_gestion = $1, notas_ejecutivo = $2, fecha_proximo_contacto = $3 WHERE id = $4',
+            [status, notes || '', scheduledDate || null, id]
         );
+
         await db.query(
             'INSERT INTO lead_status_history (lead_id, estado_anterior, estado_nuevo, usuario_id, comentario) VALUES ($1, $2, $3, $4, $5)',
-            [id, oldStatus, status, userId, notes]
+            [id, oldStatus, status, userId || null, notes || '']
         );
+
         await db.query('COMMIT');
         res.json({ success: true });
     } catch (err) {
@@ -183,7 +186,7 @@ app.get('/api/leads/:id/history', verifyToken, async (req, res) => {
 app.post('/api/leads/assign', verifyToken, async (req, res) => {
     const { leadId, userId } = req.body;
     try {
-        await db.query('UPDATE leads SET asignado_a = $1 WHERE id = $2', [userId, leadId]);
+        await db.query('UPDATE leads SET asignado_a = $1 WHERE id = $2', [userId || null, leadId]);
         res.json({ success: true });
     } catch (err) {
         console.error('[ASSIGN LEAD]', err);
@@ -213,8 +216,8 @@ app.post('/api/admin/users/bulk-upload', verifyToken, requireAdmin, upload.singl
 
         const BCRYPT_ROUNDS = 10;
         for (const row of results) {
-            const nombre = row.nombre || row.name;
-            const email = row.email;
+            const nombre = row.nombre || row.name || '';
+            const email = row.email || '';
             if (nombre && email) {
                 const autoPassword = Math.random().toString(36).slice(-8);
                 const hashedPassword = await bcrypt.hash(autoPassword, BCRYPT_ROUNDS);
@@ -250,7 +253,7 @@ app.post('/api/admin/users', verifyToken, requireAdmin, async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
         const result = await db.query(
             'INSERT INTO usuarios_sistema (nombre, email, password_hash, role, jefe_id, must_reset_password) VALUES ($1, $2, $3, $4, $5, false) RETURNING id',
-            [nombre, email, hashedPassword, role, jefe_id || null]
+            [nombre, email, hashedPassword, role || 'ejecutivo', jefe_id || null]
         );
         res.json({ success: true, id: result.rows[0].id });
     } catch (err) {
@@ -346,15 +349,15 @@ app.post('/api/upload', verifyToken, requireAdmin, upload.single('file'), async 
                     const off = idx * 12;
                     values.push(`($${off + 1}, $${off + 2}, $${off + 3}, $${off + 4}, $${off + 5}, 'No Gestionado', $${off + 6}, $${off + 7}, $${off + 8}, $${off + 9}, $${off + 10}, $${off + 11}, $${off + 12})`);
                     params.push(
-                        (row.nombre || 'Sin Nombre').substring(0, 255),
+                        (row.nombre || row.name || 'Sin Nombre').substring(0, 255),
                         (row.email || 'noemail@example.com').substring(0, 255),
-                        (row.renta || '0').toString().substring(0, 50),
-                        (row.proyecto || 'General').substring(0, 100),
-                        (row.telefono || '').toString().substring(0, 50),
+                        (row.renta || row.income || '0').toString().substring(0, 50),
+                        (row.proyecto || row.project || 'General').substring(0, 100),
+                        (row.telefono || row.phone || '').toString().substring(0, 50),
                         eventId,
                         assignedTo,
                         null,
-                        row.observacion || '',
+                        row.observacion || row.observation || '',
                         (row.rut || '').toString().substring(0, 20),
                         row.es_ia === 'true' || row.es_ia === true,
                         row.es_caliente === 'true' || row.es_caliente === true
