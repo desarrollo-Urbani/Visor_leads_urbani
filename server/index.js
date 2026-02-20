@@ -16,7 +16,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'urbani-secret-key-2024';
 
 // --- MIDDLEWARE ---
 app.use(cors({
-    origin: process.env.ALLOWED_ORIGIN || 'http://localhost:5173',
+    origin: process.env.ALLOWED_ORIGIN || ['http://localhost:5173', 'http://localhost:5174'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
