@@ -318,35 +318,65 @@ app.post('/api/upload', verifyToken, requireAdmin, upload.single('file'), async 
             const userAssignments = {};
             targetUserIds.forEach(id => userAssignments[id] = 0);
             for (let i = 0; i < results.length; i += 100) {
-                const batch = results.slice(i, i + 100);
+                const rawBatch = results.slice(i, i + 100);
+
+                // Deduplicate within the batch to avoid ON CONFLICT errors
+                const batchMap = new Map();
+                rawBatch.forEach(row => {
+                    const key = `${(row.email || '').toLowerCase().trim()}|${(row.telefono || '').toLowerCase().trim()}|${(row.proyecto || 'General').toLowerCase().trim()}`;
+                    batchMap.set(key, row); // Keep the last one
+                });
+                const batch = Array.from(batchMap.values());
+
                 const values = [];
                 const params = [];
                 batch.forEach((row, idx) => {
-                    const globalIdx = i + idx;
                     let assignedTo = null;
                     if (targetUserIds.length > 0) {
                         let chosenId = targetUserIds[0];
                         let maxGap = -Infinity;
                         targetUserIds.forEach(id => {
-                            const target = (globalIdx + 1) * (allocMap[id] / 100);
+                            const target = (i + idx + 1) * (allocMap[id] / 100);
                             const gap = target - userAssignments[id];
                             if (gap > maxGap) { maxGap = gap; chosenId = id; }
                         });
                         assignedTo = chosenId;
                         userAssignments[chosenId]++;
                     }
-                    const off = idx * 9;
-                    values.push(`($${off + 1}, $${off + 2}, $${off + 3}, $${off + 4}, $${off + 5}, 'No Gestionado', $${off + 6}, $${off + 7}, $${off + 8}, $${off + 9})`);
+                    const off = idx * 12;
+                    values.push(`($${off + 1}, $${off + 2}, $${off + 3}, $${off + 4}, $${off + 5}, 'No Gestionado', $${off + 6}, $${off + 7}, $${off + 8}, $${off + 9}, $${off + 10}, $${off + 11}, $${off + 12})`);
                     params.push(
                         (row.nombre || 'Sin Nombre').substring(0, 255),
                         (row.email || 'noemail@example.com').substring(0, 255),
                         (row.renta || '0').toString().substring(0, 50),
                         (row.proyecto || 'General').substring(0, 100),
                         (row.telefono || '').toString().substring(0, 50),
-                        eventId, assignedTo, null, row.observacion || ''
+                        eventId,
+                        assignedTo,
+                        null,
+                        row.observacion || '',
+                        (row.rut || '').toString().substring(0, 20),
+                        row.es_ia === 'true' || row.es_ia === true,
+                        row.es_caliente === 'true' || row.es_caliente === true
                     );
                 });
-                await db.query(`INSERT INTO leads (nombre, email, renta, proyecto, telefono, estado_gestion, contact_event_id, asignado_a, renta_real, observacion) VALUES ${values.join(',')}`, params);
+                if (batch.length > 0) {
+                    await db.query(`
+                        INSERT INTO leads (nombre, email, renta, proyecto, telefono, estado_gestion, contact_event_id, asignado_a, renta_real, observacion, rut, es_ia, es_caliente) 
+                        VALUES ${values.join(',')}
+                        ON CONFLICT (email, telefono, proyecto) DO UPDATE SET
+                            nombre = EXCLUDED.nombre,
+                            renta = EXCLUDED.renta,
+                            observacion = EXCLUDED.observacion,
+                            renta_real = EXCLUDED.renta_real,
+                            contact_event_id = EXCLUDED.contact_event_id,
+                            asignado_a = EXCLUDED.asignado_a,
+                            rut = EXCLUDED.rut,
+                            es_ia = EXCLUDED.es_ia,
+                            es_caliente = EXCLUDED.es_caliente,
+                            estado_gestion = 'No Gestionado'
+                    `, params);
+                }
             }
         }
         cleanupTempFile(req.file.path);

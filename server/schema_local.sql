@@ -43,8 +43,15 @@ CREATE TABLE IF NOT EXISTS public.leads (
     -- Referencias
     contact_event_id INTEGER REFERENCES public.contact_events(id) ON DELETE CASCADE,
     asignado_a UUID REFERENCES public.usuarios_sistema(id),
-    notas_ejecutivo TEXT
+    notas_ejecutivo TEXT,
+    rut TEXT,
+    es_ia BOOLEAN DEFAULT false,
+    es_caliente BOOLEAN DEFAULT false
 );
+
+-- Restricción de unicidad para prevención de duplicados inteligentes
+ALTER TABLE public.leads DROP CONSTRAINT IF EXISTS unique_lead_email_proyecto;
+ALTER TABLE public.leads ADD CONSTRAINT unique_lead_email_tel_proy UNIQUE (email, telefono, proyecto);
 
 -- 4. Historial de Estados
 CREATE TABLE IF NOT EXISTS public.lead_status_history (
@@ -66,9 +73,15 @@ CREATE TABLE IF NOT EXISTS public.archivos_csv (
     fecha_subida TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. Usuario Administrador Inicial
-INSERT INTO public.usuarios_sistema (nombre, email, password_hash, role, activo)
-VALUES ('Admin Urbani', 'admin@urbani.com', '123', 'admin', true)
+-- 6. Usuarios Iniciales
+-- Admin
+INSERT INTO public.usuarios_sistema (nombre, email, password_hash, role, activo, must_reset_password)
+VALUES ('Admin Desarrollo', 'desarrollo@urbani.cl', '$2b$10$I/n7QreaSe/j3i89SOr7fe9xeqNq.MvHXaB0cUOY6qnPSxnOTUdmO', 'admin', true, false)
+ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash;
+
+-- Ejecutivo Felipe
+INSERT INTO public.usuarios_sistema (nombre, email, password_hash, role, activo, must_reset_password)
+VALUES ('Felipe Torres', 'felipe.torresp@gmail.com', '$2b$10$I/n7QreaSe/j3i89SOr7fe9xeqNq.MvHXaB0cUOY6qnPSxnOTUdmO', 'ejecutivo', true, true)
 ON CONFLICT (email) DO NOTHING;
 
 -- Indices

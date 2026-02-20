@@ -3,13 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { getUsers, uploadLeads, getDashboardSummary, updateLeadStatus, getLeadHistory, assignLead, getContactEvents, downloadCsv, deleteContactEvent, getAdminUsers, createAdminUser, updateAdminUser, resetAdminUserPassword, purgeLeads, logout } from "@/lib/api";
 import type { Lead, User } from "@/types";
-import { Phone, MessageCircle, Mail, User as UserIcon, LayoutList, Upload, CheckSquare, Square, Search, History, Calendar, ChevronRight, Download, BarChart2, Trash2, UserPlus, X, RefreshCw, Edit, Power } from "lucide-react";
+import { User as UserIcon, LayoutList, Upload, CheckSquare, Square, Search, History, Calendar, ChevronRight, Download, Clock, BarChart2, Trash2, UserPlus, X, RefreshCw, Edit, Power, Phone, Bot } from "lucide-react";
 import MetricsDashboard from "@/components/MetricsDashboard";
 import { Input } from "@/components/ui/input";
-import { InlineStatusDropdown } from "@/components/InlineStatusDropdown";
-import DayAlertsPanel from "@/components/DayAlertsPanel";
-import MiniKPIs from "@/components/MiniKPIs";
 import BulkActionsBar from "@/components/BulkActionsBar";
+import LeadCard from "@/components/LeadCard";
+import ExecutiveDashboard from "@/components/ExecutiveDashboard";
 
 export default function Dashboard() {
     const [leads, setLeads] = useState<Lead[]>([]);
@@ -44,11 +43,7 @@ export default function Dashboard() {
 
     // Audit Advanced Filters
     const [filterEjecutivo, setFilterEjecutivo] = useState("");
-    const [filterProyecto, setFilterProyecto] = useState("");
-    const [filterEstado, setFilterEstado] = useState("");
     const [filterJefe, setFilterJefe] = useState("");
-    const [filterFechaDesde, setFilterFechaDesde] = useState("");
-    const [filterFechaHasta, setFilterFechaHasta] = useState("");
 
     // Main Lead Filters  (initialized from localStorage for persistence)
     const [filterProyectoLead, setFilterProyectoLead] = useState<string>(() => {
@@ -81,6 +76,7 @@ export default function Dashboard() {
     const [uploadingUsers, setUploadingUsers] = useState(false);
 
     // === NEW UX: Bulk selection ===
+    const [viewMode, setViewMode] = useState<'dashboard' | 'gestionar'>('dashboard');
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const toggleSelect = useCallback((id: string) => {
         setSelectedIds(prev => {
@@ -205,11 +201,7 @@ export default function Dashboard() {
 
         const filters = {
             ejecutivo_id: filterEjecutivo,
-            proyecto: filterProyecto,
-            estado: filterEstado,
             jefe_id: filterJefe,
-            fecha_desde: filterFechaDesde,
-            fecha_hasta: filterFechaHasta
         };
 
         const params = new URLSearchParams();
@@ -504,8 +496,8 @@ export default function Dashboard() {
                     </Button>
                     <Button
                         variant="ghost"
-                        onClick={() => { goBack(); setShowAudit(true); }}
-                        className={`w-full justify-start h-12 rounded-2xl font-bold ${showAudit ? 'bg-primary/10 text-primary border border-primary/10' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                        onClick={() => { goBack(); setViewMode('gestionar'); }}
+                        className={`w-full justify-start h-12 rounded-2xl font-bold ${viewMode === 'gestionar' && !showCampaigns && !showUsersAdmin ? 'bg-primary/10 text-primary border border-primary/10' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                     >
                         <History className="mr-3 h-5 w-5" /> Gestionar
                     </Button>
@@ -818,7 +810,7 @@ export default function Dashboard() {
                     </div>
                 )}
 
-                {isAdmin ? (
+                {showCampaigns ? (
                     <div className="space-y-8 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                         {showCampaigns ? (
                             <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -1008,7 +1000,7 @@ export default function Dashboard() {
                                     </CardContent>
                                 </Card>
                             </div>
-                        ) : !showAudit ? (
+                        ) : (
                             <>
                                 <MetricsDashboard leads={leads} />
                                 <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5">
@@ -1072,433 +1064,343 @@ export default function Dashboard() {
                                     </CardContent>
                                 </Card>
                             </>
-                        ) : (
-                            <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5">
-                                <CardHeader className="bg-white/[0.02] py-6 px-8 space-y-4">
-                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                        <div>
-                                            <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                                                Auditoría de Leads
-                                            </CardTitle>
-                                            <CardDescription className="text-gray-500 font-medium">Búsqueda detallada e historial de gestiones.</CardDescription>
-                                        </div>
-                                        <div className="relative w-full sm:w-80">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-                                            <Input
-                                                placeholder="Buscar por nombre, email o ejecutivo..."
-                                                className="pl-10 bg-black/40 border-white/10 rounded-xl focus:ring-primary/40 focus:border-primary"
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Dynamic Filter Bar */}
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-white/5">
-                                        {(currentUser?.role === 'admin') && (
-                                            <div className="space-y-1">
-                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Filtrar por Jefe</label>
-                                                <select
-                                                    className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
-                                                    value={filterJefe}
-                                                    onChange={(e) => { setFilterJefe(e.target.value); refreshData(currentUser); }}
-                                                >
-                                                    <option value="">Todos los Jefes</option>
-                                                    {users.filter(u => u.role === 'gerente' || u.role === 'subgerente').map(u => (
-                                                        <option key={u.id} value={u.id}>{u.nombre} ({u.role})</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
-                                        {(currentUser?.role === 'admin' || currentUser?.role === 'gerente' || currentUser?.role === 'subgerente') && (
-                                            <div className="space-y-1">
-                                                <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Filtrar por Ejecutivo</label>
-                                                <select
-                                                    className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
-                                                    value={filterEjecutivo}
-                                                    onChange={(e) => { setFilterEjecutivo(e.target.value); refreshData(currentUser); }}
-                                                >
-                                                    <option value="">Todos los Ejecutivos</option>
-                                                    {users.filter(u => u.role === 'ejecutivo' && (!filterJefe || u.jefe_id === filterJefe)).map(u => (
-                                                        <option key={u.id} value={u.id}>{u.nombre}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        )}
-                                        <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Desde Fecha</label>
-                                            <input
-                                                type="date"
-                                                className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
-                                                value={filterFechaDesde}
-                                                onChange={(e) => { setFilterFechaDesde(e.target.value); refreshData(currentUser); }}
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Hasta Fecha</label>
-                                            <input
-                                                type="date"
-                                                className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
-                                                value={filterFechaHasta}
-                                                onChange={(e) => { setFilterFechaHasta(e.target.value); refreshData(currentUser); }}
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Proyecto</label>
-                                            <select
-                                                className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
-                                                value={filterProyecto}
-                                                onChange={(e) => { setFilterProyecto(e.target.value); refreshData(currentUser); }}
-                                            >
-                                                <option value="">Todos los Proyectos</option>
-                                                {Array.from(new Set(leads.map(l => l.proyecto))).filter(Boolean).map(p => (
-                                                    <option key={p} value={p}>{p}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[9px] font-black text-gray-500 uppercase tracking-widest ml-1">Estado Gestión</label>
-                                            <select
-                                                className="w-full h-10 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-3 outline-none focus:border-primary/50"
-                                                value={filterEstado}
-                                                onChange={(e) => { setFilterEstado(e.target.value); refreshData(currentUser); }}
-                                            >
-                                                <option value="">Todos los Estados</option>
-                                                <option value="No Gestionado">No Gestionado</option>
-                                                <option value="Por Contactar">Por Contactar</option>
-                                                <option value="En Proceso">En Proceso</option>
-                                                <option value="Visita">Visita</option>
-                                                <option value="Venta Cerrada">Venta Cerrada</option>
-                                                <option value="No Efectivo">No Efectivo</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="p-0">
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-sm text-left">
-                                            <thead className="bg-white/[0.03] text-gray-500 uppercase text-[10px] font-bold tracking-widest border-b border-white/5">
-                                                <tr>
-                                                    <th className="px-8 py-5">Prospecto</th>
-                                                    <th className="px-8 py-5">Ejecutivo</th>
-                                                    <th className="px-8 py-5">Proyecto</th>
-                                                    <th className="px-8 py-5">Estado Actual</th>
-                                                    <th className="px-8 py-5 text-right">Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-white/5 bg-transparent">
-                                                {leads
-                                                    .filter(l =>
-                                                        l.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                                        l.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                                                        (l.nombre_ejecutivo || '').toLowerCase().includes(searchTerm.toLowerCase())
-                                                    )
-                                                    .map((lead) => (
-                                                        <tr key={lead.id} className="hover:bg-white/[0.02] transition-colors border-b border-white/5">
-                                                            <td className="px-8 py-6">
-                                                                <div className="font-semibold text-white">{lead.nombre}</div>
-                                                                <div className="text-[11px] text-gray-500 font-mono">{lead.email}</div>
-                                                            </td>
-                                                            <td className="px-8 py-6">
-                                                                <div className="flex items-center gap-2 text-gray-300">
-                                                                    <UserIcon className="h-3 w-3 text-primary/60" />
-                                                                    {lead.nombre_ejecutivo || 'Sin Asignar'}
-                                                                </div>
-                                                            </td>
-                                                            <td className="px-8 py-6 text-gray-400 font-medium">{lead.proyecto}</td>
-                                                            <td className="px-8 py-6">
-                                                                <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${getStatusColor(lead.estado_gestion)} border border-white/5`}>
-                                                                    {lead.estado_gestion}
-                                                                </span>
-                                                            </td>
-                                                            <td className="px-8 py-6 text-right">
-                                                                <div className="flex justify-end gap-2">
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        onClick={() => openHistory(lead)}
-                                                                        className="h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 font-bold border border-white/10 transition-all text-xs"
-                                                                    >
-                                                                        <History className="h-3 w-3 mr-2" /> Historial
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="sm"
-                                                                        onClick={() => setReassignLeadId(lead.id)}
-                                                                        className="h-8 rounded-lg bg-primary/5 hover:bg-primary/20 text-primary font-bold border border-primary/10 transition-all text-xs"
-                                                                    >
-                                                                        <UserIcon className="h-3 w-3 mr-2" /> Reasignar
-                                                                    </Button>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </CardContent>
-                            </Card>
                         )}
                     </div>
                 ) : (
                     <>
-                        <div className="space-y-8">
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-white/5 pb-8">
-                                <div>
-                                    <h2 className="text-5xl font-black text-white tracking-tighter mb-2">Gestión de Leads</h2>
-                                    <p className="text-gray-500 font-medium text-lg">Monitorea y gestiona tu flujo de entrada con puntajes IA.</p>
+                        {/* Unified Dashboard View for ALL Users (Admins & Executives) */}
+
+
+                        {/* Executive Header with Pending Indicator (Replaces Tabs) */}
+                        <div className="flex items-center justify-between mb-8 border-b border-white/5 pb-4">
+                            <div className="flex items-center gap-6">
+                                <h2 className="text-3xl font-black text-white tracking-tighter">Gestión de Leads</h2>
+                                {/* Pending Leads Indicator */}
+                                <div className="flex items-center gap-3 px-5 py-2.5 bg-orange-500/10 rounded-full border border-orange-500/20 shadow-[0_0_15px_rgba(249,115,22,0.1)] animate-pulse">
+                                    <Clock className="w-4 h-4 text-orange-500" />
+                                    <span className="text-sm font-black text-orange-500 tracking-wide">
+                                        {leads.filter(l => l.estado_gestion === 'No Gestionado').length} PENDIENTES
+                                    </span>
                                 </div>
                             </div>
 
-                            {/* Mini KPIs personales */}
-                            <MiniKPIs leads={leads} userName={currentUser?.nombre} />
+                            {/* User Profile Summary */}
+                            <div className="flex items-center gap-3">
+                                <div className="text-right hidden sm:block">
+                                    <p className="text-sm font-bold text-white leading-none mb-1">{currentUser?.nombre}</p>
+                                    <p className="text-[10px] text-gray-500 uppercase font-black tracking-widest">{currentUser?.role}</p>
+                                </div>
+                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 ring-2 ring-black">
+                                    <span className="font-bold text-primary text-sm">{currentUser?.nombre?.charAt(0)}</span>
+                                </div>
+                            </div>
+                        </div>
 
-                            {/* Agenda del día */}
-                            <DayAlertsPanel leads={leads} onOpenLead={(lead) => openManagement(lead)} />
+                        {viewMode === 'dashboard' ? (
+                            <>
+                                {isAdmin && (
+                                    <div className="mb-8 space-y-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                                        <MetricsDashboard leads={leads} />
+                                        <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl overflow-hidden ring-1 ring-white/5">
+                                            <CardHeader className="bg-white/[0.02] py-6 px-8 flex flex-row items-center justify-between">
+                                                <div>
+                                                    <CardTitle className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                                                        Productividad por Ejecutivo
+                                                    </CardTitle>
+                                                    <CardDescription className="text-gray-500 font-medium">Resumen de leads asignados y estados de gestión.</CardDescription>
+                                                </div>
+                                            </CardHeader>
+                                            <CardContent className="p-0">
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-sm text-left">
+                                                        <thead className="bg-white/[0.03] text-gray-500 uppercase text-[10px] font-bold tracking-widest border-b border-white/5">
+                                                            <tr>
+                                                                <th className="px-8 py-5">Ejecutivo Comercial</th>
+                                                                <th className="px-8 py-5">Asignados</th>
+                                                                <th className="px-8 py-5 text-orange-500">Sin Gestión</th>
+                                                                <th className="px-8 py-5 text-primary">Por Contactar</th>
+                                                                <th className="px-8 py-5 text-blue-500">En Proceso</th>
+                                                                <th className="px-8 py-5 text-purple-500">Visitas</th>
+                                                                <th className="px-8 py-5 text-primary">Ventas</th>
+                                                                <th className="px-8 py-5">Ratio Conversión</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-white/5 bg-transparent">
+                                                            {loadingSummary ? (
+                                                                <tr><td colSpan={7} className="px-8 py-16 text-center text-gray-500 italic">Actualizando métricas...</td></tr>
+                                                            ) : summaryData.map((row) => (
+                                                                <tr key={row.id} className="hover:bg-white/[0.02] transition-colors border-b border-white/5">
+                                                                    <td className="px-8 py-6 font-semibold text-white">{row.nombre}</td>
+                                                                    <td className="px-8 py-6 font-mono text-gray-400">{row.total_assigned}</td>
+                                                                    <td className="px-8 py-6">
+                                                                        <span className={`px-2 py-1 rounded-lg text-xs ${row.no_gestionado > 0 ? 'bg-orange-500/10 text-orange-500 font-bold' : 'bg-white/5 text-gray-600'}`}>
+                                                                            {row.no_gestionado}
+                                                                        </span>
+                                                                    </td>
+                                                                    <td className="px-8 py-6 text-primary/80 font-medium">{row.por_contactar || 0}</td>
+                                                                    <td className="px-8 py-6 text-blue-500/80 font-medium">{row.en_proceso}</td>
+                                                                    <td className="px-8 py-6 text-purple-500/80 font-medium">{row.visita}</td>
+                                                                    <td className="px-8 py-6 text-primary font-bold">{row.venta_cerrada}</td>
+                                                                    <td className="px-8 py-6">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden max-w-[80px] ring-1 ring-white/5">
+                                                                                <div
+                                                                                    className="h-full bg-primary shadow-[0_0_8px_rgba(132,204,22,0.4)]"
+                                                                                    style={{ width: `${row.total_assigned > 0 ? (row.venta_cerrada / row.total_assigned * 100) : 0}%` }}
+                                                                                />
+                                                                            </div>
+                                                                            <span className="text-[11px] font-mono text-primary font-bold">
+                                                                                {row.total_assigned > 0 ? (row.venta_cerrada / row.total_assigned * 100).toFixed(0) : 0}%
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    </div>
+                                )}
+                                <ExecutiveDashboard
+                                    leads={leads}
+                                    currentUser={currentUser}
+                                    onOpenManagement={openManagement}
+                                />
+                            </>
+                        ) : (
+                            <div className="animate-in fade-in slide-in-from-right-8 duration-500">
+                                {/* Daily Summary Bar */}
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                                    <div className="bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 p-6 rounded-[2rem] backdrop-blur-md">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center border border-primary/30">
+                                                <Phone className="w-6 h-6 text-primary" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-primary/60 uppercase tracking-widest">Contactar Hoy</p>
+                                                <p className="text-2xl font-black text-white leading-none">
+                                                    {leads.filter(l => {
+                                                        if (l.estado_gestion !== 'Por Contactar' || !l.fecha_proximo_contacto) return false;
+                                                        const todayStr = new Date().toISOString().split('T')[0];
+                                                        return l.fecha_proximo_contacto.startsWith(todayStr);
+                                                    }).length}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] backdrop-blur-md">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
+                                                <Clock className="w-6 h-6 text-orange-500" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Pendientes</p>
+                                                <p className="text-2xl font-black text-white leading-none">
+                                                    {leads.filter(l => l.estado_gestion === 'No Gestionado').length}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] backdrop-blur-md">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                                                <CheckSquare className="w-6 h-6 text-emerald-500" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">En Proceso</p>
+                                                <p className="text-2xl font-black text-white leading-none">
+                                                    {leads.filter(l => l.estado_gestion === 'En Proceso').length}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] backdrop-blur-md">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+                                                <Bot className="w-6 h-6 text-blue-500" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Vía Prosper AI</p>
+                                                <p className="text-2xl font-black text-white leading-none">
+                                                    {leads.filter(l => l.es_ia).length}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            {/* Dedicated Filter Bar */}
-                            <div className="flex flex-wrap items-center gap-6 p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] backdrop-blur-sm">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Filtro por Proyecto</label>
-                                    <select
-                                        className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
-                                        value={filterProyectoLead}
-                                        onChange={(e) => setFilterProyectoLead(e.target.value)}
-                                    >
-                                        <option value="">Todos los Proyectos</option>
-                                        {Array.from(new Set(leads.map(l => l.proyecto))).filter(Boolean).sort().map(p => (
-                                            <option key={p} value={p}>{p}</option>
+                                {/* Dedicated Filter Bar */}
+                                <div className="flex flex-wrap items-center gap-6 p-6 bg-white/[0.02] border border-white/5 rounded-[2rem] backdrop-blur-sm mb-8">
+                                    {/* Admin/Manager Filters */}
+                                    {(currentUser?.role === 'admin' || currentUser?.role === 'gerente' || currentUser?.role === 'subgerente') && (
+                                        <>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Filtrar por Ejecutivo</label>
+                                                <select
+                                                    className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
+                                                    value={filterEjecutivo}
+                                                    onChange={(e) => setFilterEjecutivo(e.target.value)}
+                                                >
+                                                    <option value="">Todos los Ejecutivos</option>
+                                                    {users.filter(u => u.role === 'ejecutivo').map(u => (
+                                                        <option key={u.id} value={u.id}>{u.nombre}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="w-px h-10 bg-white/5 hidden md:block" />
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Filtrar por Jefe</label>
+                                                <select
+                                                    className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
+                                                    value={filterJefe}
+                                                    onChange={(e) => setFilterJefe(e.target.value)}
+                                                >
+                                                    <option value="">Todos los Jefes</option>
+                                                    {users.filter(u => u.role === 'gerente' || u.role === 'subgerente').map(u => (
+                                                        <option key={u.id} value={u.id}>{u.nombre}</option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <div className="w-px h-10 bg-white/5 hidden md:block" />
+                                        </>
+                                    )}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Filtro por Proyecto</label>
+                                        <select
+                                            className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
+                                            value={filterProyectoLead}
+                                            onChange={(e) => setFilterProyectoLead(e.target.value)}
+                                        >
+                                            <option value="">Todos los Proyectos</option>
+                                            {Array.from(new Set(leads.map(l => l.proyecto))).filter(Boolean).sort().map(p => (
+                                                <option key={p} value={p}>{p}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="w-px h-10 bg-white/5 hidden md:block" />
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Estado de Gestión</label>
+                                        <select
+                                            className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
+                                            value={filterStatusLead}
+                                            onChange={(e) => setFilterStatusLead(e.target.value)}
+                                        >
+                                            <option value="">Todos los Estados</option>
+                                            <option value="No Gestionado">No Gestionado</option>
+                                            <option value="En Proceso">En Proceso</option>
+                                            <option value="Visita">Visita</option>
+                                            <option value="Por Contactar">Por Contactar</option>
+                                            <option value="Venta Cerrada">Venta Cerrada</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="w-px h-10 bg-white/5 hidden md:block" />
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Calidad IA</label>
+                                        <select
+                                            className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
+                                            value={filterQualityLead}
+                                            onChange={(e) => setFilterQualityLead(e.target.value)}
+                                        >
+                                            <option value="">Cualquier Calidad</option>
+                                            <option value="hot">🔥 Hot Lead</option>
+                                            <option value="ia">🤖 Data IA</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="flex-1" />
+
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
+                                        <span className="text-[10px] font-black text-primary uppercase">Leads: {leads.filter(l => {
+                                            const searchLower = searchTerm.toLowerCase();
+                                            const matchesSearch = l.nombre.toLowerCase().includes(searchLower) || (l.email || '').toLowerCase().includes(searchLower);
+                                            const matchesProyecto = !filterProyectoLead || l.proyecto === filterProyectoLead;
+                                            const matchesStatus = !filterStatusLead || l.estado_gestion === filterStatusLead;
+                                            const matchesQuality = !filterQualityLead || (filterQualityLead === 'hot' && l.es_caliente) || (filterQualityLead === 'ia' && l.es_ia);
+                                            return matchesSearch && matchesProyecto && matchesStatus && matchesQuality;
+                                        }).length}</span>
+                                    </div>
+                                </div>
+
+                                {/* Lead Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-32">
+                                    {Array.isArray(leads) && leads.length === 0 && (
+                                        <div className="col-span-full py-40 flex flex-col items-center justify-center bg-[#1a1d23]/40 border-4 border-dashed border-white/5 rounded-[4rem] group hover:border-primary/20 transition-all duration-700">
+                                            <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-8 border border-white/10 group-hover:scale-110 transition-transform duration-500">
+                                                <LayoutList className="w-10 h-10 text-gray-700 group-hover:text-primary/40 transition-colors" />
+                                            </div>
+                                            <h3 className="text-3xl font-black text-gray-700 group-hover:text-gray-600 transition-colors tracking-tighter uppercase mb-4">Base de Datos Vacía</h3>
+                                            <p className="text-sm font-bold text-gray-500/40 uppercase tracking-[0.3em]">No hay leads registrados en el sistema</p>
+                                        </div>
+                                    )}
+                                    {Array.isArray(leads) && leads
+                                        .filter(l => {
+                                            const searchLower = searchTerm.toLowerCase();
+                                            const matchesSearch = (l.nombre || '').toLowerCase().includes(searchLower) ||
+                                                (l.email || '').toLowerCase().includes(searchLower) ||
+                                                (l.apellido || '').toLowerCase().includes(searchLower) ||
+                                                (l.proyecto || '').toLowerCase().includes(searchLower);
+
+                                            const matchesProyecto = !filterProyectoLead || l.proyecto === filterProyectoLead;
+                                            const matchesStatus = !filterStatusLead || l.estado_gestion === filterStatusLead;
+                                            const matchesQuality = !filterQualityLead ||
+                                                (filterQualityLead === 'hot' && l.es_caliente) ||
+                                                (filterQualityLead === 'ia' && l.es_ia);
+
+                                            return matchesSearch && matchesProyecto && matchesStatus && matchesQuality;
+                                        })
+                                        .map((lead) => (
+                                            <LeadCard
+                                                key={lead.id}
+                                                lead={lead}
+                                                currentUser={currentUser}
+                                                isSelected={selectedIds.has(lead.id)}
+                                                toggleSelect={toggleSelect}
+                                                openManagement={openManagement}
+                                                openHistory={openHistory}
+                                                refreshData={() => refreshData(currentUser)}
+                                            />
                                         ))}
-                                    </select>
-                                </div>
-
-                                <div className="w-px h-10 bg-white/5 hidden md:block" />
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Estado de Gestión</label>
-                                    <select
-                                        className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
-                                        value={filterStatusLead}
-                                        onChange={(e) => setFilterStatusLead(e.target.value)}
-                                    >
-                                        <option value="">Todos los Estados</option>
-                                        <option value="No Gestionado">No Gestionado</option>
-                                        <option value="En Proceso">En Proceso</option>
-                                        <option value="Visita">Visita</option>
-                                        <option value="Por Contactar">Por Contactar</option>
-                                        <option value="Venta Cerrada">Venta Cerrada</option>
-                                    </select>
-                                </div>
-
-                                <div className="w-px h-10 bg-white/5 hidden md:block" />
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Calidad IA</label>
-                                    <select
-                                        className="h-12 bg-black/40 border border-white/10 rounded-xl text-xs text-white px-4 outline-none focus:border-primary/50 min-w-[200px] hover:bg-black/60 transition-colors cursor-pointer"
-                                        value={filterQualityLead}
-                                        onChange={(e) => setFilterQualityLead(e.target.value)}
-                                    >
-                                        <option value="">Cualquier Calidad</option>
-                                        <option value="hot">🔥 Hot Lead</option>
-                                        <option value="ia">🤖 Data IA</option>
-                                    </select>
-                                </div>
-
-                                <div className="flex-1" />
-
-                                <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
-                                    <span className="text-[10px] font-black text-primary uppercase">Leads: {leads.filter(l => {
+                                    {Array.isArray(leads) && leads.length > 0 && leads.filter(l => {
                                         const searchLower = searchTerm.toLowerCase();
-                                        const matchesSearch = l.nombre.toLowerCase().includes(searchLower) || (l.email || '').toLowerCase().includes(searchLower);
+                                        const matchesSearch = (l.nombre || '').toLowerCase().includes(searchLower) ||
+                                            (l.email || '').toLowerCase().includes(searchLower) ||
+                                            (l.apellido || '').toLowerCase().includes(searchLower) ||
+                                            (l.proyecto || '').toLowerCase().includes(searchLower);
                                         const matchesProyecto = !filterProyectoLead || l.proyecto === filterProyectoLead;
                                         const matchesStatus = !filterStatusLead || l.estado_gestion === filterStatusLead;
                                         const matchesQuality = !filterQualityLead || (filterQualityLead === 'hot' && l.es_caliente) || (filterQualityLead === 'ia' && l.es_ia);
                                         return matchesSearch && matchesProyecto && matchesStatus && matchesQuality;
-                                    }).length}</span>
+                                    }).length === 0 && (
+                                            <div className="col-span-full py-20 flex flex-col items-center justify-center text-center opacity-50">
+                                                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4">
+                                                    <Search className="w-8 h-8 text-gray-400" />
+                                                </div>
+                                                <p className="text-lg font-bold text-gray-400">No se encontraron leads con estos filtros.</p>
+                                                <Button variant="link" onClick={() => { setSearchTerm(''); setFilterProyectoLead(''); setFilterStatusLead(''); setFilterQualityLead(''); }} className="text-primary">
+                                                    Limpiar Filtros
+                                                </Button>
+                                            </div>
+                                        )}
                                 </div>
+
+                                {/* Bulk Actions Floating Bar */}
+                                <BulkActionsBar
+                                    selectedIds={selectedIds}
+                                    users={users}
+                                    currentUserId={currentUser?.id || ''}
+                                    onClear={() => setSelectedIds(new Set())}
+                                    onDone={() => refreshData(currentUser)}
+                                />
                             </div>
-                        </div>
-
-                        {/* Lead Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-32">
-                            {Array.isArray(leads) && leads.length === 0 && (
-                                <div className="col-span-full py-40 flex flex-col items-center justify-center bg-[#1a1d23]/40 border-4 border-dashed border-white/5 rounded-[4rem] group hover:border-primary/20 transition-all duration-700">
-                                    <div className="w-24 h-24 rounded-full bg-white/5 flex items-center justify-center mb-8 border border-white/10 group-hover:scale-110 transition-transform duration-500">
-                                        <LayoutList className="w-10 h-10 text-gray-700 group-hover:text-primary/40 transition-colors" />
-                                    </div>
-                                    <h3 className="text-3xl font-black text-gray-700 group-hover:text-gray-600 transition-colors tracking-tighter uppercase mb-4">Base de Datos Vacía</h3>
-                                    <p className="text-sm font-bold text-gray-500/40 uppercase tracking-[0.3em]">No hay leads registrados en el sistema</p>
-                                </div>
-                            )}
-                            {Array.isArray(leads) && leads
-                                .filter(l => {
-                                    const searchLower = searchTerm.toLowerCase();
-                                    const matchesSearch = l.nombre.toLowerCase().includes(searchLower) ||
-                                        (l.email || '').toLowerCase().includes(searchLower) ||
-                                        (l.apellido || '').toLowerCase().includes(searchLower) ||
-                                        (l.proyecto || '').toLowerCase().includes(searchLower);
-
-                                    const matchesProyecto = !filterProyectoLead || l.proyecto === filterProyectoLead;
-                                    const matchesStatus = !filterStatusLead || l.estado_gestion === filterStatusLead;
-                                    const matchesQuality = !filterQualityLead ||
-                                        (filterQualityLead === 'hot' && l.es_caliente) ||
-                                        (filterQualityLead === 'ia' && l.es_ia);
-
-                                    return matchesSearch && matchesProyecto && matchesStatus && matchesQuality;
-                                })
-                                .map((lead) => {
-                                    const initials = (lead.nombre || 'U').split(' ').map((n: string) => n[0]).join('').toUpperCase().substring(0, 2);
-                                    const matchScore = lead.es_caliente ? Math.floor(Math.random() * 10 + 85) : Math.floor(Math.random() * 30 + 40);
-
-                                    // Priority classification
-                                    const now = new Date();
-                                    const isOverdue = lead.estado_gestion === 'Por Contactar' && lead.fecha_proximo_contacto && new Date(lead.fecha_proximo_contacto) < now;
-                                    const isNew = lead.created_at && (Date.now() - new Date(lead.created_at).getTime()) < 24 * 60 * 60 * 1000;
-                                    const isSelected = selectedIds.has(lead.id);
-
-                                    const formatCurrency = (val: string | undefined) => {
-                                        if (!val) return null;
-                                        const clean = val.replace(/\./g, '').replace(/,/g, '.').replace(/[^0-9.]/g, '');
-                                        const n = parseFloat(clean);
-                                        return isNaN(n) ? null : new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
-                                    };
-
-                                    const phoneNum = (lead.telefono || '').replace(/\D/g, '');
-                                    const waNum = phoneNum.startsWith('56') ? phoneNum : `56${phoneNum}`;
-
-                                    return (
-                                        <Card key={lead.id} className={`group transition-all duration-500 bg-[#1a1d23]/80 backdrop-blur-md border-white/5 hover:border-primary/40 hover:-translate-y-2 shadow-2xl rounded-[2.5rem] overflow-hidden relative ${isSelected ? 'ring-2 ring-primary border-primary/50' : ''} ${isOverdue ? 'ring-1 ring-red-500/30' : ''}`}>
-
-                                            {/* Bulk select checkbox */}
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); toggleSelect(lead.id); }}
-                                                className={`absolute top-4 left-4 z-10 w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${isSelected ? 'bg-primary border-primary text-black' : 'border-white/20 bg-black/40 text-transparent hover:border-primary/60'}`}
-                                                title="Seleccionar para acción masiva"
-                                            >
-                                                <CheckSquare className="h-3 w-3" />
-                                            </button>
-
-                                            {/* Priority badges */}
-                                            {(isOverdue || isNew) && (
-                                                <div className="absolute top-4 right-4 z-10 flex gap-1">
-                                                    {isOverdue && <span className="bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full text-[8px] font-black uppercase animate-pulse">⏰ Vencido</span>}
-                                                    {isNew && <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[8px] font-black uppercase">🆕 Nuevo</span>}
-                                                </div>
-                                            )}
-
-                                            <CardHeader className="p-8 pb-4 pt-10">
-                                                <div className="flex justify-between items-start mb-6">
-                                                    <div className="flex items-center gap-4">
-                                                        <div className="w-16 h-16 rounded-[1.5rem] bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center border border-white/10 shadow-inner group-hover:scale-110 transition-transform duration-500">
-                                                            <span className="text-2xl font-black text-primary/80 tracking-tighter">{initials}</span>
-                                                        </div>
-                                                        <div>
-                                                            <CardTitle className="text-xl font-black text-white group-hover:text-primary transition-colors leading-none tracking-tight">
-                                                                {lead.nombre} {lead.apellido || ''}
-                                                            </CardTitle>
-                                                            <CardDescription className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mt-2">
-                                                                {lead.proyecto || "Generic Project"}
-                                                            </CardDescription>
-                                                        </div>
-                                                    </div>
-                                                    <div className="relative w-14 h-14 flex items-center justify-center">
-                                                        <svg className="w-full h-full -rotate-90">
-                                                            <circle cx="28" cy="28" r="24" fill="transparent" stroke="currentColor" strokeWidth="4" className="text-white/5" />
-                                                            <circle cx="28" cy="28" r="24" fill="transparent" stroke="currentColor" strokeWidth="4" strokeDasharray={151} strokeDashoffset={151 - (151 * matchScore) / 100} className="text-primary" strokeLinecap="round" />
-                                                        </svg>
-                                                        <span className="absolute text-[11px] font-black text-white">{matchScore}%</span>
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-4 py-6 border-y border-white/5 border-dashed">
-                                                    <div>
-                                                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1">Valor Est.</span>
-                                                        <span className="text-lg font-black text-white tracking-tight">
-                                                            {formatCurrency(lead.renta) || <span className="text-gray-800">—</span>}
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1">Antigüedad</span>
-                                                        <span className="text-sm font-bold text-gray-400">
-                                                            {lead.antiguedad_laboral || <span className="text-gray-800">—</span>}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </CardHeader>
-                                            <CardContent className="p-8 pt-2">
-                                                <div className="p-5 bg-black/30 rounded-3xl border border-white/5 mb-6 group-hover:bg-black/50 transition-colors">
-                                                    <span className="text-[8px] font-black text-gray-500 uppercase tracking-widest block mb-2">Última Observación</span>
-                                                    <p className="text-xs text-gray-400 line-clamp-2 leading-relaxed italic font-medium">
-                                                        {lead.observacion || "Sin actividad reciente registrada..."}
-                                                    </p>
-                                                </div>
-
-                                                {/* Status + quality badges */}
-                                                <div className="flex items-center gap-2 mb-6 flex-wrap">
-                                                    <InlineStatusDropdown
-                                                        lead={lead}
-                                                        userId={currentUser?.id || ''}
-                                                        onUpdated={() => refreshData(currentUser)}
-                                                    />
-                                                    {lead.es_caliente && <span className="bg-[#fb923c]/10 text-[#fb923c] border border-[#fb923c]/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase italic">🔥 Hot</span>}
-                                                    {lead.es_ia && <span className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded-full text-[9px] font-black uppercase">🤖 IA</span>}
-                                                </div>
-
-                                                <div className="flex items-center justify-between">
-                                                    {/* Quick action buttons — functional links */}
-                                                    <div className="flex gap-2">
-                                                        <a
-                                                            href={phoneNum ? `tel:+${waNum}` : undefined}
-                                                            onClick={!phoneNum ? (e) => e.preventDefault() : undefined}
-                                                            title={phoneNum ? `Llamar a ${lead.nombre}` : 'Sin teléfono'}
-                                                        >
-                                                            <Button size="icon" variant="ghost" disabled={!phoneNum} className={`h-11 w-11 rounded-2xl border border-white/5 transition-all ${phoneNum ? 'bg-white/5 hover:bg-green-500/20 hover:text-green-400 hover:border-green-500/30 text-gray-400' : 'bg-white/[0.02] text-gray-700 cursor-not-allowed'}`}>
-                                                                <Phone className="h-4 w-4" />
-                                                            </Button>
-                                                        </a>
-                                                        <a
-                                                            href={lead.email ? `mailto:${lead.email}` : undefined}
-                                                            onClick={!lead.email ? (e) => e.preventDefault() : undefined}
-                                                            title={lead.email ? `Email a ${lead.nombre}` : 'Sin email'}
-                                                        >
-                                                            <Button size="icon" variant="ghost" disabled={!lead.email} className={`h-11 w-11 rounded-2xl border border-white/5 transition-all ${lead.email ? 'bg-white/5 hover:bg-blue-500/20 hover:text-blue-400 hover:border-blue-500/30 text-gray-400' : 'bg-white/[0.02] text-gray-700 cursor-not-allowed'}`}>
-                                                                <Mail className="h-4 w-4" />
-                                                            </Button>
-                                                        </a>
-                                                        <a
-                                                            href={phoneNum ? `https://wa.me/${waNum}?text=Hola%20${encodeURIComponent(lead.nombre)}%2C%20te%20contactamos%20desde%20Urbani.` : undefined}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            onClick={!phoneNum ? (e) => e.preventDefault() : undefined}
-                                                            title={phoneNum ? `WhatsApp a ${lead.nombre}` : 'Sin teléfono'}
-                                                        >
-                                                            <Button size="icon" variant="ghost" disabled={!phoneNum} className={`h-11 w-11 rounded-2xl border border-white/5 transition-all ${phoneNum ? 'bg-white/5 hover:bg-[#25D366]/20 hover:text-[#25D366] hover:border-[#25D366]/30 text-gray-400' : 'bg-white/[0.02] text-gray-700 cursor-not-allowed'}`}>
-                                                                <MessageCircle className="h-4 w-4" />
-                                                            </Button>
-                                                        </a>
-                                                    </div>
-                                                    <Button
-                                                        onClick={() => openManagement(lead)}
-                                                        className="h-11 px-6 rounded-2xl bg-white/5 hover:bg-primary hover:text-black font-black text-[10px] uppercase tracking-widest border border-white/10 hover:border-transparent transition-all shadow-lg hover:shadow-primary/20"
-                                                    >
-                                                        Gestionar
-                                                    </Button>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    )
-                                })}
-                        </div>
-
-                        {/* Bulk Actions Floating Bar */}
-                        <BulkActionsBar
-                            selectedIds={selectedIds}
-                            users={users}
-                            currentUserId={currentUser?.id || ''}
-                            onClear={() => setSelectedIds(new Set())}
-                            onDone={() => refreshData(currentUser)}
-                        />
+                        )}
                     </>
+
                 )}
             </main>
 
@@ -1696,6 +1598,6 @@ export default function Dashboard() {
                     </div>
                 )
             }
-        </div>
+        </div >
     );
 }

@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+server/node_modules
+*.tsbuildinfo
+.tmp
+.gemini
+brain
+*.csv
+*.xlsx
+uploads
+src/_temp_*
+temp_*
+*.log

@@ -15,9 +15,10 @@ interface InlineStatusDropdownProps {
     lead: Lead;
     userId: string;
     onUpdated: () => void;
+    onScheduleRequest?: () => void;
 }
 
-export function InlineStatusDropdown({ lead, userId, onUpdated }: InlineStatusDropdownProps) {
+export function InlineStatusDropdown({ lead, userId, onUpdated, onScheduleRequest }: InlineStatusDropdownProps) {
     const [open, setOpen] = useState(false);
     const [saving, setSaving] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -32,6 +33,13 @@ export function InlineStatusDropdown({ lead, userId, onUpdated }: InlineStatusDr
 
     const handleSelect = async (newStatus: string) => {
         if (newStatus === lead.estado_gestion) { setOpen(false); return; }
+
+        if (newStatus === 'Por Contactar' && onScheduleRequest) {
+            onScheduleRequest();
+            setOpen(false);
+            return;
+        }
+
         setSaving(true);
         setOpen(false);
         await updateLeadStatus(lead.id, newStatus, userId, "");

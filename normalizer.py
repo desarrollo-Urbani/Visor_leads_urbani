@@ -3,6 +3,7 @@ import re
 import sys
 import os
 import argparse
+import json
 
 # --- CONFIGURATION: KEYWORD MAPPING ---
 # Define keywords that map to our target schema columns.
@@ -84,6 +85,61 @@ def extract_email_from_text(text):
     if match:
         return match.group(0)
     return ""
+
+def summarize_chat(chat_content):
+    if pd.isna(chat_content) or not str(chat_content).strip():
+        return ""
+    
+    s = str(chat_content).strip()
+    
+    # Check if it's JSON
+    if (s.startswith('[') and s.endswith(']')) or (s.startswith('{') and s.endswith('}')):
+        try:
+            data = json.loads(s)
+            if isinstance(data, list):
+                summary_parts = []
+                user_msgs = [m['message'] for m in data if m.get('sender') == 'user']
+                
+                # Heuristics for summary
+                # 1. First user message (intent)
+                if user_msgs:
+                    summary_parts.append(f"Intención: {user_msgs[0]}")
+                
+                # 2. Look for keywords in all user messages
+                keywords = {
+                    'renta': ['renta', 'sueldo', 'gano', 'ingreso', 'líquido', '$'],
+                    'interés': ['vivir', 'invertir', 'comprar', 'interesa'],
+                    'contacto': ['llame', 'mañana', 'tarde', 'horario', 'contacto', 'llamar']
+                }
+                
+                found_info = {}
+                for msg in user_msgs:
+                    msg_low = msg.lower()
+                    for key, words in keywords.items():
+                        if any(w in msg_low for w in words):
+                            if key not in found_info: found_info[key] = []
+                            found_info[key].append(msg.strip())
+                
+                if 'interés' in found_info:
+                    summary_parts.append(f"Interés: {found_info['interés'][-1]}")
+                if 'renta' in found_info:
+                    summary_parts.append(f"Info Renta: {found_info['renta'][-1]}")
+                if 'contacto' in found_info:
+                    summary_parts.append(f"Preferencia Contacto: {found_info['contacto'][-1]}")
+                
+                if not summary_parts and user_msgs:
+                    # Fallback: just join the last few user messages
+                    return " | ".join(user_msgs[-3:])
+                    
+                return " -- ".join(summary_parts)
+        except:
+            pass
+            
+    # If not JSON or parsing fails, just clean basic characters as requested
+    clean = re.sub(r'[\[\]\{\}]', '', s)
+    clean = re.sub(r'"message":"(.*?)"', r'\1', clean)
+    clean = re.sub(r'"sender":"(.*?)"', r'(\1):', clean)
+    return clean.strip()
 
 def normalize_file(input_path, output_path=None):
     print(f"Propcessing: {input_path}")
@@ -221,7 +277,12 @@ def normalize_file(input_path, output_path=None):
                 final_cols.append('observacion')
                 break
 
-    final_df = df[final_cols]
+    final_df = df[final_cols].copy()
+    
+    # 6. Apply intelligent summary to 'observacion'
+    if 'observacion' in final_df.columns:
+        print("Creating human-readable summaries for 'observacion'...")
+        final_df['observacion'] = final_df['observacion'].apply(summarize_chat)
     
     if not output_path:
         base, ext = os.path.splitext(input_path)
