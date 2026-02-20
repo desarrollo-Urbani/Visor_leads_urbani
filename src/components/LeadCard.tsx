@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Phone, MessageCircle, Mail, History, Fingerprint, Banknote, Clock, Save } from "lucide-react";
+import { Phone, MessageCircle, Mail, History, Fingerprint, Banknote, Clock, Save, Calendar, Bell } from "lucide-react";
 import { updateLeadStatus } from "@/lib/api";
 import type { Lead, User } from "@/types";
 
@@ -23,6 +23,7 @@ export default function LeadCard({
     refreshData
 }: LeadCardProps) {
     const [rentaValue, setRentaValue] = useState(lead.renta || "");
+    const [scheduledDateValue, setScheduledDateValue] = useState(lead.fecha_proximo_contacto || "");
     const [status, setStatus] = useState(lead.estado_gestion || "No Gestionado");
     const [note, setNote] = useState("");
     const [saving, setSaving] = useState(false);
@@ -50,7 +51,7 @@ export default function LeadCard({
     const handleSave = async () => {
         setSaving(true);
         try {
-            const success = await updateLeadStatus(lead.id, status, currentUser?.id || "", note, undefined, rentaValue);
+            const success = await updateLeadStatus(lead.id, status, currentUser?.id || "", note, scheduledDateValue, rentaValue);
             if (success) {
                 setNote("");
                 refreshData();
@@ -95,11 +96,17 @@ export default function LeadCard({
                         </div>
                     </div>
 
-                    <div className="flex flex-col items-end">
+                    <div className="flex flex-col items-end gap-2">
                         <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[9px] font-bold text-gray-400">
                             <Clock className="w-3 h-3" />
                             <span>{waitingHours} hrs espera</span>
                         </div>
+                        {lead.fecha_proximo_contacto && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-bold text-emerald-400">
+                                <Bell className="w-3 h-3" />
+                                <span>Prox: {new Date(lead.fecha_proximo_contacto).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
             </CardHeader>
@@ -163,6 +170,20 @@ export default function LeadCard({
                             <option value="No Interesado">No Interesado</option>
                         </select>
                     </div>
+
+                    {status === "Por Contactar" && (
+                        <div className="flex flex-col gap-1.5 animate-in slide-in-from-top-2 duration-300">
+                            <label className="text-[9px] text-primary uppercase font-black tracking-widest flex items-center gap-2">
+                                <Calendar className="w-3 h-3" /> Próximo Contacto (Fecha/Hora)
+                            </label>
+                            <input
+                                type="datetime-local"
+                                value={scheduledDateValue}
+                                onChange={(e) => setScheduledDateValue(e.target.value)}
+                                className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
+                            />
+                        </div>
+                    )}
 
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[9px] text-primary uppercase font-black tracking-widest">Registrar Gestión</label>
