@@ -19,19 +19,21 @@ export default function MetricsDashboard({ leads }: MetricsDashboardProps) {
         const total = leads.length;
         const contacted = leads.filter(l => l.estado_gestion !== 'No Gestionado').length;
 
-        // Parse rent logic: remove non-numeric chars but keep potential numbers
-        const totalRent = leads.reduce((sum, l) => {
+        // Parse rent logic: average of reported incomes
+        const rents = leads.map(l => {
             const rentaStr = String(l.renta || "0");
             const val = parseFloat(rentaStr.replace(/[^0-9.-]+/g, ""));
-            return sum + (isNaN(val) ? 0 : val);
-        }, 0);
+            return isNaN(val) ? 0 : val;
+        }).filter(v => v > 0);
+
+        const avgRent = rents.length > 0 ? rents.reduce((a, b) => a + b, 0) / rents.length : 0;
 
         return {
             total,
             contacted,
             pendingFollowUp: leads.filter(l => l.estado_gestion === 'Por Contactar').length,
             conversionRate: total > 0 ? ((contacted / total) * 100).toFixed(1) : 0,
-            totalRent: new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalRent)
+            avgRent: new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(avgRent)
         };
     }, [leads]);
 
@@ -94,14 +96,14 @@ export default function MetricsDashboard({ leads }: MetricsDashboardProps) {
                 </Card>
                 <Card className="bg-[#18181b] border-white/5 shadow-xl rounded-2xl ring-1 ring-white/5 overflow-hidden border-b-primary/30 border-b-2">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500">Valor de Cartera</CardTitle>
+                        <CardTitle className="text-xs font-bold uppercase tracking-widest text-gray-500">Renta Promedio</CardTitle>
                         <div className="h-8 w-8 bg-green-500/10 rounded-lg flex items-center justify-center border border-green-500/20">
                             <span className="text-green-500 font-bold">$</span>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-extrabold text-white">{metrics.totalRent}</div>
-                        <p className="text-[10px] text-gray-400 font-medium mt-1 uppercase">Suma de rentas mensuales</p>
+                        <div className="text-3xl font-extrabold text-white">{metrics.avgRent}</div>
+                        <p className="text-[10px] text-gray-400 font-medium mt-1 uppercase">Promedio de rentas informadas</p>
                     </CardContent>
                 </Card>
             </div>
