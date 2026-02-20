@@ -58,6 +58,9 @@ export default function Dashboard() {
     const [bulkUserFile, setBulkUserFile] = useState<File | null>(null);
     const [uploadingUsers, setUploadingUsers] = useState(false);
 
+    // Navigation state
+    const [activeMainView, setActiveMainView] = useState<'dashboard' | 'gestionar'>('dashboard');
+
     // Multi-selection
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const toggleSelect = useCallback((id: string) => {
@@ -253,6 +256,8 @@ export default function Dashboard() {
 
     if (loading && !currentUser) return <div className="min-h-screen bg-[#09090b] flex items-center justify-center text-white font-bold animate-pulse">Cargando Sistema...</div>;
 
+    const isShowingSubAdminView = showUpload || showCampaigns || showUsersAdmin;
+
     return (
         <div className="flex min-h-screen bg-[#0d0d0f] text-white font-sans selection:bg-primary/30 relative overflow-hidden">
 
@@ -260,28 +265,39 @@ export default function Dashboard() {
             <aside className="w-64 bg-[#09090b] border-r border-white/5 flex flex-col fixed inset-y-0 z-40 p-6">
                 <div
                     className="flex items-center gap-3 mb-10 cursor-pointer group"
-                    onClick={goBack}
+                    onClick={() => { goBack(); setActiveMainView('dashboard'); }}
                 >
-                    <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30 group-hover:scale-110 transition-transform">
-                        <LayoutList className="h-6 w-6 text-primary" />
+                    <div className="w-12 h-12 bg-[#3f5d1e]/20 rounded-2xl flex items-center justify-center border border-[#3f5d1e]/30 group-hover:scale-110 transition-transform">
+                        <LayoutList className="h-6 w-6 text-[#9acd32]" />
                     </div>
                     <div>
-                        <h1 className="text-sm font-black text-white leading-none">Visor Leads</h1>
-                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">MVP Delivery</span>
+                        <h1 className="text-xl font-black text-white leading-none italic tracking-tight">Lead Console</h1>
+                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1 block">SALES ENTERPRISE V3</span>
                     </div>
                 </div>
 
-                <nav className="flex-1 space-y-1">
-                    <Button
-                        variant="ghost"
-                        onClick={goBack}
-                        className={`w-full justify-start h-11 rounded-xl text-xs font-bold ${(!showCampaigns && !showUsersAdmin && !showUpload) ? 'bg-primary/10 text-primary border border-primary/10' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
-                    >
-                        <LayoutList className="mr-3 h-4 w-4" /> Gestión de Leads
-                    </Button>
+                <nav className="flex-1 space-y-4">
+                    <div className="space-y-2">
+                        <Button
+                            variant="ghost"
+                            onClick={() => { goBack(); setActiveMainView('dashboard'); }}
+                            className={`w-full justify-start h-14 rounded-3xl text-sm font-bold transition-all px-6 ${(!isShowingSubAdminView && activeMainView === 'dashboard') ? 'bg-[#3f5d1e]/20 text-[#9acd32] border border-[#3f5d1e]/30 shadow-[0_0_20px_rgba(63,93,30,0.1)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                        >
+                            <LayoutList className="mr-4 h-5 w-5" /> Dashboard
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            onClick={() => { goBack(); setActiveMainView('gestionar'); }}
+                            className={`w-full justify-start h-14 rounded-3xl text-sm font-bold transition-all px-6 ${(!isShowingSubAdminView && activeMainView === 'gestionar') ? 'bg-[#3f5d1e]/20 text-[#9acd32] border border-[#3f5d1e]/30 shadow-[0_0_20px_rgba(63,93,30,0.1)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
+                        >
+                            <History className="mr-4 h-5 w-5" /> Gestionar
+                        </Button>
+                    </div>
 
                     {isAdmin && (
-                        <>
+                        <div className="pt-6 space-y-2">
+                            <p className="px-6 text-[10px] font-black text-gray-600 uppercase tracking-[0.2em] mb-4">Administración</p>
                             <Button
                                 variant="ghost"
                                 onClick={() => { goBack(); setShowCampaigns(true); loadCampaigns(); }}
@@ -303,7 +319,7 @@ export default function Dashboard() {
                             >
                                 <Upload className="mr-3 h-4 w-4" /> Cargar Base
                             </Button>
-                        </>
+                        </div>
                     )}
                 </nav>
 
@@ -452,109 +468,115 @@ export default function Dashboard() {
                 )}
 
                 {/* Unified Main View */}
-                {!showUpload && !showCampaigns && !showUsersAdmin && (
+                {!isShowingSubAdminView && (
                     <div className="animate-in fade-in duration-500">
 
-                        {/* Summary Bar */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                            <div className="bg-white/5 border border-white/5 p-5 rounded-2xl">
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Pendientes</p>
-                                <p className="text-2xl font-black text-white leading-none">
-                                    {leads.filter(l => l.estado_gestion === 'No Gestionado').length}
-                                </p>
-                            </div>
-                            <div className="bg-primary/5 border border-primary/20 p-5 rounded-2xl">
-                                <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Contactar Hoy</p>
-                                <p className="text-2xl font-black text-white leading-none">
-                                    {leads.filter(l => {
-                                        if (l.estado_gestion !== 'Por Contactar' || !l.fecha_proximo_contacto) return false;
-                                        return l.fecha_proximo_contacto.startsWith(new Date().toISOString().split('T')[0]);
-                                    }).length}
-                                </p>
-                            </div>
-                            <div className="bg-white/5 border border-white/5 p-5 rounded-2xl">
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">En Proceso</p>
-                                <p className="text-2xl font-black text-white leading-none">
-                                    {leads.filter(l => l.estado_gestion === 'En Proceso').length}
-                                </p>
-                            </div>
-                            <div className="bg-white/5 border border-white/5 p-5 rounded-2xl">
-                                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Vía AI</p>
-                                <p className="text-2xl font-black text-white leading-none">
-                                    {leads.filter(l => l.es_ia).length}
-                                </p>
-                            </div>
-                        </div>
+                        {activeMainView === 'dashboard' && (
+                            <>
+                                {/* Summary Bar */}
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                                    <div className="bg-white/5 border border-white/5 p-5 rounded-2xl">
+                                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Pendientes</p>
+                                        <p className="text-2xl font-black text-white leading-none">
+                                            {leads.filter(l => l.estado_gestion === 'No Gestionado').length}
+                                        </p>
+                                    </div>
+                                    <div className="bg-[#3f5d1e]/10 border border-[#3f5d1e]/20 p-5 rounded-2xl">
+                                        <p className="text-[10px] font-bold text-[#9acd32] uppercase tracking-widest mb-1">Contactar Hoy</p>
+                                        <p className="text-2xl font-black text-white leading-none">
+                                            {leads.filter(l => {
+                                                if (l.estado_gestion !== 'Por Contactar' || !l.fecha_proximo_contacto) return false;
+                                                return l.fecha_proximo_contacto.startsWith(new Date().toISOString().split('T')[0]);
+                                            }).length}
+                                        </p>
+                                    </div>
+                                    <div className="bg-white/5 border border-white/5 p-5 rounded-2xl">
+                                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">En Proceso</p>
+                                        <p className="text-2xl font-black text-white leading-none">
+                                            {leads.filter(l => l.estado_gestion === 'En Proceso').length}
+                                        </p>
+                                    </div>
+                                    <div className="bg-white/5 border border-white/5 p-5 rounded-2xl">
+                                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Vía AI</p>
+                                        <p className="text-2xl font-black text-white leading-none">
+                                            {leads.filter(l => l.es_ia).length}
+                                        </p>
+                                    </div>
+                                </div>
 
-                        {/* Filter Bar */}
-                        <div className="flex flex-wrap items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl mb-8">
-                            <select
-                                className="bg-black border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
-                                value={filterProyectoLead}
-                                onChange={(e) => setFilterProyectoLead(e.target.value)}
-                            >
-                                <option value="">Todos los Proyectos</option>
-                                {Array.from(new Set(leads.map(l => l.proyecto))).filter(Boolean).map(p => <option key={p} value={p}>{p}</option>)}
-                            </select>
-                            <select
-                                className="bg-black border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
-                                value={filterStatusLead}
-                                onChange={(e) => setFilterStatusLead(e.target.value)}
-                            >
-                                <option value="">Todos los Estados</option>
-                                <option value="No Gestionado">No Gestionado</option>
-                                <option value="Por Contactar">Por Contactar</option>
-                                <option value="En Proceso">En Proceso</option>
-                                <option value="Cerrado">Cerrado</option>
-                            </select>
-                            <select
-                                className="bg-black border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
-                                value={filterQualityLead}
-                                onChange={(e) => setFilterQualityLead(e.target.value)}
-                            >
-                                <option value="">Calidad AI/Hot</option>
-                                <option value="hot">🔥 Hot Leads</option>
-                                <option value="ia">🤖 Data AI</option>
-                            </select>
-                            <div className="flex-1" />
-                            <div className="text-[10px] font-black text-gray-600 uppercase">Mostrando: {filteredLeads.length} leads</div>
-                        </div>
-
-                        {/* Metrics for Admins */}
-                        {isAdmin && (
-                            <div className="mb-10 animate-in fade-in duration-700">
-                                <MetricsDashboard leads={leads} />
-                            </div>
+                                {/* Metrics for Admins and non-Admins */}
+                                <div className="animate-in slide-in-from-bottom-5 duration-700">
+                                    <MetricsDashboard leads={leads} />
+                                </div>
+                            </>
                         )}
 
-                        {/* Lead Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
-                            {filteredLeads.map(lead => (
-                                <LeadCard
-                                    key={lead.id}
-                                    lead={lead}
-                                    currentUser={currentUser}
-                                    isSelected={selectedIds.has(lead.id)}
-                                    toggleSelect={toggleSelect}
-                                    openHistory={openHistory}
-                                    refreshData={() => refreshData(currentUser)}
-                                />
-                            ))}
-                            {filteredLeads.length === 0 && (
-                                <div className="col-span-full py-40 text-center border-2 border-dashed border-white/5 rounded-3xl">
-                                    <p className="text-gray-600 font-bold uppercase tracking-[0.2em] text-sm">No se encontraron resultados</p>
+                        {activeMainView === 'gestionar' && (
+                            <div className="animate-in slide-in-from-bottom-5 duration-700">
+                                {/* Filter Bar */}
+                                <div className="flex flex-wrap items-center gap-4 p-4 bg-white/5 border border-white/5 rounded-2xl mb-8">
+                                    <select
+                                        className="bg-black border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
+                                        value={filterProyectoLead}
+                                        onChange={(e) => setFilterProyectoLead(e.target.value)}
+                                    >
+                                        <option value="">Todos los Proyectos</option>
+                                        {Array.from(new Set(leads.map(l => l.proyecto))).filter(Boolean).map(p => <option key={p} value={p}>{p}</option>)}
+                                    </select>
+                                    <select
+                                        className="bg-black border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
+                                        value={filterStatusLead}
+                                        onChange={(e) => setFilterStatusLead(e.target.value)}
+                                    >
+                                        <option value="">Todos los Estados</option>
+                                        <option value="No Gestionado">No Gestionado</option>
+                                        <option value="Por Contactar">Por Contactar</option>
+                                        <option value="En Proceso">En Proceso</option>
+                                        <option value="Cerrado">Cerrado</option>
+                                    </select>
+                                    <select
+                                        className="bg-black border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
+                                        value={filterQualityLead}
+                                        onChange={(e) => setFilterQualityLead(e.target.value)}
+                                    >
+                                        <option value="">Calidad AI/Hot</option>
+                                        <option value="hot">🔥 Hot Leads</option>
+                                        <option value="ia">🤖 Data AI</option>
+                                    </select>
+                                    <div className="flex-1" />
+                                    <div className="text-[10px] font-black text-gray-600 uppercase">Mostrando: {filteredLeads.length} leads</div>
                                 </div>
-                            )}
-                        </div>
 
-                        {/* Bulk Actions */}
-                        <BulkActionsBar
-                            selectedIds={selectedIds}
-                            users={users}
-                            currentUserId={currentUser?.id || ''}
-                            onClear={() => setSelectedIds(new Set())}
-                            onDone={() => refreshData(currentUser)}
-                        />
+                                {/* Lead Grid */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20">
+                                    {filteredLeads.map(lead => (
+                                        <LeadCard
+                                            key={lead.id}
+                                            lead={lead}
+                                            currentUser={currentUser}
+                                            isSelected={selectedIds.has(lead.id)}
+                                            toggleSelect={toggleSelect}
+                                            openHistory={openHistory}
+                                            refreshData={() => refreshData(currentUser)}
+                                        />
+                                    ))}
+                                    {filteredLeads.length === 0 && (
+                                        <div className="col-span-full py-40 text-center border-2 border-dashed border-white/5 rounded-3xl">
+                                            <p className="text-gray-600 font-bold uppercase tracking-[0.2em] text-sm">No se encontraron resultados</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Bulk Actions */}
+                                <BulkActionsBar
+                                    selectedIds={selectedIds}
+                                    users={users}
+                                    currentUserId={currentUser?.id || ''}
+                                    onClear={() => setSelectedIds(new Set())}
+                                    onDone={() => refreshData(currentUser)}
+                                />
+                            </div>
+                        )}
                     </div>
                 )}
             </main>
