@@ -1,10 +1,9 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'urbani-secret-key-2024';
 
-if (!JWT_SECRET) {
-    console.error('[FATAL] JWT_SECRET environment variable is not set. Server cannot start securely.');
-    process.exit(1);
+if (JWT_SECRET === 'urbani-secret-key-2024') {
+    console.warn('[WARN] JWT_SECRET environment variable is not set. Using default insecure fallback key. Please define JWT_SECRET in production.');
 }
 
 /**
