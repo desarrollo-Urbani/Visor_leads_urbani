@@ -42,12 +42,7 @@ export default function LeadCard({
 
     const waitingHours = getWaitingHours();
 
-    const formatCurrency = (val: string | undefined) => {
-        if (!val || val === "0") return "N/A";
-        const clean = val.toString().replace(/\./g, "").replace(/,/g, ".").replace(/[^0-9.]/g, "");
-        const n = parseFloat(clean);
-        return isNaN(n) ? "N/A" : new Intl.NumberFormat("es-CL", { style: "currency", currency: "CLP", maximumFractionDigits: 0 }).format(n);
-    };
+
 
     const handleSave = async () => {
         setSaving(true);
@@ -104,9 +99,9 @@ export default function LeadCard({
                         </div>
                         {lead.clasificacion && (
                             <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-bold ${lead.clasificacion === 'Caliente' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                                    lead.clasificacion === 'Tibio' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
-                                        lead.clasificacion === 'Frio' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' :
-                                            'bg-white/5 border-white/5 text-gray-400'
+                                lead.clasificacion === 'Tibio' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
+                                    lead.clasificacion === 'Frio' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' :
+                                        'bg-white/5 border-white/5 text-gray-400'
                                 }`}>
                                 {lead.clasificacion === 'Caliente' ? '🔥 ' : lead.clasificacion === 'Tibio' ? '🌤️ ' : lead.clasificacion === 'Frio' ? '❄️ ' : ''}
                                 {lead.clasificacion}
@@ -171,7 +166,7 @@ export default function LeadCard({
                         <label className="text-[9px] text-primary uppercase font-black tracking-widest">Nuevo Estado</label>
                         <select
                             value={status}
-                            onChange={(e) => setStatus(e.target.value as any)}
+                            onChange={(e) => setStatus(e.target.value as Lead['estado_gestion'])}
                             className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
                         >
                             <option value="No Gestionado">No Gestionado</option>

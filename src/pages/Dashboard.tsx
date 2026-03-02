@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getLeads, getUsers, uploadLeads, updateLeadStatus, getLeadHistory, assignLead, getContactEvents, downloadCsv, deleteContactEvent, getAdminUsers, createAdminUser, updateAdminUser, deleteAdminUser, resetAdminUserPassword, purgeLeads, exportLeads, logout } from "@/lib/api";
 import type { Lead, User } from "@/types";
-import { User as UserIcon, LayoutList, Upload, CheckSquare, Square, Search, History, Calendar, ChevronRight, Download, Clock, BarChart2, Trash2, UserPlus, X, RefreshCw, Edit, Power, Phone, Bot, Zap } from "lucide-react";
+import { User as UserIcon, LayoutList, Upload, Search, History, Download, BarChart2, Trash2, UserPlus, X, RefreshCw, Edit, Power, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import BulkActionsBar from "@/components/BulkActionsBar";
 import LeadCard from "@/components/LeadCard";
@@ -21,7 +21,7 @@ export default function Dashboard() {
     const [showUpload, setShowUpload] = useState(false);
     const [showCampaigns, setShowCampaigns] = useState(false);
     const [showUsersAdmin, setShowUsersAdmin] = useState(false);
-    const [showAudit, _setShowAudit] = useState(false);
+    const [_showAudit, _setShowAudit] = useState(false);
 
     // Filter States
     const [searchTerm, setSearchTerm] = useState("");
@@ -34,8 +34,8 @@ export default function Dashboard() {
     const [filterQualityLead, setFilterQualityLead] = useState<string>(() => {
         try { return JSON.parse(localStorage.getItem('visor_filters') || '{}').quality ?? ''; } catch { return ''; }
     });
-    const [filterEjecutivo, setFilterEjecutivo] = useState("");
-    const [filterJefe, setFilterJefe] = useState("");
+    const [filterEjecutivo, _setFilterEjecutivo] = useState("");
+    const [filterJefe, _setFilterJefe] = useState("");
 
     // History & Reassign
     const [historyLead, setHistoryLead] = useState<Lead | null>(null);
@@ -49,7 +49,7 @@ export default function Dashboard() {
     const [allocations, setAllocations] = useState<Record<string, number>>({});
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
-    const [uploadSuccess, setUploadSuccess] = useState<{ count: number, eventId: string } | null>(null);
+    const [uploadSuccess, _setUploadSuccess] = useState<{ count: number, eventId: string } | null>(null);
     const [campaignName, setCampaignName] = useState("");
     const [campaignsData, setCampaignsData] = useState<any[]>([]);
     const [loadingCampaigns, setLoadingCampaigns] = useState(false);
@@ -58,7 +58,7 @@ export default function Dashboard() {
     const [showUserModal, setShowUserModal] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [userForm, setUserForm] = useState({ nombre: '', email: '', role: 'ejecutivo', password: '', jefe_id: '', company_id: 'Urbani' });
-    const [bulkUserFile, setBulkUserFile] = useState<File | null>(null);
+    const [bulkUserFile, _setBulkUserFile] = useState<File | null>(null);
     const [uploadingUsers, setUploadingUsers] = useState(false);
 
     // Navigation state
@@ -180,7 +180,7 @@ export default function Dashboard() {
         try {
             const res = await uploadLeads(uploadFile, allocations, currentUser?.id || '', campaignName);
             if (res.success) {
-                setUploadSuccess({ count: res.count || 0, eventId: res.eventId || '' });
+                _setUploadSuccess({ count: res.count || 0, eventId: res.eventId || '' });
                 setUploadFile(null);
                 refreshData(currentUser);
             } else {
@@ -194,7 +194,7 @@ export default function Dashboard() {
         }
     };
 
-    const handleReassign = async (leadId: string, newUserId: string) => {
+    const _handleReassign = async (leadId: string, newUserId: string) => {
         if (!currentUser) return;
         setIsReassigning(true);
         const success = await assignLead(leadId, newUserId, currentUser.id);
@@ -232,7 +232,7 @@ export default function Dashboard() {
         }
     };
 
-    const handleBulkUserUpload = async () => {
+    const _handleBulkUserUpload = async () => {
         if (!bulkUserFile) return;
         setUploadingUsers(true);
         const formData = new FormData();
@@ -243,11 +243,11 @@ export default function Dashboard() {
         } catch (err) {
             console.error(err);
         } finally {
-            setUploadingUsers(false);
+            // setUploadingUsers(false);
         }
     };
 
-    const loadAudit = () => {
+    const _loadAudit = () => {
         // Mock or legacy audit logic
     };
 
