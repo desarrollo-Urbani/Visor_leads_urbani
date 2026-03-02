@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>V3 Producción - Visor Leads Urbani</title>
+  <style>
+    :root{
+      --bg:#f3f6fb;--panel:#ffffff;--line:#dfe6ef;--text:#0f172a;--muted:#64748b;
+      --primary:#1d4ed8;--ok:#15803d;--warn:#b45309;--danger:#b91c1c;
+      --chip:#eef2ff;
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    body{margin:0;background:var(--bg);color:var(--text)}
+    .top{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#0b1220;color:#fff}
+    .top .right{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{font-size:12px;padding:5px 9px;border-radius:999px;background:#1e293b}
+
+    .layout{display:grid;grid-template-columns:320px minmax(680px,1fr) 360px;gap:12px;padding:12px;height:calc(100vh - 56px)}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;min-height:0}
+    .h{padding:12px 14px;border-bottom:1px solid var(--line);font-weight:700}
+    .sub{font-size:12px;color:var(--muted);font-weight:500}
+    .pad{padding:10px 12px}
+    .scroll{overflow:auto;min-height:0}
+
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff}
+    .btn{border:1px solid var(--line);background:#fff;padding:8px 10px;border-radius:10px;font-size:13px;cursor:pointer}
+    .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+    .btn.ok{background:#ecfdf3;color:var(--ok);border-color:#bbf7d0}
+    .btn.warn{background:#fffbeb;color:var(--warn);border-color:#fde68a}
+    .btn.danger{background:#fef2f2;color:var(--danger);border-color:#fecaca}
+
+    .lead{padding:10px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+    .lead.active{background:#eff6ff;border-left:4px solid var(--primary)}
+    .lead .n{font-weight:650}
+    .lead .m{font-size:12px;color:var(--muted)}
+    .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+    .tag{font-size:11px;border:1px solid var(--line);padding:2px 7px;border-radius:8px;background:#f8fafc}
+
+    .sec{padding:12px 14px;border-bottom:1px solid var(--line)}
+    .kv{display:grid;grid-template-columns:130px 1fr;gap:8px;font-size:14px}
+    .kv div:nth-child(odd){color:var(--muted)}
+
+    .flow{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+    .step{font-size:11px;padding:8px;border:1px solid var(--line);border-radius:8px;background:#f8fafc;text-align:center}
+    .step.active{background:#dbeafe;border-color:#93c5fd;font-weight:700}
+
+    .timeline{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+    .event{border-left:3px solid #cbd5e1;padding-left:8px;font-size:13px}
+    .event small{display:block;color:var(--muted)}
+
+    .sticky{margin-top:auto;border-top:1px solid var(--line);padding:12px;background:#fff}
+    .helper{font-size:12px;color:var(--muted)}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <strong>Visor Leads Urbani · V3 Producción</strong>
+    <div class="right">
+      <span class="chip">Contactabilidad hoy 34%</span>
+      <span class="chip">T° 1er contacto 2.1h</span>
+      <span class="chip">Vencidos 9</span>
+      <span class="chip">Agendados 7</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- LeadQueue -->
+    <section class="panel" id="LeadQueue">
+      <div class="h">LeadQueue <div class="sub">Bandeja priorizada por SLA + probabilidad de contacto</div></div>
+      <div class="pad row">
+        <select><option>Filtro: Todos</option><option>Vencidos</option><option>Nuevos</option><option>Sin próximo paso</option></select>
+        <select><option>Orden: Prioridad</option><option>Renta alta</option><option>Más intentos</option></select>
+        <input placeholder="Buscar por nombre/teléfono/proyecto" />
+      </div>
+      <div class="scroll">
+        <article class="lead active">
+          <div class="n">María Pérez · Parque Norte</div>
+          <div class="m">+56 9 9234 8812 · maria@email.com</div>
+          <div class="tags"><span class="tag">🔥 Score 92</span><span class="tag">Intento 3/6</span><span class="tag">Vencido</span></div>
+        </article>
+        <article class="lead">
+          <div class="n">Luis Araya · Altos del Sol</div>
+          <div class="m">+56 9 8111 2233 · luis@email.com</div>
+          <div class="tags"><span class="tag">Nuevo</span><span class="tag">Renta 1.5M</span></div>
+        </article>
+        <article class="lead">
+          <div class="n">Carla Ríos · Condominio Urbani</div>
+          <div class="m">+56 9 7444 0199 · carla@email.com</div>
+          <div class="tags"><span class="tag">Sin contacto 5 días</span><span class="tag">Prioridad media</span></div>
+        </article>
+      </div>
+      <div class="sticky">
+        <div class="helper">Componente sugerido: <code>src/features/leads/components/LeadQueue.tsx</code></div>
+      </div>
+    </section>
+
+    <!-- LeadDetail + QuickActions -->
+    <section class="panel" id="LeadDetail">
+      <div class="h">LeadDetail + QuickActions<div class="sub">Flujo operativo para gestión en &lt;30s</div></div>
+
+      <div class="sec">
+        <div class="flow">
+          <div class="step">Nuevo</div>
+          <div class="step active">Primer contacto</div>
+          <div class="step">Contactado</div>
+          <div class="step">No contactable</div>
+          <div class="step">Agendado</div>
+          <div class="step">Cerrado/Perdido</div>
+        </div>
+      </div>
+
+      <div class="sec kv">
+        <div>Proyecto</div><div>Parque Norte</div>
+        <div>Teléfono</div><div>+56 9 9234 8812 <button class="btn">Llamar</button> <button class="btn">WhatsApp</button></div>
+        <div>Email</div><div>maria@email.com <button class="btn">Correo</button></div>
+        <div>Renta</div><div>$1.200.000</div>
+        <div>Observación</div><div>Interés en 2D/2B, solicita alternativa con subsidio.</div>
+      </div>
+
+      <div class="sec">
+        <strong>QuickActions</strong>
+        <div class="row" style="margin-top:8px">
+          <button class="btn warn">No contesta</button>
+          <button class="btn danger">Número inválido</button>
+          <button class="btn ok">Contactado</button>
+          <button class="btn primary">Agendar visita</button>
+          <button class="btn">Perdido</button>
+        </div>
+      </div>
+
+      <div class="sec">
+        <div class="row">
+          <div style="flex:1;min-width:180px">
+            <label class="helper">Motivo (requerido)</label>
+            <select><option>Seleccionar motivo</option><option>No responde</option><option>Teléfono inválido</option><option>Interesado</option><option>No califica</option></select>
+          </div>
+          <div style="flex:1;min-width:180px">
+            <label class="helper">Próxima acción</label>
+            <select><option>Llamar</option><option>WhatsApp</option><option>Email</option><option>Visita</option></select>
+          </div>
+          <div style="flex:1;min-width:180px">
+            <label class="helper">Fecha/hora</label>
+            <input type="datetime-local" />
+          </div>
+        </div>
+      </div>
+
+      <div class="sec" style="border-bottom:none">
+        <label class="helper">Nota rápida (máx 280)</label>
+        <textarea rows="3" placeholder="Ej: pidió llamada mañana 18:30; evaluar DS19"></textarea>
+      </div>
+
+      <div class="sticky row" style="justify-content:space-between">
+        <span class="helper">Componente sugerido: <code>src/features/leads/components/LeadDetail.tsx</code></span>
+        <button class="btn primary">Guardar + Traer siguiente lead</button>
+      </div>
+    </section>
+
+    <!-- ContactTimeline -->
+    <section class="panel" id="ContactTimeline">
+      <div class="h">ContactTimeline<div class="sub">Evidencia de gestión y control de cadencia</div></div>
+
+      <div class="sec">
+        <strong>Cadencia sugerida</strong>
+        <div class="sub" style="margin-top:6px">D1 llamada+WA · D2 llamada · D4 WA/email · D6 llamada · D8 WA · D10 cierre no contactable</div>
+      </div>
+
+      <div class="timeline scroll">
+        <div class="event"><small>Hoy 10:45</small>No contesta → próximo intento mañana 09:30</div>
+        <div class="event"><small>Ayer 17:20</small>WhatsApp enviado sin respuesta</div>
+        <div class="event"><small>20 feb 11:00</small>Contactado breve, agendar visita sábado</div>
+        <div class="event"><small>19 feb 09:35</small>Primer intento llamada (ocupada)</div>
+      </div>
+
+      <div class="sec">
+        <strong>Alertas</strong>
+        <div class="tags" style="margin-top:8px">
+          <span class="tag">9 leads vencidos</span>
+          <span class="tag">6 sin próximo paso</span>
+          <span class="tag">2 con teléfono inválido</span>
+        </div>
+      </div>
+
+      <div class="sticky">
+        <div class="helper">Componente sugerido: <code>src/features/leads/components/ContactTimeline.tsx</code></div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

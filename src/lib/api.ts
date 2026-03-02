@@ -26,7 +26,7 @@ const apiFetch = async (path: string, options: RequestInit = {}): Promise<Respon
 };
 
 // --- Auth ---
-export async function login(email: string, password: string): Promise<{ success: boolean; error?: string }> {
+export async function login(email: string, password: string): Promise<{ success: boolean; error?: string; user?: User }> {
     try {
         const response = await fetch(`${API_URL}/login`, {
             method: 'POST',
@@ -37,7 +37,7 @@ export async function login(email: string, password: string): Promise<{ success:
         if (data.success && data.token) {
             saveToken(data.token);
             localStorage.setItem('visor_user', JSON.stringify(data.user));
-            return { success: true };
+            return { success: true, user: data.user };
         }
         return { success: false, error: data.error || 'Credenciales inválidas' };
     } catch (e) {
@@ -72,7 +72,7 @@ export async function getLeads(
     params.append('page', String(page));
     params.append('pageSize', String(pageSize));
 
-    const filterKeys = ['ejecutivo_id', 'proyecto', 'estado', 'jefe_id', 'fecha_desde', 'fecha_hasta'];
+    const filterKeys = ['ejecutivo_id', 'proyecto', 'estado', 'jefe_id', 'fecha_desde', 'fecha_hasta', 'search'];
     filterKeys.forEach(key => { if (filters[key]) params.append(key, filters[key]); });
 
     const response = await apiFetch(`/leads?${params.toString()}`, { method: 'GET', headers: {} });
@@ -110,11 +110,12 @@ export const assignLead = async (leadId: string, userId: string, adminId: string
     }
 };
 
-export async function uploadLeads(file: File, allocations: Record<string, number>, adminId: string): Promise<{ success: boolean; count?: number; eventId?: string; error?: string }> {
+export async function uploadLeads(file: File, allocations: Record<string, number>, adminId: string, campaignName: string): Promise<{ success: boolean; count?: number; eventId?: string; error?: string }> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('allocations', JSON.stringify(allocations));
     formData.append('adminId', adminId);
+    formData.append('campaignName', campaignName);
 
     try {
         const response = await fetch(`${API_URL}/upload`, {
@@ -259,6 +260,19 @@ export async function resetAdminUserPassword(userId: string, newPassword: string
     }
 }
 
+export async function deleteAdminUser(userId: string): Promise<boolean> {
+    try {
+        const response = await apiFetch(`/admin/users/${userId}`, {
+            method: 'DELETE',
+            headers: {},
+        });
+        return response.ok;
+    } catch (e) {
+        console.error('[deleteAdminUser]', e);
+        return false;
+    }
+}
+
 export async function purgeLeads(): Promise<boolean> {
     try {
         const response = await apiFetch('/leads/purge', { method: 'DELETE', headers: {} });
@@ -268,3 +282,35 @@ export async function purgeLeads(): Promise<boolean> {
         return false;
     }
 }
+
+export async function exportLeads(filters: Record<string, string> = {}) {
+    try {
+        const params = new URLSearchParams();
+        const filterKeys = ['ejecutivo_id', 'proyecto', 'estado', 'jefe_id', 'fecha_desde', 'fecha_hasta'];
+        filterKeys.forEach(key => { if (filters[key]) params.append(key, filters[key]); });
+
+        const response = await fetch(`${API_URL}/admin/export-leads?${params.toString()}`, {
+            headers: authHeaders(),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || 'Error al exportar');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const date = new Date().toISOString().split('T')[0];
+        a.download = `gestion_leads_${date}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+    } catch (e: any) {
+        console.error('[exportLeads]', e);
+        alert(e.message || 'Error al exportar leads');
+    }
+}
+

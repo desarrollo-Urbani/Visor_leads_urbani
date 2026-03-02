@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Phone, MessageCircle, Mail, History, Fingerprint, Banknote, Clock, Save, Calendar, Bell } from "lucide-react";
 import { updateLeadStatus } from "@/lib/api";
+import { DateTimePicker } from "./ui/DateTimePicker";
 import type { Lead, User } from "@/types";
 
 interface LeadCardProps {
@@ -101,6 +102,16 @@ export default function LeadCard({
                             <Clock className="w-3 h-3" />
                             <span>{waitingHours} hrs espera</span>
                         </div>
+                        {lead.clasificacion && (
+                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-bold ${lead.clasificacion === 'Caliente' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                                    lead.clasificacion === 'Tibio' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
+                                        lead.clasificacion === 'Frio' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' :
+                                            'bg-white/5 border-white/5 text-gray-400'
+                                }`}>
+                                {lead.clasificacion === 'Caliente' ? '🔥 ' : lead.clasificacion === 'Tibio' ? '🌤️ ' : lead.clasificacion === 'Frio' ? '❄️ ' : ''}
+                                {lead.clasificacion}
+                            </div>
+                        )}
                         {lead.fecha_proximo_contacto && (
                             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-bold text-emerald-400">
                                 <Bell className="w-3 h-3" />
@@ -160,7 +171,7 @@ export default function LeadCard({
                         <label className="text-[9px] text-primary uppercase font-black tracking-widest">Nuevo Estado</label>
                         <select
                             value={status}
-                            onChange={(e) => setStatus(e.target.value)}
+                            onChange={(e) => setStatus(e.target.value as any)}
                             className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
                         >
                             <option value="No Gestionado">No Gestionado</option>
@@ -176,11 +187,10 @@ export default function LeadCard({
                             <label className="text-[9px] text-primary uppercase font-black tracking-widest flex items-center gap-2">
                                 <Calendar className="w-3 h-3" /> Próximo Contacto (Fecha/Hora)
                             </label>
-                            <input
-                                type="datetime-local"
+                            <DateTimePicker
                                 value={scheduledDateValue}
-                                onChange={(e) => setScheduledDateValue(e.target.value)}
-                                className="w-full bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-xs text-white outline-none focus:border-primary/50"
+                                onChange={setScheduledDateValue}
+                                className="w-full"
                             />
                         </div>
                     )}

@@ -1,6 +1,22 @@
+/*
+  API principal del Visor de Leads.
+
+  Este archivo concentra:
+  - Autenticación (login JWT)
+  - Gestión de leads (listar, actualizar, historial, asignación)
+  - Administración de usuarios (CRUD + reset password + carga masiva)
+  - Carga de campañas/leads desde CSV
+  - Exportaciones y endpoints de dashboard
+  - Servido del frontend compilado (dist)
+
+  Nota de mantenimiento:
+  - Si este archivo crece más, conviene separar rutas por dominio:
+    auth.routes.js / leads.routes.js / admin.routes.js / dashboard.routes.js
+*/
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
-const path = require('path');
 const multer = require('multer');
 const csv = require('csv-parser');
 const fs = require('fs');
@@ -83,7 +99,8 @@ app.post('/api/login', loginLimiter, async (req, res) => {
 
 // --- LEADS WITH HIERARCHY ---
 app.get('/api/leads', verifyToken, async (req, res) => {
-    const { userId, role, ejecutivo_id, proyecto, estado, jefe_id, fecha_desde, fecha_hasta } = req.query;
+    const { id: userId, role } = req.user;
+    const { ejecutivo_id, proyecto, estado, jefe_id, fecha_desde, fecha_hasta, search } = req.query;
     const page = parseInt(req.query.page || '0', 10);
     const pageSize = parseInt(req.query.pageSize || '100', 10);
     const safePage = Math.max(0, page);
@@ -122,6 +139,11 @@ app.get('/api/leads', verifyToken, async (req, res) => {
         if (fecha_desde) { params.push(fecha_desde); query += ` AND l.created_at >= $${params.length}`; }
         if (fecha_hasta) { params.push(fecha_hasta); query += ` AND l.created_at <= $${params.length}`; }
 
+        if (search) {
+            params.push(`%${search}%`);
+            query += ` AND (l.nombre ILIKE $${params.length} OR l.email ILIKE $${params.length} OR l.telefono ILIKE $${params.length})`;
+        }
+
         // Count total for pagination metadata
         const countQuerySnapshot = query.replace('SELECT l.*, u.nombre as nombre_ejecutivo', 'SELECT COUNT(*) as total');
         const countResult = await db.query(countQuerySnapshot, params);
@@ -132,6 +154,8 @@ app.get('/api/leads', verifyToken, async (req, res) => {
         params.push(safePage * safePageSize);
         query += ` ORDER BY l.created_at DESC LIMIT $${params.length - 1} OFFSET $${params.length}`;
 
+        console.log('[DEBUG-SQL]', query);
+        console.log('[DEBUG-PARAMS]', params);
         const result = await db.query(query, params);
         res.json({ data: result.rows, total, page: safePage, pageSize: safePageSize });
     } catch (err) {
@@ -139,6 +163,73 @@ app.get('/api/leads', verifyToken, async (req, res) => {
         res.status(500).json({ error: 'Error al obtener leads' });
     }
 });
+
+app.get('/api/admin/export-leads', verifyToken, async (req, res) => {
+    const { id: userId, role } = req.user;
+    const { ejecutivo_id, proyecto, estado, jefe_id, fecha_desde, fecha_hasta } = req.query;
+
+    try {
+        let query = `
+            SELECT l.nombre, l.email, l.telefono, l.proyecto, l.estado_gestion, 
+                   l.notas_ejecutivo, l.renta, l.fecha_proximo_contacto, l.created_at,
+                   u.nombre as nombre_ejecutivo 
+            FROM leads l 
+            LEFT JOIN usuarios_sistema u ON l.asignado_a = u.id
+            WHERE 1=1
+        `;
+        const params = [];
+
+        if (role === 'admin') {
+            // See everything
+        } else if (role === 'gerente') {
+            params.push(userId);
+            query += ` AND (l.asignado_a = $${params.length} OR u.jefe_id = $${params.length} 
+                         OR u.jefe_id IN (SELECT id FROM usuarios_sistema WHERE jefe_id = $${params.length}))`;
+        } else if (role === 'subgerente') {
+            params.push(userId);
+            query += ` AND (l.asignado_a = $${params.length} OR u.jefe_id = $${params.length})`;
+        } else {
+            params.push(userId);
+            query += ` AND l.asignado_a = $${params.length}`;
+        }
+
+        if (ejecutivo_id) { params.push(ejecutivo_id); query += ` AND l.asignado_a = $${params.length}`; }
+        if (proyecto) { params.push(proyecto); query += ` AND l.proyecto = $${params.length}`; }
+        if (estado) { params.push(estado); query += ` AND l.estado_gestion = $${params.length}`; }
+        if (jefe_id) { params.push(jefe_id); query += ` AND u.jefe_id = $${params.length}`; }
+        if (fecha_desde) { params.push(fecha_desde); query += ` AND l.created_at >= $${params.length}`; }
+        if (fecha_hasta) { params.push(fecha_hasta); query += ` AND l.created_at <= $${params.length}`; }
+
+        query += ` ORDER BY l.created_at DESC`;
+
+        const result = await db.query(query, params);
+        const rows = result.rows;
+
+        if (rows.length === 0) {
+            return res.status(404).json({ error: 'No hay datos para exportar' });
+        }
+
+        const headers = Object.keys(rows[0]);
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => headers.map(header => {
+                const val = row[header];
+                if (val === null || val === undefined) return '';
+                const str = String(val).replace(/"/g, '""').replace(/\n/g, ' ').replace(/\r/g, '');
+                return `"${str}"`;
+            }).join(','))
+        ].join('\n');
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="gestion_leads_${new Date().toISOString().split('T')[0]}.csv"`);
+        res.send('\uFEFF' + csvContent);
+
+    } catch (err) {
+        console.error('[EXPORT ERROR]', err);
+        res.status(500).json({ error: 'Error al exportar datos' });
+    }
+});
+
 
 app.patch('/api/leads/:id', verifyToken, async (req, res) => {
     const { id } = req.params;
@@ -273,6 +364,13 @@ app.patch('/api/admin/users/:id', verifyToken, requireAdmin, async (req, res) =>
             setClauses.push(`${field} = $${params.length}`);
         }
     }
+
+    if (req.body.password) {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        params.push(hashedPassword);
+        setClauses.push(`password_hash = $${params.length}`);
+    }
+
     if (setClauses.length === 0) return res.status(400).json({ error: 'No fields to update' });
     params.push(id);
     try {
@@ -281,6 +379,46 @@ app.patch('/api/admin/users/:id', verifyToken, requireAdmin, async (req, res) =>
     } catch (err) {
         console.error('[UPDATE USER]', err);
         res.status(500).json({ error: 'Error al actualizar usuario' });
+    }
+});
+
+app.delete('/api/admin/users/:id', verifyToken, requireAdmin, async (req, res) => {
+    const { id } = req.params;
+
+    if (req.user.id === id) {
+        return res.status(400).json({ error: 'No puedes eliminarte a ti mismo' });
+    }
+
+    try {
+        // Integrity check: Leads
+        const leadsCheck = await db.query('SELECT id FROM leads WHERE asignado_a = $1 LIMIT 1', [id]);
+        if (leadsCheck.rows.length > 0) {
+            return res.status(400).json({
+                error: 'No se puede eliminar: El usuario tiene leads asignados. Desactívalo en su lugar o reasigna sus leads.'
+            });
+        }
+
+        // Integrity check: Campaign Creator
+        const campaignCheck = await db.query('SELECT id FROM contact_events WHERE created_by = $1 LIMIT 1', [id]);
+        if (campaignCheck.rows.length > 0) {
+            return res.status(400).json({
+                error: 'No se puede eliminar: El usuario es creador de campañas históricas. Desactívalo en su lugar.'
+            });
+        }
+
+        // Integrity check: Sub-users
+        const subUsersCheck = await db.query('SELECT id FROM usuarios_sistema WHERE jefe_id = $1 LIMIT 1', [id]);
+        if (subUsersCheck.rows.length > 0) {
+            return res.status(400).json({
+                error: 'No se puede eliminar: El usuario es jefe de otros usuarios. Reasigna a sus subordinados primero.'
+            });
+        }
+
+        await db.query('DELETE FROM usuarios_sistema WHERE id = $1', [id]);
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[DELETE USER]', err);
+        res.status(500).json({ error: 'Error al eliminar usuario' });
     }
 });
 
@@ -301,18 +439,32 @@ app.post('/api/admin/users/:id/reset-password', verifyToken, requireAdmin, async
 // --- LEADS UPLOAD ---
 app.post('/api/upload', verifyToken, requireAdmin, upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No CSV' });
-    const { adminId, allocations } = req.body;
+    const { adminId, allocations, campaignName } = req.body;
     const allocMap = JSON.parse(allocations || '{}');
     const targetUserIds = Object.keys(allocMap);
+
     try {
+        // Detect separator by reading first line
+        const firstLine = fs.readFileSync(req.file.path, 'utf8').split('\n')[0];
+        const separator = firstLine.includes(';') ? ';' : ',';
+        console.log(`[UPLOAD] Detected separator: "${separator}"`);
+
         const eventRes = await db.query(
             'INSERT INTO contact_events (description, created_by) VALUES ($1, $2) RETURNING id',
-            [`Carga Masiva ${new Date().toLocaleDateString()}`, adminId || null]
+            [campaignName || `Carga Masiva ${new Date().toLocaleDateString()}`, adminId || null]
         );
         const eventId = eventRes.rows[0].id;
+
         const results = await new Promise((resolve, reject) => {
             const rows = [];
-            fs.createReadStream(req.file.path).pipe(csv()).on('data', d => rows.push(d)).on('end', () => resolve(rows)).on('error', reject);
+            fs.createReadStream(req.file.path)
+                .pipe(csv({
+                    separator,
+                    mapHeaders: ({ header }) => header.toLowerCase().trim()
+                }))
+                .on('data', d => rows.push(d))
+                .on('end', () => resolve(rows))
+                .on('error', reject);
         });
         const fileBuffer = fs.readFileSync(req.file.path);
         await db.query('INSERT INTO archivos_csv (nombre_archivo, contenido_binario, contact_event_id) VALUES ($1, $2, $3)', [req.file.originalname, fileBuffer, eventId]);
@@ -351,21 +503,21 @@ app.post('/api/upload', verifyToken, requireAdmin, upload.single('file'), async 
                     params.push(
                         (row.nombre || row.name || 'Sin Nombre').substring(0, 255),
                         (row.email || 'noemail@example.com').substring(0, 255),
-                        (row.renta || row.income || '0').toString().substring(0, 50),
+                        (row.renta || row.income || row.renta_mensual || '0').toString().substring(0, 50),
                         (row.proyecto || row.project || 'General').substring(0, 100),
-                        (row.telefono || row.phone || '').toString().substring(0, 50),
+                        (row.telefono || row.phone || row.celular || '').toString().substring(0, 50),
                         eventId,
                         assignedTo,
                         null,
-                        row.observacion || row.observation || '',
-                        (row.rut || '').toString().substring(0, 20),
-                        row.es_ia === 'true' || row.es_ia === true,
-                        row.es_caliente === 'true' || row.es_caliente === true
+                        row.observacion || row.observation || row.notas || '',
+                        (row.rut || row.dni || '').toString().substring(0, 20),
+                        row.es_ia === 'true' || row.es_ia === true || row.ai === 'true',
+                        row.clasificacion || row.classification || row.calidad || 'Sin Clasificacion'
                     );
                 });
                 if (batch.length > 0) {
                     await db.query(`
-                        INSERT INTO leads (nombre, email, renta, proyecto, telefono, estado_gestion, contact_event_id, asignado_a, renta_real, observacion, rut, es_ia, es_caliente) 
+                        INSERT INTO leads (nombre, email, renta, proyecto, telefono, estado_gestion, contact_event_id, asignado_a, renta_real, observacion, rut, es_ia, clasificacion) 
                         VALUES ${values.join(',')}
                         ON CONFLICT (email, telefono, proyecto) DO UPDATE SET
                             nombre = EXCLUDED.nombre,
@@ -376,7 +528,7 @@ app.post('/api/upload', verifyToken, requireAdmin, upload.single('file'), async 
                             asignado_a = EXCLUDED.asignado_a,
                             rut = EXCLUDED.rut,
                             es_ia = EXCLUDED.es_ia,
-                            es_caliente = EXCLUDED.es_caliente,
+                            clasificacion = EXCLUDED.clasificacion,
                             estado_gestion = 'No Gestionado'
                     `, params);
                 }
@@ -404,7 +556,7 @@ app.delete('/api/leads/purge', verifyToken, requireAdmin, async (req, res) => {
     } catch (err) {
         await db.query('ROLLBACK');
         console.error('[PURGE ERROR]', err);
-        res.status(500).json({ error: 'Error al purgar datos' });
+        res.status(500).json({ error: 'Error al purgar datos: ' + err.message });
     }
 });
 

@@ -93,7 +93,8 @@ def read_csv_envuelto(path: str) -> pd.DataFrame:
         return pd.DataFrame()
 
     header_line = lines[0]
-    header_cols = [c.strip() for c in header_line.split(",")]
+    # Detectar delimitador: Priorizar ';' según el manual de usuario
+    delim = ";" if ";" in header_line else ","
 
     rows = []
     for raw in lines[1:]:
@@ -108,26 +109,26 @@ def read_csv_envuelto(path: str) -> pd.DataFrame:
         # Restaura comillas internas: "" -> "
         inner = inner.replace('""', '"')
 
-        # Extrae fecha (primer campo antes de la primera coma que no está en JSON)
+        # Extrae fecha (primer campo antes del inicio del JSON)
         # La transcripción es un array JSON que empieza con [{ ...
-        # Estrategia: dividir por la primera coma encontrada ANTES del JSON
-        json_start = inner.find(",[{")
+        # Estrategia: buscar el delimitador seguido del inicio del array JSON
+        json_pattern = f"{delim}[{{"
+        json_start = inner.find(json_pattern)
         if json_start == -1:
-            # Intenta sin coma
             json_start = inner.find("[{")
             if json_start == -1:
                 continue
 
             prefix = inner[:json_start]
             rest   = inner[json_start:]
-            prefix_parts = [p.strip() for p in prefix.split(",")]
+            prefix_parts = [p.strip() for p in prefix.split(delim)]
             fecha        = prefix_parts[0] if len(prefix_parts) > 0 else ""
             nombre       = prefix_parts[1] if len(prefix_parts) > 1 else ""
             telefono_raw = prefix_parts[2] if len(prefix_parts) > 2 else ""
         else:
             prefix       = inner[:json_start]
-            rest         = inner[json_start+1:]   # quita la coma
-            prefix_parts = [p.strip() for p in prefix.split(",")]
+            rest         = inner[json_start+1:]   # quita el delimitador
+            prefix_parts = [p.strip() for p in prefix.split(delim)]
             fecha        = prefix_parts[0] if len(prefix_parts) > 0 else ""
             nombre       = prefix_parts[1] if len(prefix_parts) > 1 else ""
             telefono_raw = prefix_parts[2] if len(prefix_parts) > 2 else ""
@@ -260,6 +261,11 @@ def extract_renta(conv: str) -> str:
             return clean
     return "0"
 
+def extract_rut(conv: str) -> str:
+    """Busca un RUT chileno en la conversación utilizando la RE definida."""
+    m = RUT_RE.search(conv)
+    return m.group(0) if m else ""
+
 def clean_name(raw: str) -> str:
     # quita emojis y caracteres especiales, capitaliza
     name = re.sub(r'[^\w\s]', '', raw, flags=re.UNICODE)
@@ -368,6 +374,7 @@ def main():
         email     = extract_email(conv)
         telefono  = extract_phone(telefono_raw, conv)
         renta     = extract_renta(conv)
+        rut       = extract_rut(conv)
         proyecto  = project_tag if project_tag and project_tag.lower() not in ('nan', 'none', '') else ""
 
         # 3. Generar resumen con IA (o heurística)
@@ -390,13 +397,20 @@ def main():
         # 5. Limpiar caracteres especiales no deseados del nombre
         nombre_final = nombre if nombre else nombre_raw[:50]
 
+        # 6. Determinar flags adicionales para el CRM (es_caliente y es_ia)
+        es_caliente = "true" if "🔥" in tag_estado or "caliente" in tag_estado.lower() else "false"
+        es_ia = "true" if por_ia else "false"
+
         results.append({
             "nombre":      nombre_final,
             "email":       email,
             "telefono":    telefono,
+            "rut":         rut,
             "renta":       renta,
             "proyecto":    proyecto,
             "observacion": observacion,
+            "es_ia":       es_ia,
+            "es_caliente": es_caliente
         })
 
         status = "🤖 IA" if por_ia else "⚙️  heurística"
@@ -423,6 +437,7 @@ def main():
         print(f"  Nombre:    {r['nombre']}")
         print(f"  Email:     {r['email'] or '(no encontrado)'}")
         print(f"  Teléfono:  {r['telefono']}")
+        print(f"  RUT:       {r['rut'] or '(no encontrado)'}")
         print(f"  Renta:     {r['renta']}")
         print(f"  Proyecto:  {r['proyecto'] or '(no especificado)'}")
         print(f"  Observ:    {obs_short}...")

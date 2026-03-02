@@ -22,7 +22,7 @@ export default function MetricsDashboard({ leads }: MetricsDashboardProps) {
         // Parse rent logic: average of reported incomes
         const rents = leads.map(l => {
             const rentaStr = String(l.renta || "0");
-            const val = parseFloat(rentaStr.replace(/[^0-9.-]+/g, ""));
+            const val = parseFloat(rentaStr.replace(/\./g, "").replace(/[^0-9.-]+/g, ""));
             return isNaN(val) ? 0 : val;
         }).filter(v => v > 0);
 

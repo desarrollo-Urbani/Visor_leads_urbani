@@ -1,24 +1,33 @@
-# Resumen del Proyecto: Visor de Leads Urbani
+# Resumen del Proyecto: Visor de Leads Urbani (V3 Final Preparation)
 
-Este documento sirve como contexto técnico para que un LLM (como Claude, GPT o Gemini) comprenda el estado actual del proyecto y proponga pasos a seguir.
+Este documento es la fuente de verdad técnica sobre el estado actual del proyecto.
 
 ## 1. Arquitectura Técnica
-- **Frontend**: React 18 con TypeScript y Vite. Estilizado con Tailwind CSS y componentes de Shadcn UI.
-- **Backend**: Servidor Node.js con Express. Maneja la lógica de negocio, autenticación, y carga de archivos con **UPSERT Inteligente**.
-- **Base de Datos**: PostgreSQL 15 **Local a Docker** (con volumen persistente `postgres_data`).
-- **Contenerización**: Todo el sistema corre en containers (`docker-compose`).
+- **Frontend**: React 18 / TypeScript / Vite / Tailwind CSS / Shadcn UI.
+- **Backend**: Node.js / Express (Port 3000).
+- **Base de Datos**: PostgreSQL 15 en Docker.
+- **Seguridad**: Autenticación persistente vía JWT (8h) con validación de identidad en endpoints de gestión.
+- **Despliegue**: Docker Compose (Frontend + Backend + DB).
 
-## 2. Funciones Implementadas
-- **Dashboard de Métricas**: Visualización en tiempo real de leads.
-- **Normalización Inteligente**: `ai_normalizer.py` con Ollama (llama3.2:latest) para resúmenes automáticos con 🤖.
-- **Importación Robusta**: Prevención de duplicados basada en Email + Teléfono + Proyecto.
-- **Purga & Carga**: Herramientas administrativas para limpieza y repoblación de leads.
+# Visor Leads Urbani - Estado del Proyecto
 
-## 4. Credenciales y Acceso (Docker)
-- **URL Frontend**: [http://localhost:5173](http://localhost:5173) (Vite Dev)
-- **URL Unificada**: [http://localhost:3000](http://localhost:3000) (Producción)
-- **Admin**: `desarrollo@urbani.cl` / `Urbani2026!`
-- **Ejecutivo**: `felipe.torresp@gmail.com` / `Urbani2026!`
+## 🚀 Estado Actual: Preparado para Producción (Pre-Launch)
+El sistema ha sido auditado y los bugs críticos de la V3 han sido resueltos.
+
+### ✅ Mejoras Recientes (Feb 26, 2026)
+1. **Fix QuickActions**: Se corrigió el error de autocompletado de fechas (ahora usa hora local en lugar de UTC).
+2. **KPIs Dinámicos**: Implementación de indicadores reales en el header (Renta Promedio, % Gestión, Conteo de Vencidos y Total).
+3. **Build Verificado**: El proceso de compilación (`npm run build`) se ejecuta sin errores.
+4. **Seguridad**: Reforzamiento de RBAC y Login Limiter.
+
+### 🏛️ Arquitectura y Perfiles
+- **Monitor Administrativo (Dashboard)**: Acceso restringido a `admin`, `gerente` y `subgerente`. 
+- **Panel de Gestión V3**: Interfaz optimizada para `ejecutivo` con flujo Auto-Next.
+
+### ⚠️ Pendientes para el "Go-Live"
+- [ ] Cambiar `JWT_SECRET` en el archivo `.env` del servidor.
+- [ ] Configurar `ALLOWED_ORIGIN` en el servidor para el dominio final.
+- [ ] Realizar una carga de prueba con datos reales.
 
 ---
-**Estado Actual**: Finalizado y Operativo en Docker.
+**Ultima Actualización**: 26 de Febrero, 2026 - Auditoría y Fixes V3 Completados.

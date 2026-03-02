@@ -1,11 +1,13 @@
+require('dotenv').config({ path: './server/.env' });
 const db = require('./db');
 const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 
 async function ensureAdmin() {
     console.log("Checking Admin User...");
     const email = 'admin@urbani.com';
     const password = '123';
-    const hash = 'hashed_' + password;
+    const hash = bcrypt.hashSync(password, 10);
 
     try {
         const res = await db.query('SELECT * FROM usuarios_sistema WHERE email = $1', [email]);

@@ -45,11 +45,12 @@ export interface Lead {
     nombre_ejecutivo?: string;
     contact_event_id?: string;
     antiguedad_laboral?: string;
-    es_caliente?: boolean;
+    clasificacion?: "Caliente" | "Tibio" | "Frio" | "Sin Clasificacion";
     es_ia?: boolean;
     rut?: string;
     observacion?: string;
     created_at?: string;
+    es_caliente?: boolean;
 }
 
 export interface User {

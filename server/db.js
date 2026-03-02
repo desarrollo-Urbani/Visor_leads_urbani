@@ -1,7 +1,15 @@
+// Capa de acceso a datos del backend.
+// Responsabilidades:
+// 1) cargar variables de entorno
+// 2) levantar pool de PostgreSQL
+// 3) reintentar queries ante fallos de red temporales
+// 4) caer en modo mock si la DB no está disponible
 const { Pool } = require('pg');
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-// Validate required env vars — fail fast if missing
+// Validación temprana de variables críticas de DB.
+// Si falta alguna, detenemos el proceso para evitar errores ambiguos en runtime.
 const required = ['DB_USER', 'DB_HOST', 'DB_NAME', 'DB_PASSWORD'];
 required.forEach(key => {
     if (!process.env[key]) {
@@ -10,6 +18,8 @@ required.forEach(key => {
     }
 });
 
+// Pool de conexiones PostgreSQL.
+// Ajustes pensados para ambiente productivo básico.
 const pool = new Pool({
     user: process.env.DB_USER,
     host: process.env.DB_HOST,
@@ -19,14 +29,14 @@ const pool = new Pool({
     connectionTimeoutMillis: 5000,
     idleTimeoutMillis: 30000,
     keepAlive: true,
-    max: 20, // Max pool size
+    max: 20, // máximo de conexiones simultáneas
 });
 
 pool.on('error', (err) => {
     console.error('[DB] Unexpected error on idle client:', err.message);
 });
 
-// Retry logic wrapper with exponential backoff
+// Wrapper de query con retry exponencial para errores de conectividad.
 const queryWithRetry = async (text, params, retries = 3, delay = 1000) => {
     for (let i = 0; i < retries; i++) {
         try {
@@ -45,15 +55,26 @@ const queryWithRetry = async (text, params, retries = 3, delay = 1000) => {
     }
 };
 
-// Initial connection test
+// Test inicial de conexión.
+// Si falla, habilitamos modo mock para no dejar caída total del backend.
+let useMock = false;
+const { mockQuery } = require('./mock_data');
+
 (async () => {
     try {
         const client = await pool.connect();
         console.log(`[DB] Connected successfully to PostgreSQL at ${process.env.DB_HOST}`);
         client.release();
     } catch (err) {
-        console.error('[DB] Failed to connect to database:', err.message);
+        console.error('[DB] Failed to connect to database. Falling back to MOCK MODE.');
+        useMock = true;
     }
 })();
 
-module.exports = { query: queryWithRetry };
+module.exports = {
+    // Punto único de consulta usado por el resto del backend.
+    query: async (text, params) => {
+        if (useMock) return mockQuery(text, params);
+        return queryWithRetry(text, params);
+    }
+};

@@ -1,0 +1,162 @@
+MAPA DEL PROYECTO - VISOR_LEADS
+Actualizado: 2026-03-02
+Objetivo: explicar para qué sirve cada parte del proyecto y reducir desorden.
+
+==================================================
+1) VISTA GENERAL
+==================================================
+Este proyecto tiene 3 bloques principales:
+
+A) Frontend (React + Vite + TypeScript)
+- Ubicación: /src, /public, archivos vite/tsconfig/tailwind
+- Función: interfaz del visor de leads (login, panel, gestión, reportes)
+
+B) Backend (Node + Express)
+- Ubicación: /server
+- Función: API de login, leads, usuarios, carga CSV, exportaciones y seguridad
+
+C) Base de datos (PostgreSQL)
+- Ubicación: /server/schema_local.sql
+- Función: tablas de usuarios, leads, historial, campañas y archivos CSV
+
+==================================================
+2) ARCHIVOS CLAVE (SÍ O SÍ MANTENER)
+==================================================
+Raíz:
+- package.json
+  Scripts y dependencias del frontend.
+- vite.config.ts
+  Configuración de build/frontend.
+- tsconfig*.json
+  Configuración TypeScript.
+- Dockerfile
+  Imagen de la app para producción.
+- docker-compose.yml
+  Levanta app + PostgreSQL en conjunto.
+- DEPLOY.md
+  Pasos de despliegue Docker.
+- PROJECT_STATE.md
+  Estado técnico del proyecto y pendientes de go-live.
+- MANUAL_V3.md
+  Manual operativo funcional del sistema.
+
+Frontend:
+- src/main.tsx
+  Punto de entrada React.
+- src/App.tsx
+  Componente principal de la app.
+- src/App.css / src/index.css
+  Estilos base.
+- public/
+  Assets estáticos.
+
+Backend:
+- server/index.js
+  API principal (auth, leads, usuarios, upload, export, dashboard).
+- server/db.js
+  Conexión a PostgreSQL.
+- server/.env
+  Variables de entorno del backend (NO versionar credenciales reales).
+- server/.env_example
+  Plantilla de variables.
+- server/schema_local.sql
+  Esquema de DB + usuarios iniciales.
+
+==================================================
+3) ARCHIVOS DE SOPORTE / TEST / UTILIDAD
+==================================================
+Backend scripts utilitarios:
+- server/ensure_admin.js
+  Asegura/crea admin.
+- server/migrate_passwords.js
+  Migración de contraseñas/hash.
+- server/migrate_ux.js
+  Ajustes de UX/estructura de datos.
+- server/debug_sql.js
+  Diagnóstico SQL.
+- server/test_setup.js / test_integrity.js / upload_test.js / verify_export.js
+  Pruebas técnicas de setup, integridad, upload y export.
+- server/mock_data.js / mock_debug.log
+  Soporte de modo mock.
+
+Utilidades raíz:
+- audit_backend.cjs
+  Auditoría rápida de backend.
+- test_login.js / test_mock_fix.cjs
+  Scripts puntuales de prueba.
+- v3_comprehensive_setup.js / v3_direct_setup.js / v3_verbose_setup.js
+  Asistentes de setup V3.
+
+==================================================
+4) ARCHIVOS DE DATOS / EJEMPLOS (PUEDEN MOVERSE A /samples)
+==================================================
+- prueba1.csv, prueba2.csv, leads_ejemplo.xlsx
+- *_normalized.csv, test_input_normalized.csv
+- PLANTILLA_CARGA_LEADS.csv
+- script_leads_por_proy.sql
+
+Recomendación:
+- Crear carpeta /samples y mover todos los CSV/XLSX de prueba ahí.
+
+==================================================
+5) CARPETAS POTENCIALMENTE "RUIDO" (REVISAR ANTES DE BORRAR)
+==================================================
+- _backup_dev/
+  Scripts y archivos históricos de análisis.
+- mockups/
+  Maquetas HTML/CSV de referencia.
+- dist/
+  Build generado (se puede regenerar).
+- node_modules/
+  Dependencias instaladas (se puede reinstalar).
+- uploads/
+  Temporales de subida.
+- build_output.txt / docker_build_log.txt / tsc_explain.txt / export_result.txt
+  Logs de ejecución.
+
+==================================================
+6) QUÉ HACER AHORA PARA ORDENAR (PLAN CORTO)
+==================================================
+Paso 1: Congelar estado actual
+- Hacer backup o commit de seguridad.
+
+Paso 2: Reorganizar estructura
+- Crear carpetas:
+  /docs
+  /scripts
+  /samples
+  /logs
+- Mover archivos sueltos de prueba/logs a esas carpetas.
+
+Paso 3: Definir "fuente oficial"
+- Mantener solo 1 documento de estado (PROJECT_STATE.md) + 1 guía de despliegue (DEPLOY.md).
+
+Paso 4: Limpiar dependencias
+- Borrar dist/node_modules y reinstalar para validar reproducibilidad.
+
+Paso 5: Validar ciclo mínimo
+- Login
+- Carga CSV
+- Gestión lead
+- Export
+
+==================================================
+7) SOBRE “COMENTAR TODO EL CÓDIGO”
+==================================================
+Hacerlo completo y bien requiere hacerlo por fases para no romper nada:
+
+Fase A (rápida, segura)
+- Comentarios en archivos críticos:
+  - server/index.js
+  - server/db.js
+  - src/App.tsx
+  - src/main.tsx
+
+Fase B
+- Scripts auxiliares y migraciones.
+
+Fase C
+- Limpieza final + comentarios de mantenimiento.
+
+Nota: comentar todo de una sola pasada en todo el repo puede introducir ruido y errores.
+Recomendado: hacerlo por bloques y con validación entre cada bloque.

@@ -1,15 +1,17 @@
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { getUsers, uploadLeads, updateLeadStatus, getLeadHistory, assignLead, getContactEvents, downloadCsv, deleteContactEvent, getAdminUsers, createAdminUser, updateAdminUser, resetAdminUserPassword, purgeLeads, logout } from "@/lib/api";
+import { getLeads, getUsers, uploadLeads, updateLeadStatus, getLeadHistory, assignLead, getContactEvents, downloadCsv, deleteContactEvent, getAdminUsers, createAdminUser, updateAdminUser, deleteAdminUser, resetAdminUserPassword, purgeLeads, exportLeads, logout } from "@/lib/api";
 import type { Lead, User } from "@/types";
-import { User as UserIcon, LayoutList, Upload, CheckSquare, Square, Search, History, Calendar, ChevronRight, Download, Clock, BarChart2, Trash2, UserPlus, X, RefreshCw, Edit, Power, Phone, Bot } from "lucide-react";
+import { User as UserIcon, LayoutList, Upload, CheckSquare, Square, Search, History, Calendar, ChevronRight, Download, Clock, BarChart2, Trash2, UserPlus, X, RefreshCw, Edit, Power, Phone, Bot, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import BulkActionsBar from "@/components/BulkActionsBar";
 import LeadCard from "@/components/LeadCard";
 import MetricsDashboard from "@/components/MetricsDashboard";
 
 export default function Dashboard() {
+    const navigate = useNavigate();
     const [leads, setLeads] = useState<Lead[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
@@ -19,7 +21,7 @@ export default function Dashboard() {
     const [showUpload, setShowUpload] = useState(false);
     const [showCampaigns, setShowCampaigns] = useState(false);
     const [showUsersAdmin, setShowUsersAdmin] = useState(false);
-    const [showAudit, _setShowAudit] = useState(false); // Deprecated but kept for compatibility if needed
+    const [showAudit, _setShowAudit] = useState(false);
 
     // Filter States
     const [searchTerm, setSearchTerm] = useState("");
@@ -48,6 +50,7 @@ export default function Dashboard() {
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [uploadSuccess, setUploadSuccess] = useState<{ count: number, eventId: string } | null>(null);
+    const [campaignName, setCampaignName] = useState("");
     const [campaignsData, setCampaignsData] = useState<any[]>([]);
     const [loadingCampaigns, setLoadingCampaigns] = useState(false);
     const [adminUsersList, setAdminUsersList] = useState<User[]>([]);
@@ -97,27 +100,26 @@ export default function Dashboard() {
         }
     };
 
-    const refreshData = useCallback((user: User | null) => {
+    const refreshData = useCallback(async (user: User | null) => {
+        if (!user) return;
         setLoading(true);
-        const params = new URLSearchParams();
-        if (user?.id) params.append('userId', user.id);
-        if (user?.role) params.append('role', user.role.toLowerCase());
-        if (filterEjecutivo) params.append('ejecutivo_id', filterEjecutivo);
-        if (filterJefe) params.append('jefe_id', filterJefe);
+        try {
+            const filters: Record<string, string> = {};
+            if (filterEjecutivo) filters.ejecutivo_id = filterEjecutivo;
+            if (filterJefe) filters.jefe_id = filterJefe;
 
-        Promise.all([
-            fetch(`/api/leads?${params.toString()}`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('visor_token') || ''}` }
-            }).then(r => r.json()),
-            getUsers()
-        ])
-            .then(([leadsResponse, usersData]) => {
-                const rawLeads = Array.isArray(leadsResponse) ? leadsResponse : (leadsResponse?.data || []);
-                setLeads(rawLeads);
-                setUsers(Array.isArray(usersData) ? usersData : []);
-            })
-            .catch((err) => console.error(err))
-            .finally(() => setLoading(false));
+            const [leadsResponse, usersData] = await Promise.all([
+                getLeads(user.id, user.role, filters),
+                getUsers()
+            ]);
+
+            setLeads(leadsResponse.data || []);
+            setUsers(Array.isArray(usersData) ? usersData : []);
+        } catch (err) {
+            console.error('[refreshData ERROR]', err);
+        } finally {
+            setLoading(false);
+        }
     }, [filterEjecutivo, filterJefe]);
 
     useEffect(() => {
@@ -139,6 +141,8 @@ export default function Dashboard() {
             window.location.href = '/login';
         }
     }, [refreshData]);
+
+
 
     useEffect(() => {
         localStorage.setItem('visor_filters', JSON.stringify({
@@ -174,7 +178,7 @@ export default function Dashboard() {
         setUploading(true);
         setUploadProgress(20);
         try {
-            const res = await uploadLeads(uploadFile, allocations, currentUser?.id || '');
+            const res = await uploadLeads(uploadFile, allocations, currentUser?.id || '', campaignName);
             if (res.success) {
                 setUploadSuccess({ count: res.count || 0, eventId: res.eventId || '' });
                 setUploadFile(null);
@@ -204,6 +208,17 @@ export default function Dashboard() {
     const handleToggleUserStatus = async (user: User) => {
         const res = await updateAdminUser(user.id, { activo: !user.activo });
         if (res && !('error' in res)) loadAdminUsers();
+    };
+
+    const handleDeleteUser = async (userId: string) => {
+        if (window.confirm("¿Seguro que deseas eliminar este usuario? Esta acción no se puede deshacer.")) {
+            const success = await deleteAdminUser(userId);
+            if (success) {
+                loadAdminUsers();
+            } else {
+                alert("No se pudo eliminar el usuario. Puede que tenga leads asignados o registros históricos.");
+            }
+        }
     };
 
     const handleSaveUser = async () => {
@@ -250,7 +265,12 @@ export default function Dashboard() {
             (l.proyecto || '').toLowerCase().includes(searchLower);
         const matchesProyecto = !filterProyectoLead || l.proyecto === filterProyectoLead;
         const matchesStatus = !filterStatusLead || l.estado_gestion === filterStatusLead;
-        const matchesQuality = !filterQualityLead || (filterQualityLead === 'hot' && l.es_caliente) || (filterQualityLead === 'ia' && l.es_ia);
+        const matchesQuality = !filterQualityLead ||
+            (filterQualityLead === 'Caliente' && l.clasificacion === 'Caliente') ||
+            (filterQualityLead === 'Tibio' && l.clasificacion === 'Tibio') ||
+            (filterQualityLead === 'Frio' && l.clasificacion === 'Frio') ||
+            (filterQualityLead === 'Sin Clasificacion' && l.clasificacion === 'Sin Clasificacion') ||
+            (filterQualityLead === 'ia' && l.es_ia);
         return matchesSearch && matchesProyecto && matchesStatus && matchesQuality;
     });
 
@@ -292,6 +312,14 @@ export default function Dashboard() {
                             className={`w-full justify-start h-14 rounded-3xl text-sm font-bold transition-all px-6 ${(!isShowingSubAdminView && activeMainView === 'gestionar') ? 'bg-[#3f5d1e]/20 text-[#9acd32] border border-[#3f5d1e]/30 shadow-[0_0_20px_rgba(63,93,30,0.1)]' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}
                         >
                             <History className="mr-4 h-5 w-5" /> Gestionar
+                        </Button>
+
+                        <Button
+                            variant="ghost"
+                            onClick={() => navigate('/v3')}
+                            className="w-full justify-start h-14 rounded-3xl text-sm font-bold transition-all px-6 text-[#9acd32] hover:bg-[#3f5d1e]/10 border border-[#3f5d1e]/10"
+                        >
+                            <Zap className="mr-4 h-5 w-5 text-[#9acd32]" /> Gestión V3
                         </Button>
                     </div>
 
@@ -384,7 +412,51 @@ export default function Dashboard() {
                                 <span className="text-xs font-bold text-gray-400">{uploadFile ? uploadFile.name : "Seleccionar Archivo"}</span>
                             </div>
                             <div className="space-y-4">
-                                <Button onClick={handleUpload} disabled={uploading || !uploadFile} className="w-full h-12 bg-primary text-black font-black uppercase text-xs tracking-widest rounded-xl shadow-lg shadow-primary/20">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Nombre de Campaña</label>
+                                    <Input
+                                        placeholder="Ej: Facebook Leads Marzo"
+                                        value={campaignName}
+                                        onChange={e => setCampaignName(e.target.value)}
+                                        className="bg-black border-white/10 h-10 rounded-xl"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Distribución de Leads</label>
+                                    <div className="bg-black/40 rounded-xl p-3 border border-white/5 space-y-2 max-h-40 overflow-y-auto">
+                                        {users.filter(u => u.role === 'ejecutivo').map(u => (
+                                            <div key={u.id} className="flex items-center justify-between gap-4">
+                                                <span className="text-[10px] font-bold text-gray-300 truncate flex-1">{u.nombre}</span>
+                                                <div className="flex items-center gap-2">
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="0"
+                                                        className="w-16 h-7 bg-white/5 border-white/10 text-[10px] text-center"
+                                                        value={allocations[u.id] || ""}
+                                                        onChange={e => {
+                                                            const val = parseInt(e.target.value) || 0;
+                                                            setAllocations(prev => ({ ...prev, [u.id]: val }));
+                                                        }}
+                                                    />
+                                                    <span className="text-[10px] text-gray-600 font-bold">%</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="flex justify-between px-1">
+                                        <span className="text-[9px] font-bold text-gray-600">Total asignado:</span>
+                                        <span className={`text-[9px] font-black ${Object.values(allocations).reduce((a, b) => a + b, 0) === 100 ? 'text-primary' : 'text-yellow-500'}`}>
+                                            {Object.values(allocations).reduce((a, b) => a + (b || 0), 0)}%
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <Button
+                                    onClick={handleUpload}
+                                    disabled={uploading || !uploadFile || Object.values(allocations).reduce((a, b) => a + (b || 0), 0) === 0}
+                                    className="w-full h-12 bg-primary text-black font-black uppercase text-xs tracking-widest rounded-xl shadow-lg shadow-primary/20 mt-2"
+                                >
                                     {uploading ? "Procesando..." : "Iniciar Carga Masiva"}
                                 </Button>
                             </div>
@@ -432,7 +504,7 @@ export default function Dashboard() {
                     <Card className="mb-10 bg-[#121212] border-white/5 rounded-2xl overflow-hidden">
                         <CardHeader className="bg-white/5 border-b border-white/5 flex flex-row items-center justify-between">
                             <CardTitle className="text-lg font-bold">Gestión de Usuarios</CardTitle>
-                            <Button size="sm" onClick={() => { setEditingUser(null); setShowUserModal(true); }} className="bg-primary text-black font-bold h-9 rounded-lg select-none"><UserPlus className="h-4 w-4 mr-2" /> Agregar</Button>
+                            <Button size="sm" onClick={() => { setEditingUser(null); setUserForm({ nombre: '', email: '', role: 'ejecutivo', password: '', jefe_id: '', company_id: 'Urbani' }); setShowUserModal(true); }} className="bg-primary text-black font-bold h-9 rounded-lg select-none"><UserPlus className="h-4 w-4 mr-2" /> Agregar</Button>
                         </CardHeader>
                         <CardContent className="p-0">
                             <div className="overflow-x-auto">
@@ -455,8 +527,10 @@ export default function Dashboard() {
                                                     <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase ${u.role === 'admin' ? 'bg-primary/20 text-primary' : 'bg-white/10 text-gray-400'}`}>{u.role}</span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right space-x-1">
-                                                    <Button variant="ghost" size="sm" onClick={() => handleToggleUserStatus(u)} className={`h-8 w-8 p-0 ${u.activo ? 'text-green-500' : 'text-gray-600'}`}><Power className="h-4 w-4" /></Button>
-                                                    <Button variant="ghost" size="sm" onClick={() => { setEditingUser(u); setUserForm({ ...userForm, nombre: u.nombre, email: u.email, role: u.role }); setShowUserModal(true); }} className="h-8 w-8 p-0 text-white"><Edit className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="sm" onClick={() => handleToggleUserStatus(u)} title={u.activo ? "Desactivar" : "Activar"} className={`h-8 w-8 p-0 ${u.activo ? 'text-green-500' : 'text-gray-600'}`}><Power className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="sm" onClick={() => { setEditingUser(u); setUserForm({ ...userForm, nombre: u.nombre, email: u.email, role: u.role }); setShowUserModal(true); }} title="Editar" className="h-8 w-8 p-0 text-white"><Edit className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="sm" onClick={() => { const p = prompt("Nueva contraseña:"); if (p) resetAdminUserPassword(u.id, p).then(s => s ? alert("OK") : alert("Error")); }} title="Reset Password" className="h-8 w-8 p-0 text-yellow-500/60 hover:text-yellow-500"><RefreshCw className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="sm" onClick={() => handleDeleteUser(u.id)} title="Eliminar" className="h-8 w-8 p-0 text-red-500/60 hover:text-red-500"><Trash2 className="h-4 w-4" /></Button>
                                                 </td>
                                             </tr>
                                         ))}
@@ -539,11 +613,35 @@ export default function Dashboard() {
                                         value={filterQualityLead}
                                         onChange={(e) => setFilterQualityLead(e.target.value)}
                                     >
-                                        <option value="">Calidad AI/Hot</option>
-                                        <option value="hot">🔥 Hot Leads</option>
+                                        <option value="">Calidad/Clasificación</option>
+                                        <option value="Caliente">🔥 Caliente</option>
+                                        <option value="Tibio">🌤️ Tibio</option>
+                                        <option value="Frio">❄️ Frio</option>
+                                        <option value="Sin Clasificacion">⚪ Sin Clasificación</option>
                                         <option value="ia">🤖 Data AI</option>
                                     </select>
                                     <div className="flex-1" />
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={async () => { if (confirm("¿BORRAR TODO? No hay marcha atrás.")) { await purgeLeads(); window.location.reload(); } }}
+                                        className="h-9 px-4 bg-red-500/10 text-red-500 border-red-500/30 hover:bg-red-500/20 rounded-xl font-bold"
+                                    >
+                                        <Trash2 className="mr-2 h-4 w-4" /> Purgar Leads
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => exportLeads({
+                                            ejecutivo_id: filterEjecutivo,
+                                            proyecto: filterProyectoLead,
+                                            estado: filterStatusLead,
+                                            jefe_id: filterJefe
+                                        })}
+                                        className="h-9 px-4 bg-[#3f5d1e]/10 text-[#9acd32] border-[#3f5d1e]/30 hover:bg-[#3f5d1e]/20 rounded-xl font-bold"
+                                    >
+                                        <Download className="mr-2 h-4 w-4" /> Exportar Excel
+                                    </Button>
                                     <div className="text-[10px] font-black text-gray-600 uppercase">Mostrando: {filteredLeads.length} leads</div>
                                 </div>
 
@@ -619,6 +717,13 @@ export default function Dashboard() {
                                 <option value="gerente">Gerente</option>
                                 <option value="admin">Administrador</option>
                             </select>
+                            <Input
+                                type="password"
+                                placeholder={editingUser ? "Nueva Contraseña (dejar en blanco para no cambiar)" : "Contraseña Inicial"}
+                                value={userForm.password}
+                                onChange={e => setUserForm({ ...userForm, password: e.target.value })}
+                                className="bg-black border-white/10"
+                            />
                             <Button onClick={handleSaveUser} className="w-full bg-primary text-black font-bold h-11 rounded-xl mt-4">Guardar Usuario</Button>
                             <Button variant="ghost" onClick={() => setShowUserModal(false)} className="w-full h-11 text-gray-500">Cancelar</Button>
                         </div>

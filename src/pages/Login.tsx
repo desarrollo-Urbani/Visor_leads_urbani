@@ -12,9 +12,11 @@ export default function Login() {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        const token = localStorage.getItem('visor_token');
-        if (token) {
-            window.location.href = "/";
+        const userStr = localStorage.getItem('visor_user');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            const isAdmin = user?.role === 'admin' || user?.role === 'gerente' || user?.role === 'subgerente';
+            window.location.href = isAdmin ? "/" : "/v3";
         }
     }, []);
 
@@ -30,7 +32,15 @@ export default function Login() {
         const result = await login(email, password);
 
         if (result.success) {
-            window.location.href = "/";
+            // Guardar usuario para App.tsx
+            const user = result.user;
+            const isAdmin = user?.role === 'admin' || user?.role === 'gerente' || user?.role === 'subgerente';
+
+            if (isAdmin) {
+                window.location.href = "/";
+            } else {
+                window.location.href = "/v3";
+            }
         } else {
             setError(result.error || "Error de credenciales");
         }
