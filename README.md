@@ -1,73 +1,89 @@
-# React + TypeScript + Vite
+# 🚀 Gestor de Leads Urbani
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bienvenido al manual oficial del **Gestor de Leads**. Este documento detalla los pasos necesarios para instalar, configurar y ejecutar el proyecto en tu entorno local.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🛠️ Requisitos Previos
 
-## React Compiler
+Antes de comenzar, asegúrate de tener instalado:
+1.  **Node.js** (v20 o superior).
+2.  **PostgreSQL** (Local o vía Docker).
+3.  **Ollama** (Para las funciones de Inteligencia Artificial).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## 📦 Instalación
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1.  **Clonar el repositorio** (si aplica).
+2.  **Instalar dependencias del proyecto raíz:**
+    ```bash
+    npm install
+    ```
+3.  **Instalar dependencias del servidor:**
+    ```bash
+    cd server
+    npm install
+    cd ..
+    ```
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🚀 Ejecución del Proyecto
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+El proyecto requiere tres componentes corriendo simultáneamente:
+
+### 1. El Frontend (Interfaz de Usuario)
+Ejecuta el siguiente comando desde la carpeta raíz:
+```bash
+npm run dev
 ```
+> El sistema estará disponible en `http://localhost:5173`
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### 2. El Backend (Servidor API)
+Desde una nueva terminal, entra a la carpeta del servidor y arranca:
+```bash
+cd server
+npm start
 ```
+> El servidor API corre en el puerto `3000`
+
+### 3. Asistente AI (Ollama)
+Para usar la inteligencia artificial en la vista V3, debes tener Ollama activo:
+1.  **Inicia Ollama:**
+    ```bash
+    ollama serve
+    ```
+2.  **Asegúrate de tener el modelo llama3 instalado:**
+    ```bash
+    ollama pull llama3
+    ```
+
+---
+
+## 🤖 Uso del Asistente AI
+
+En la pantalla de **Gestión V3**, verás a la derecha el panel de **AI Insights**. 
+*   La IA tiene conocimiento automático del lead que estés seleccionando.
+*   Puedes consultar análisis de perfil, consejos de venta o dudas sobre el sistema.
+*   **Nota:** Si prefieres usar otro modelo (ej: `mistral`), avísame para configurarlo en el backend.
+
+---
+
+## 🏗️ Estructura de Carpetas
+
+*   `/src`: Código fuente del Frontend (React + Vite + Tailwind).
+*   `/server`: Código fuente del Backend (Node.js + Express).
+*   `/dist`: Carpeta generada después de `npm run build` para producción.
+
+---
+
+## ☁️ Despliegue en Producción (Railway)
+
+El proyecto está configurado para desplegarse automáticamente al hacer push a la rama `main`.
+*   **Variables de Entorno Cruciales:** `DATABASE_URL`, `JWT_SECRET`.
+*   **Build Script:** `npm run build` (omite tsc por velocidad en despliegue).
+
+---
+
+*Actualizado el: 03 de Marzo, 2026*
