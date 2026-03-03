@@ -47,7 +47,7 @@ export function useLeadQueue(userId: string, role: string) {
         } finally {
             setLoading(false);
         }
-    }, [userId, role, filters, page, selectedLeadId]);
+    }, [userId, role, filters, page]); // Eliminado selectedLeadId de las dependencias para evitar sobre-peticiones y bucles infinitos.
 
     useEffect(() => {
         loadLeads();

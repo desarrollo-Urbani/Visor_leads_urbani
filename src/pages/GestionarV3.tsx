@@ -67,8 +67,18 @@ const GestionarV3: React.FC = () => {
             resetForm(); // Limpiar rastro de gestiones anteriores
             setLoadingHistory(true);
             fetchLeadHistory(selectedLeadId)
-                .then((data: any) => setHistory(data))
-                .catch(console.error)
+                .then((data: any) => {
+                    if (Array.isArray(data)) {
+                        setHistory(data);
+                    } else {
+                        console.error("History data is not an array:", data);
+                        setHistory([]);
+                    }
+                })
+                .catch(err => {
+                    console.error("Error fetching lead history:", err);
+                    setHistory([]);
+                })
                 .finally(() => setLoadingHistory(false));
         } else {
             setHistory([]);

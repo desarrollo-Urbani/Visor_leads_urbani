@@ -139,13 +139,13 @@ const LeadDetail: React.FC<LeadDetailProps> = ({
                     <div className="text-[#64748b]">Clasificación</div>
                     <div>
                         {lead.clasificacion ? (
-                            <span className={`px-2 py-0.5 rounded-lg text-[12px] font-bold border ${lead.clasificacion === 'Caliente' ? 'bg-red-50 border-red-200 text-red-700' :
-                                lead.clasificacion === 'Tibio' ? 'bg-yellow-50 border-yellow-200 text-yellow-700' :
-                                    lead.clasificacion === 'Frio' ? 'bg-blue-50 border-blue-200 text-blue-700' :
+                            <span className={`px-2 py-0.5 rounded-lg text-[12px] font-bold border ${String(lead.clasificacion) === 'Caliente' ? 'bg-red-50 border-red-200 text-red-700' :
+                                String(lead.clasificacion) === 'Tibio' ? 'bg-yellow-50 border-yellow-200 text-yellow-700' :
+                                    String(lead.clasificacion) === 'Frio' ? 'bg-blue-50 border-blue-200 text-blue-700' :
                                         'bg-[#f8fafc] border-[#dfe6ef] text-[#64748b]'
                                 }`}>
-                                {lead.clasificacion === 'Caliente' ? '🔥 ' : lead.clasificacion === 'Tibio' ? '🌤️ ' : lead.clasificacion === 'Frio' ? '❄️ ' : ''}
-                                {lead.clasificacion}
+                                {String(lead.clasificacion) === 'Caliente' ? '🔥 ' : String(lead.clasificacion) === 'Tibio' ? '🌤️ ' : String(lead.clasificacion) === 'Frio' ? '❄️ ' : ''}
+                                {String(lead.clasificacion)}
                             </span>
                         ) : (
                             <span className="text-gray-400 italic text-[12px]">Sin Clasificación</span>

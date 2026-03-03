@@ -1,0 +1,83 @@
+[0m[0m
+[0m[4mC:\proyectos\visor_leads\src\components\ui\button.tsx[24m[0m
+[0m  [2m56:18[22m  [31merror[39m  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  [2mreact-refresh/only-export-components[22m[0m
+[0m[0m
+[0m[4mC:\proyectos\visor_leads\src\components\ui\input.tsx[24m[0m
+[0m  [2m4:18[22m  [31merror[39m  An interface declaring no members is equivalent to its supertype  [2m@typescript-eslint/no-empty-object-type[22m[0m
+[0m[0m
+[0m[4mC:\proyectos\visor_leads\src\features\leads\components\LeadDetail.tsx[24m[0m
+[0m   [2m8:15[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m10:30[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m42:40[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m  [2m43:39[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\proyectos\visor_leads\src\features\leads\components\LeadQueue.tsx[24m[0m
+[0m  [2m44:84[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\proyectos\visor_leads\src\features\leads\hooks\useLeadQueue.ts[24m[0m
+[0m  [2m21:74[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\proyectos\visor_leads\src\features\leads\types\lead.types.ts[24m[0m
+[0m  [2m26:18[22m  [31merror[39m  An interface declaring no members is equivalent to its supertype  [2m@typescript-eslint/no-empty-object-type[22m[0m
+[0m[0m
+[0m[4mC:\proyectos\visor_leads\src\lib\api.ts[24m[0m
+[0m  [2m311:17[22m  [31merror[39m  Unexpected any. Specify a different type  [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[4mC:\proyectos\visor_leads\src\pages\Dashboard.tsx[24m[0m
+[0m    [2m5:43[22m  [31merror[39m  'updateLeadStatus' is defined but never used                [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m24:12[22m  [31merror[39m  '_showAudit' is assigned a value but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m24:24[22m  [31merror[39m  '_setShowAudit' is assigned a value but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m37:29[22m  [31merror[39m  '_setFilterEjecutivo' is assigned a value but never used    [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m38:24[22m  [31merror[39m  '_setFilterJefe' is assigned a value but never used         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m42:60[22m  [31merror[39m  Unexpected any. Specify a different type                    [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m44:12[22m  [31merror[39m  'reassignLeadId' is assigned a value but never used         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m45:12[22m  [31merror[39m  'isReassigning' is assigned a value but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m51:12[22m  [31merror[39m  'uploadProgress' is assigned a value but never used         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m52:12[22m  [31merror[39m  'uploadSuccess' is assigned a value but never used          [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m54:56[22m  [31merror[39m  Unexpected any. Specify a different type                    [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m   [2m55:12[22m  [31merror[39m  'loadingCampaigns' is assigned a value but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m57:12[22m  [31merror[39m  'loadingAdminUsers' is assigned a value but never used      [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m61:26[22m  [31merror[39m  '_setBulkUserFile' is assigned a value but never used       [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m   [2m62:12[22m  [31merror[39m  'uploadingUsers' is assigned a value but never used         [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m197:11[22m  [31merror[39m  '_handleReassign' is assigned a value but never used        [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m235:11[22m  [31merror[39m  '_handleBulkUserUpload' is assigned a value but never used  [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m250:11[22m  [31merror[39m  '_loadAudit' is assigned a value but never used             [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m[0m
+[0m[4mC:\proyectos\visor_leads\src\pages\GestionarV3.tsx[24m[0m
+[0m  [2m12:15[22m  [31merror[39m  'Clock' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              [2m@typescript-eslint/no-unused-vars[22m[0m
+[0m  [2m56:13[22m  [31merror[39m  Error: Calling setState synchronously within an effect can trigger cascading renders[0m
+[0m[0m
+[0mEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:[0m
+[0m* Update external systems with the latest state from React.[0m
+[0m* Subscribe for updates from some external system, calling setState in a callback function when external state changes.[0m
+[0m[0m
+[0mCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).[0m
+[0m[0m
+[0mC:\proyectos\visor_leads\src\pages\GestionarV3.tsx:56:13[0m
+[0m  54 |     useEffect(() => {[0m
+[0m  55 |         if (actionError) {[0m
+[0m> 56 |             setToast({ message: actionError, type: "error" });[0m
+[0m     |             ^^^^^^^^ Avoid calling setState() directly within an effect[0m
+[0m  57 |             setActionError(null);[0m
+[0m  58 |         }[0m
+[0m  59 |     }, [actionError, setActionError]);                                                                                        [2mreact-hooks/set-state-in-effect[22m[0m
+[0m  [2m68:13[22m  [31merror[39m  Error: Calling setState synchronously within an effect can trigger cascading renders[0m
+[0m[0m
+[0mEffects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:[0m
+[0m* Update external systems with the latest state from React.[0m
+[0m* Subscribe for updates from some external system, calling setState in a callback function when external state changes.[0m
+[0m[0m
+[0mCalling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).[0m
+[0m[0m
+[0mC:\proyectos\visor_leads\src\pages\GestionarV3.tsx:68:13[0m
+[0m  66 |         if (selectedLeadId) {[0m
+[0m  67 |             resetForm(); // Limpiar rastro de gestiones anteriores[0m
+[0m> 68 |             setLoadingHistory(true);[0m
+[0m     |             ^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect[0m
+[0m  69 |             fetchLeadHistory(selectedLeadId)[0m
+[0m  70 |                 .then((data: any) => setHistory(data))[0m
+[0m  71 |                 .catch(console.error)  [2mreact-hooks/set-state-in-effect[22m[0m
+[0m  [2m70:30[22m  [31merror[39m  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       [2m@typescript-eslint/no-explicit-any[22m[0m
+[0m[0m
+[0m[31m[1m✖ 32 problems (32 errors, 0 warnings)[22m[39m[0m
+[0m[31m[1m[22m[39m[0m

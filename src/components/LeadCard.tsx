@@ -98,13 +98,13 @@ export default function LeadCard({
                             <span>{waitingHours} hrs espera</span>
                         </div>
                         {lead.clasificacion && (
-                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-bold ${lead.clasificacion === 'Caliente' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
-                                lead.clasificacion === 'Tibio' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
-                                    lead.clasificacion === 'Frio' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' :
+                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border text-[9px] font-bold ${String(lead.clasificacion) === 'Caliente' ? 'bg-red-500/10 border-red-500/20 text-red-400' :
+                                String(lead.clasificacion) === 'Tibio' ? 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400' :
+                                    String(lead.clasificacion) === 'Frio' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' :
                                         'bg-white/5 border-white/5 text-gray-400'
                                 }`}>
-                                {lead.clasificacion === 'Caliente' ? '🔥 ' : lead.clasificacion === 'Tibio' ? '🌤️ ' : lead.clasificacion === 'Frio' ? '❄️ ' : ''}
-                                {lead.clasificacion}
+                                {String(lead.clasificacion) === 'Caliente' ? '🔥 ' : String(lead.clasificacion) === 'Tibio' ? '🌤️ ' : String(lead.clasificacion) === 'Frio' ? '❄️ ' : ''}
+                                {String(lead.clasificacion)}
                             </div>
                         )}
                         {lead.fecha_proximo_contacto && (
