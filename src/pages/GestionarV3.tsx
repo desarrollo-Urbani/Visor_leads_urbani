@@ -11,6 +11,7 @@ import { fetchLeadHistory } from "../features/leads/services/leads.api";
 import type { LeadHistoryEntry } from "../features/leads/types/lead.types";
 import { Zap, Clock, CheckCircle, LogOut } from "lucide-react";
 import { logout } from "../lib/api";
+import AISidebar from "../features/ai/components/AISidebar";
 
 const GestionarV3: React.FC = () => {
     const navigate = useNavigate();
@@ -130,7 +131,7 @@ const GestionarV3: React.FC = () => {
                     )}
                     <div className="flex items-center gap-2">
                         <Zap className="h-5 w-5 text-[#9acd32]" />
-                        <strong className="text-[15px] tracking-tight">Visor Leads Urbani · <span className="text-[#9acd32]">Gestión V3</span></strong>
+                        <strong className="text-[15px] tracking-tight">Gestor de Leads Urbani · <span className="text-[#9acd32]">Gestión V3</span></strong>
                     </div>
                 </div>
                 <div className="flex gap-2">
@@ -158,7 +159,7 @@ const GestionarV3: React.FC = () => {
             </header>
 
             {/* Main Layout */}
-            <main className="flex-1 grid grid-cols-[320px_minmax(600px,1fr)_360px] gap-3 p-3 min-h-0 overflow-hidden">
+            <main className="flex-1 grid grid-cols-[280px_1fr_320px_320px] gap-3 p-3 min-h-0 overflow-hidden">
                 {/* Columna 1: LeadQueue */}
                 <LeadQueue
                     leads={leads}
@@ -183,6 +184,9 @@ const GestionarV3: React.FC = () => {
                     history={history}
                     loading={loadingHistory}
                 />
+
+                {/* Columna 4: AI Insights */}
+                <AISidebar leadContext={selectedLead} />
             </main>
 
             {/* Toasts */}

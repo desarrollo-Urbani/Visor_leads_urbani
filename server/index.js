@@ -627,6 +627,53 @@ app.delete('/api/contact-events/:id', verifyToken, requireAdmin, async (req, res
     }
 });
 
+// --- AI ASSISTANT (OLLAMA) ---
+app.post('/api/ai/chat', verifyToken, async (req, res) => {
+    const { message, leadContext } = req.body;
+
+    const systemPrompt = `Eres el "Asistente Inteligente Urbani", integrado en el Gestor de Leads de la inmobiliaria Urbani.
+Tu objetivo es ayudar al ejecutivo a analizar los leads y responder dudas operativas.
+Reglas:
+1. Sé breve, profesional y directo.
+2. Usa los datos del lead proporcionados para dar consejos de venta.
+3. Si no sabes algo, no inventes.
+4. Habla siempre en español.
+
+DATOS DEL LEAD ACTUAL:
+${JSON.stringify(leadContext || "Ninguno seleccionado")}
+
+MENSAJE DEL USUARIO:
+${message}
+
+ASISTENTE URBANI:`;
+
+    try {
+        // Nota: Requiere Ollama corriendo localmente
+        const response = await fetch('http://localhost:11434/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'llama3', // O el modelo que el usuario tenga descargado (mistral, etc)
+                prompt: systemPrompt,
+                stream: false
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`Ollama error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        res.json({ response: data.response });
+    } catch (err) {
+        console.error('[AI ERROR]', err);
+        res.status(500).json({
+            error: 'Error de comunicación con la IA.',
+            details: 'Asegúrate de que Ollama esté corriendo en http://localhost:11434 y el modelo llama3 esté descargado.'
+        });
+    }
+});
+
 // Serve frontend SPA for any unmatched route
 app.get('*', (req, res) => {
     const indexPath = path.resolve(__dirname, '..', 'dist', 'index.html');

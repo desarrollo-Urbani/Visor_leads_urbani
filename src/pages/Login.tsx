@@ -61,7 +61,7 @@ export default function Login() {
                         <Lock className="h-8 w-8 text-primary shrink-0" />
                     </div>
                     <CardTitle className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
-                        Visor de Leads
+                        Gestor de Leads
                     </CardTitle>
                     <CardDescription className="text-gray-400 font-medium">
                         Acceso Corporativo <span className="text-primary/80">urbani.cl</span>
