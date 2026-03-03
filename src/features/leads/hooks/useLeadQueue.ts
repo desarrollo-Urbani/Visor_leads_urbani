@@ -18,11 +18,22 @@ export function useLeadQueue(userId: string, role: string) {
         setLoading(true);
         try {
             const response = await fetchLeadQueue(userId, role, filters, page);
+            const clasificacionWeight: Record<string, number> = {
+                "Caliente": 1,
+                "Tibio": 2,
+                "Frio": 3,
+                "Sin Clasificacion": 4
+            };
+
             const enrichedLeads: LeadQueueItem[] = response.data.map((l: any) => ({
                 ...l,
                 intentos: l.intentos || 0,
                 vencido: l.vencido || false,
-            }));
+            })).sort((a: any, b: any) => {
+                const wA = clasificacionWeight[a.clasificacion] ?? 4;
+                const wB = clasificacionWeight[b.clasificacion] ?? 4;
+                return wA - wB;
+            });
             setLeads(enrichedLeads);
             setTotalLeads(response.total);
 
